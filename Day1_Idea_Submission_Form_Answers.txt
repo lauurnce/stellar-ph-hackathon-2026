@@ -1,0 +1,327 @@
+================================================================================
+PANGOLIN — STELLAR PHILIPPINES HACKATHON 2026
+DAY 1 IDEA SUBMISSION FORM — COPY-PASTE READY
+Prepared: May 16, 2026
+================================================================================
+
+NOTE: Fields marked [FILL IN] require your specific information before submitting.
+Everything else is ready to copy-paste as-is.
+
+================================================================================
+PROBLEM STATEMENT (STANDALONE — USE THIS ANYWHERE)
+================================================================================
+
+Over 500,000 Filipino digital art freelancers earn an estimated ₱18–25 billion
+in commissions annually, yet every major payment platform leaves them structurally
+unprotected — PayPal explicitly excludes all digital and intangible services from
+Seller Protection, and banks side with buyers in 73% of digital goods disputes.
+1 in 3 commission artists has experienced non-payment or chargeback fraud after
+delivering completed work, with zero legal recourse and an added ₱900 dispute fee
+charged to the artist — amounting to ₱120–640 million in estimated annual losses
+to Philippine creatives. Existing alternatives either charge extractive 9.4–10.4%
+fees with no protection mechanism (Vgen), or are bare job boards with no financial
+layer at all (RaketPH, GCash). Despite the Philippines ranking #3 globally for
+freelancer earnings (Payoneer 2023), its 200,000+ digital art commission artists
+are forced to operate entirely on trust — a structural gap that drives talent
+attrition, suppresses higher-value commissions, and leaves a measurable ₱640M
+problem with no viable solution.
+
+================================================================================
+QUESTION 1 — PROJECT NAME
+================================================================================
+
+Pangolin
+
+================================================================================
+QUESTION 2 — PROBLEM STATEMENT
+================================================================================
+
+Over 500,000 Filipino digital art freelancers earn an estimated ₱18–25 billion
+in commissions annually, yet every major payment platform leaves them structurally
+unprotected — PayPal explicitly excludes all digital and intangible services from
+Seller Protection, and banks side with buyers in 73% of digital goods disputes.
+1 in 3 commission artists has experienced non-payment or chargeback fraud after
+delivering completed work, with zero legal recourse and an added ₱900 dispute fee
+charged to the artist — amounting to ₱120–640 million in estimated annual losses
+to Philippine creatives. Existing alternatives either charge extractive 9.4–10.4%
+fees with no protection mechanism (Vgen), or are bare job boards with no financial
+layer at all (RaketPH, GCash). Despite the Philippines ranking #3 globally for
+freelancer earnings (Payoneer 2023), its 200,000+ digital art commission artists
+are forced to operate entirely on trust — a structural gap that drives talent
+attrition, suppresses higher-value commissions, and leaves a measurable ₱640M
+problem with no viable solution.
+
+================================================================================
+QUESTION 3 — PROPOSED SOLUTION
+================================================================================
+
+Pangolin is a blockchain-powered escrow payment platform built on Stellar,
+designed specifically for digital art commissions and creative freelance work.
+
+Unlike existing platforms, Pangolin is NOT a marketplace — it does not help
+freelancers and clients find each other. Discovery already happens on Twitter/X,
+Instagram, Facebook, and Discord. Pangolin enters AFTER the agreement, acting as
+the trusted financial layer that enforces what both parties already agreed to.
+
+HOW IT WORKS (THE CORE FLOW):
+
+1. Freelancer and client negotiate their commission privately (as they already do).
+2. Both agree on price, scope, and a minimum guaranteed payment percentage
+   (default: 20% — this is the floor the freelancer will always receive, no matter
+   what happens, agreed upfront and enforced by smart contract code).
+3. Client deposits USDC into a Pangolin Soroban smart contract on Stellar.
+4. Freelancer receives on-chain proof that the money is locked and waiting.
+   They can now start working with confidence.
+5. Freelancer delivers the work.
+6. Client reviews and approves — full payment releases instantly to freelancer.
+7. If client disputes or goes silent: the minimum guaranteed % goes to the freelancer
+   automatically. The remaining amount is handled via the dispute process.
+
+THE KEY INNOVATION — MINIMUM GUARANTEED PAYMENT:
+
+The single mechanic that no existing platform has: the client CANNOT get 100% back.
+A pre-agreed floor percentage (10–50%, default 20%) always goes to the freelancer —
+enforced by Soroban contract code, not by human moderation.
+
+This solves the core asymmetry:
+- Freelancers get paid for work they already did.
+- Clients cannot weaponize the chargeback system after delivery.
+- Both parties are protected from bad actors.
+
+WHY STELLAR:
+- Native USDC on Stellar — Circle-issued stablecoin, no bridging risk
+- Soroban smart contracts — Stellar's native contract platform, purpose-built
+- Sub-second finality — 3–5 second settlement vs PayPal's T+3 days
+- Ultra-low fees — ~$0.00001 per transaction, near-zero platform overhead
+- ~99% gross margin on platform fee
+
+PRICING:
+- Platform charges 2.5% on each transaction (paid by client, added on top)
+- This is 75% cheaper than Vgen (9.4–10.4%) — with more protection
+- Revenue from Day 1, no subscription required
+
+LONG-TERM VISION:
+- Pangolin Trust Score: on-chain reputation built from transaction history,
+  tied to the user's Stellar wallet address — a verifiable freelancer credential
+- EaaS (Escrow-as-a-Service): B2B API for platforms to embed Pangolin escrow
+- Expand beyond digital art to all digital service freelancers in SEA
+
+================================================================================
+QUESTION 4 — TARGET USERS / AUDIENCE
+================================================================================
+
+PRIMARY USERS (Launch Market):
+
+1. Filipino digital art commission artists
+   - Character illustrators, VTuber riggers, concept artists, logo/brand designers
+   - Active on: Twitter/X, Instagram, Vgen, Discord, Facebook commission groups
+   - Commission size: ₱1,000–₱50,000+ per project
+   - Core beachhead: artists doing ₱5,000+ commissions (highest pain, highest WTP)
+   - Estimated addressable in Philippines: ~200,000 active commission artists
+
+2. Clients hiring Filipino digital artists
+   - Indie game developers, VTuber talents, content creators, small businesses
+   - Located in PH, US, Japan, EU — wherever Filipino art commissions are hired
+   - Currently paying via PayPal, Wise, GCash, or direct bank transfer — all unprotected
+
+SECONDARY USERS (3–12 Month Expansion):
+
+3. Other digital service freelancers in the Philippines
+   - UI/UX designers, motion graphic artists, video editors, writers
+   - Same structural payment protection gap, same solution applies
+
+4. SEA regional expansion
+   - Indonesia: ~380,000 digital art freelancers
+   - Vietnam: ~200,000
+   - Thailand, Malaysia, Singapore combined: ~310,000
+
+TOTAL ADDRESSABLE COMMUNITY (BEACHHEAD):
+- r/artcommissions: 420,000+ members
+- Filipino Digital Artists (Facebook Group): 50,000+ members
+- Artists & Clients Discord: 15,000+ members
+- Vgen Community Discord: active commission artists
+- r/buhaydigital: Filipino freelancer community
+
+WHO WE ARE NOT TARGETING (YET):
+- Physical product sellers (existing PayPal/Shopify solutions work fine)
+- Enterprise companies (B2B API is Year 2+)
+- Non-creative freelancers (writers, VAs, developers) — adjacent but not Day 1
+
+================================================================================
+QUESTION 5 — SELECTED FOCUS TRACK
+================================================================================
+
+MSME Commerce Tools
+
+REASON: Pangolin directly enables micro and small business commerce for freelance
+creatives — the largest and most underserved MSME segment in the Philippines.
+Every Filipino digital art commission artist is effectively a solo MSME, transacting
+₱18–25 billion annually with zero structured payment infrastructure. Pangolin is
+the commerce rail they are missing.
+
+(Secondary track relevance: Stablecoins & PayFi — USDC on Stellar is the
+payment backbone of the entire system)
+
+================================================================================
+QUESTION 6 — TEAM MEMBER NAMES & ROLES
+================================================================================
+
+[FILL IN — Replace each line with actual team member name + role]
+
+Team Lead / Product Strategy:     [Your Name — Lawrence Panes]
+Smart Contract Developer:         [Team Member 2 Name]
+Backend Developer:                [Team Member 3 Name]
+Frontend Developer:               [Team Member 4 Name]
+Developer / QA / Integration:     [Team Member 5 Name]
+
+Team Size: 5 members
+All members: Developers (full-stack capable)
+Primary PM / Strategy: Lawrence Panes (Team Lead)
+
+NOTE: All 5 members are developers. Strategy, business model, and validation
+research are pre-built. The team will focus 80%+ of hackathon time on execution.
+
+================================================================================
+QUESTION 7 — INITIAL TECHNICAL APPROACH
+================================================================================
+
+CORE STACK:
+
+Smart Contract Layer:
+- Platform: Soroban (Stellar's native smart contract platform)
+- Language: Rust
+- Contract logic: Escrow state machine with 5 states —
+  CREATED → FUNDED → ACTIVE → COMPLETED / DISPUTED / CANCELLED
+- Key functions: deposit(), release(), dispute(), cancel(), getStatus()
+- Minimum guarantee logic: hardcoded floor % enforced at contract level —
+  client cannot withdraw below freelancer's guaranteed minimum under any condition
+- Milestone support: optional split releases within single contract
+
+Payment Layer:
+- Stablecoin: USDC on Stellar (Circle-issued, native — not bridged)
+  Asset issuer: GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+- All contract values denominated in USDC
+- Stellar transaction fees: ~$0.00001 per operation
+
+Authentication / Wallet:
+- Primary wallet: Freighter Wallet (browser extension)
+- Wallet connect: @stellar/freighter-api
+- User identity: Stellar public key (G-address)
+- No username/password required — wallet IS the account
+
+Frontend:
+- Framework: Next.js (React) + TypeScript
+- Stellar SDK: @stellar/stellar-sdk (JavaScript)
+- Soroban JS SDK: @stellar/stellar-sdk/contract
+- UI: Clean, mobile-friendly, minimal crypto jargon
+- Key screens: Create Escrow, Fund Escrow, Confirm Delivery, Release/Dispute
+
+Backend (minimal):
+- Purpose: off-chain metadata only (project title, description, file hashes)
+- On-chain: all financial logic (no backend can touch funds)
+- Optional: email/Discord notifications on state changes
+
+Deployment:
+- Testnet: Stellar Testnet (Days 2–4)
+- Mainnet: Stellar Mainnet (Days 5–6)
+- Frontend: Vercel
+
+MVP SCOPE FOR HACKATHON (7 DAYS):
+- Create escrow agreement (both parties sign)
+- Client deposits USDC
+- Freelancer confirms funding (sees on-chain proof)
+- Client releases full payment on approval
+- Automatic minimum guarantee enforcement if disputed
+- Basic transaction history per wallet address
+- Freighter wallet connect + disconnect
+
+================================================================================
+QUESTION 8 — EXPECTED STELLAR INTEGRATION
+================================================================================
+
+Pangolin is Stellar-native by design — not a multi-chain app ported to Stellar.
+Every core product function runs on Stellar infrastructure:
+
+1. SOROBAN SMART CONTRACTS (Primary Integration)
+   - All escrow logic lives in Soroban contracts on Stellar
+   - Minimum guarantee enforcement is a Soroban function — cannot be bypassed
+   - Contract state is publicly verifiable on Stellar Explorer
+   - Both parties can audit the terms before funding
+
+2. USDC ON STELLAR (Payment Infrastructure)
+   - Circle-issued USDC native to Stellar (not bridged from Ethereum)
+   - Asset issuer: GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+   - Stablecoin = dollar-pegged value, zero volatility risk for freelancer income
+   - Payments settle in 3–5 seconds at ~$0.00001 per operation
+   - Filipino freelancers can convert USDC → PHP via Coins.ph or PDAX
+
+3. STELLAR ACCOUNTS AS USER IDENTITY
+   - Freighter wallet (Stellar public key) = user account
+   - No email, no password, no KYC at launch (permissionless MVP)
+   - On-chain transaction history = the foundation for Pangolin Trust Score
+     (future: reputation score derived from completed escrow contracts)
+
+4. STELLAR NETWORK ADVANTAGES THAT DIRECTLY BENEFIT THE USE CASE
+   - 3–5 second finality: freelancer receives confirmation faster than a GCash transfer
+   - $0.00001 fees: platform can charge 2.5% and still be 75% cheaper than Vgen
+   - 100 operations/second throughput: scalable from Day 1 to thousands of users
+   - Built-in DEX: future feature — accept any Stellar asset, auto-convert to USDC
+   - Stellar Testnet: full-featured test environment for safe development (Days 2–4)
+   - Stellar Mainnet deployment: production-ready by Day 6
+
+5. WHY STELLAR OVER ETHEREUM / SOLANA FOR THIS USE CASE
+   - Ethereum gas fees (~$5–50/tx) make $50 commissions economically unviable
+   - Solana has higher fees and more complexity for escrow state machines
+   - Stellar's fee structure is the ONLY chain where 2.5% fee + escrow makes sense
+     for micro-transactions common in Philippine art commissions (₱500–₱5,000)
+   - USDC on Stellar = direct Circle partnership, enterprise-grade stablecoin,
+     already integrated with Philippine on-ramps (Coins.ph)
+
+================================================================================
+QUESTION 9 — XLM MAINNET WALLET ADDRESS
+================================================================================
+
+[FILL IN — Your Freighter Wallet Stellar Mainnet address (starts with G...)]
+
+HOW TO GET YOUR WALLET ADDRESS:
+1. Install Freighter Wallet: freighter.app (browser extension)
+2. Create new wallet → save your 24-word seed phrase securely
+3. Switch network to "Mainnet" in Freighter settings
+4. Copy your public key (G-address) — this is your wallet address
+5. Paste here
+
+IMPORTANT: Use the team lead's wallet (Lawrence Panes). This address will receive
+the ₱50,000 prize and XLM deployment support from the hackathon organizers.
+
+================================================================================
+QUICK REFERENCE — KEY NUMBERS FOR VERBAL PITCH
+================================================================================
+
+"We charge 2.5%."                 (vs Vgen's 9.4% — 75% cheaper)
+"PayPal gives freelancers $0."    (explicit policy exclusion — verifiable)
+"1 in 3 artists hit this."        (non-payment/chargeback frequency)
+"₱640M lost annually in PH."      (estimated annual losses, Philippine creatives)
+"#3 globally for freelancers."    (Philippines rank, Payoneer 2023)
+"500,000 PH digital art workers." (core serviceable market)
+"20% floor, enforced by code."    (the minimum guarantee — core innovation)
+"3–5 seconds to settle."          (Stellar finality vs PayPal T+3 days)
+
+================================================================================
+TAGLINE OPTIONS
+================================================================================
+
+PRIMARY:
+"PayPal protects the buyer. Pangolin protects the work."
+
+ALTERNATIVES:
+"Your floor is in the contract, not in the client's hands."
+"Escrow for creative work. Finally."
+"Work with confidence. Get paid by code."
+
+CLOSING STATEMENT (for pitch ending):
+"Pangolin doesn't ask clients to be honest. It makes dishonesty structurally impossible."
+
+================================================================================
+END OF DOCUMENT
+Pangolin | Stellar Philippines Hackathon 2026 | Team: Lawrence Panes + 4
+================================================================================
