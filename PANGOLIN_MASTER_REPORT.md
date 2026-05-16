@@ -794,3 +794,47 @@ Unbanked/underbanked Filipino freelancers getting access to secure payment infra
 *This document will be updated as research agents return with market sizing, problem validation, GTM strategy, and technical recommendations.*
 
 *Research agents dispatched: TAM/SAM/SOM Agent, Problem Validation Agent, GTM Agent, Hackathon Win Strategy Agent*
+
+---
+
+## References
+
+### Internal Source Documents
+
+Primary input files located in `source-documents/` that this report synthesizes:
+
+- **`source-documents/Hackathon_Rules_Schedule_And_Judging_Criteria.md`** — Hackathon event details (dates, prize pool, team size, format), 7-day schedule, judging criteria and weights (Impact 30%, Technical 25%, UX 20%, Innovation 15%, Feasibility 10%), submission requirements, and track definitions. Directly drives Sections 2, 11, 13, 14, and Appendix C.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original SafeVault/Pangolin business analysis: problem statement, escrow model design, dispute management, trust gap framing, two-sided platform concept, and B2B EaaS opportunity. Foundation for Sections 1, 4, 5, 8, 9, 10, Appendix A, and Appendix B.
+- **`source-documents/Pangolin_API_Stack_Recommendations_KYC_AML_Blockchain.md`** — API stack recommendations for KYC (Sumsub, Onfido), AML/fraud detection (Chainalysis, TRM Labs), blockchain validation, and escrow infrastructure. Referenced in Sections 6 and 15 (post-hackathon KYC/AML decisions).
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — Detailed comparison of PayPal, Stripe/Credit Cards, Etsy, Vgen, and RaketPH: protection policies, fee structures, and critical gaps for freelancers. Core evidence for Sections 3, 4, 7, and the judging criteria alignment in Section 13.
+
+---
+
+### Internal Research Files
+
+Detailed analysis files located in `research/` that feed into the key numbers and strategic recommendations in this master report:
+
+- **`research/Market_Sizing_TAM_SAM_SOM_Bottom_Up_Analysis.md`** — Bottom-up TAM ($450M), SAM ($71.8M), SOM ($3.75M Year 3 revenue) calculations; freelancer population data; average commission values; revenue projections Years 1–5; sensitivity analysis.
+- **`research/Problem_Validation_Is_Problem_Real_Large_Significant.md`** — Problem reality (9/10), scale (8/10), and significance (9/10) scoring; hard evidence from platform policies, community data, and financial loss estimates.
+- **`research/Business_Model_Revenue_Strategy_And_Unit_Economics.md`** — 2.5% fee rationale; unit economics ($3.75 revenue per transaction, ~99% gross margin); CAC ($5 blended), LTV ($116), LTV:CAC (23:1); break-even analysis (~110 users, Month 3); revenue projections.
+- **`research/GTM_Go_To_Market_Strategy_Philippines_SEA.md`** — Beachhead market selection; community targeting (Reddit, Facebook, Discord, Twitter); influencer strategy; partnership roadmap (RaketPH, Coins.ph); 30/60/90-day KPIs; Floor Stories campaign.
+- **`research/Pitch_Narrative_Storytelling_Strategy_And_Slide_Outline.md`** — 5-minute narrative arc; 12-slide deck outline; judge Q&A preparation; tagline options; what NOT to say; the Pangolin metaphor.
+- **`research/Pre_Build_Validation_Playbook_48_Hour_Community_Sprint.md`** — 6 unvalidated assumptions with risk ratings; 48-hour sprint execution plan; Go/No-Go scoring framework; Typeform validation questions; Mom Test interview scripts for freelancers and clients.
+
+---
+
+### External Sources
+
+Third-party data and reports cited across this document and the research files:
+
+1. Payoneer Global Freelancer Income Report 2022–2023 — 1.5M registered PH freelancers; Philippines #3 globally for freelancer earnings; design as #1 skill category; 70% of PH commissions from overseas clients
+2. DOLE Philippines 2024 — Filipino freelancer population estimates; gig economy growth
+3. Bangko Sentral ng Pilipinas (BSP) Digital Payments Report 2024 — 71% of Filipinos using digital payments (2024), up from 30% in 2020
+4. Chainalysis Global Crypto Adoption Index 2023 — Philippines #1 in SEA crypto adoption; 55% SEA crypto-accessible rate
+5. Stellar Development Foundation Annual Report 2024 — USDC on Stellar 340% growth; transaction finality (3–5 seconds); fee structure (~$0.00001/operation)
+6. Grand View Research, "Digital Art Market" 2024 — $3.5B global market (2023), 14% CAGR to $7B+ by 2028
+7. Google-Temasek-Bain e-Conomy SEA 2024 Report — SEA digital economy and gig market growth context
+8. Vgen platform statistics 2024 — 250K–500K artists; 9.4–10.4% fee structure; $50M+ transaction volume
+9. PayPal Seller Protection Policy (official PayPal policy page) — Digital and intangible services exclusion clause; 180-day buyer dispute window; ₱900 dispute processing fee
+10. Freelancers Union, "Freelancing in America" 2023 — 71% non-payment incidence; average $6,000/year loss
+11. Fiverr Q4 2023 Earnings Call — ~2.1M active "Graphics & Design" sellers globally

@@ -297,3 +297,27 @@ The pangolin's shell is not armor — it is the only mammal that rolls into a pe
 That is the product. Not a wall. A design that makes the attack functionally useless.
 
 Lead with that image if you want to. The metaphor earns itself.
+
+---
+
+## References
+
+### Internal Source Documents
+
+These files are in the `source-documents/` folder and contain the primary data inputs used in this analysis:
+
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — PayPal Seller Protection policy exclusion for digital/intangible services (the "smoking gun" for Slide 3); Vgen 9.4–10.4% fee (competitor benchmark for Slides 5 and 11); RaketPH zero-protection finding. The verbatim policy language cited in the pitch scripts comes from this document.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original escrow model, minimum payment concept, dispute management framework, and trust gap problem statement that shaped the narrative arc and product differentiation claims.
+- **`source-documents/Hackathon_Rules_Schedule_And_Judging_Criteria.md`** — Hackathon context (Stellar Philippines Hackathon 2026, May 18–24, 2026), judging criteria (Impact, Technical Implementation, Business Model, Presentation), and track definitions that shaped pitch structure and emphasis on judge-specific angles.
+
+---
+
+### External Sources
+
+1. Payoneer Global Freelancer Income Report 2022–2023 — 1.5M registered PH freelancers; design as #1 skill category; Philippines #3 globally for freelancer earnings (Slides 4 and 11)
+2. DOLE Philippines 2024 — PH freelancer population estimates supporting scale numbers
+3. PayPal Seller Protection Policy (official PayPal policy page) — Digital and intangible services exclusion clause; ₱900 dispute processing fee — cited verbatim in Slide 3 and verbal scripts
+4. Stellar Development Foundation — 3–5 second transaction finality; ~$0.001 per transaction fee (Slide 8 technical credibility)
+5. Upwork / Fiverr public pricing — 20% fee benchmark for competing platforms (Slide 5 comparison)
+6. r/artcommissions (subreddit public stats) — 420K+ members; payment complaint frequency (Slide 10 traction/validation)
+7. Grand View Research, "Digital Art Market" 2024 — $3.5B market, 14% CAGR used in market sizing narrative

@@ -179,7 +179,20 @@ Year 5 includes B2B API licensing (5 marketplace partners × $100K/year).
 
 ---
 
-## Sources
+## References
+
+### Internal Source Documents
+
+These files are in the `source-documents/` folder and contain the primary data inputs used in this analysis:
+
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — Vgen fee structure (9.4–10.4%), PayPal fee and protection gap data, Etsy/RaketPH platform analysis. Used in competitive pricing benchmarks and fee disruption analysis.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original business framing, escrow model concept, and problem definition that set the scope of market sizing.
+- **`source-documents/Hackathon_Rules_Schedule_And_Judging_Criteria.md`** — Hackathon context (Stellar Philippines Hackathon 2026, May 18–24, 2026) that defines the launch market and competitive entry point.
+
+---
+
+### External Sources
+
 1. Upwork "Freelance Forward" Annual Impact Report 2023
 2. Fiverr Q4 2023 Earnings Call
 3. Payoneer Global Freelancer Income Report 2022–2023

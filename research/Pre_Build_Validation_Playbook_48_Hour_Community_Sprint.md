@@ -403,3 +403,26 @@ If 3 of 5 interviews say this → the problem is real but the market has self-se
 ---
 
 *The biggest mistake hackathon teams make is treating validation as optional pre-work. It is actually the highest-leverage 48 hours of your week — because it tells you which 80% of features to skip.*
+
+---
+
+## References
+
+### Internal Source Documents
+
+These files are in the `source-documents/` folder and contain the primary data inputs used in this analysis:
+
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — Platform-by-platform protection gaps that directly define the 6 unvalidated assumptions: PayPal chargeback policy (Assumptions 1 & 2), GCash dispute parity with PayPal (Assumption 2), Vgen fee structure and no-milestones limitation (Assumption 4 context), RaketPH zero-protection status. The verbatim post scripts and DM templates in this playbook cite PayPal policy language sourced from this document.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original business assumptions (escrow model, two-sided trust gap, user types) that this playbook is designed to validate or kill before code is written.
+- **`source-documents/Hackathon_Rules_Schedule_And_Judging_Criteria.md`** — 7-day hackathon timeline (May 18–24, 2026) that defines the 48-hour validation window constraint; Day 1 Launch Day schedule that the validation sprint is mapped against.
+
+---
+
+### External Sources
+
+1. Payoneer Global Freelancer Income Report 2022–2023 — 1.5M PH freelancers baseline; design as #1 skill category (used in Assumption 5 validation framing)
+2. PayPal Seller Protection Policy (official PayPal policy page) — Digital and intangible services exclusion clause used verbatim in validation post scripts and DM templates
+3. r/artcommissions (subreddit public stats) — 420K+ members; chargeback post frequency (primary validation community target)
+4. Chainalysis Global Crypto Adoption Index 2023 — Philippines crypto accessibility data supporting Assumption 6 (Stellar + USDC viability)
+5. Rob Fitzpatrick, "The Mom Test" (2013) — Interview methodology framework: ask about past behavior not future intent; never ask "would you use our product" — applied throughout Section 5 interview questions
+6. Escrow.com and Contra — Referenced in Section 6 (Riskiest Assumption) for client-side review research validation step

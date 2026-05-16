@@ -614,3 +614,28 @@ Floor Stories campaign is not a retention tactic bolted onto the product — it 
 
 **3. Client adoption is the riskiest GTM problem.**
 Freelancers are motivated by pain. Clients are motivated by nothing — chargebacks are their safety net. Strategy: make client onboarding extremely light (email invitation, no Freighter wallet required upfront), communicate genuine client-side value (funds held safely, work delivered before release), and use freelancer community's existing trust relationships to pull clients in rather than pushing at clients directly.
+
+---
+
+## References
+
+### Internal Source Documents
+
+These files are in the `source-documents/` folder and contain the primary data inputs used in this analysis:
+
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — PayPal Seller Protection exclusion for digital services (core "where the pain is loudest" evidence), platform comparison data (PayPal/Stripe/Etsy/Vgen/RaketPH), Vgen 9.4–10.4% fee used throughout fee arbitrage messaging and GTM scripts.
+- **`source-documents/Hackathon_Rules_Schedule_And_Judging_Criteria.md`** — Hackathon structure (Stellar Philippines Hackathon 2026, May 18–24, 2026), Demo Day timing, tracks (Payments & Remittances, Financial Inclusion, MSME Commerce Tools) that shaped the launch timeline and Phase 1/2/3 GTM calendar.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original beachhead rationale, escrow model design, and trust gap framing that GTM community positioning strategy is built on.
+
+---
+
+### External Sources
+
+1. Payoneer Global Freelancer Income Report 2022–2023 — Philippines #3 globally for freelancer earnings; design as #1 skill category; 1.5M registered PH freelancers; 70% of PH commissions from overseas clients
+2. DOLE Philippines 2024 — PH freelancer population estimates
+3. Chainalysis Global Crypto Adoption Index 2023 — Philippines #1, Vietnam #2, Thailand #5 in SEA crypto adoption; 55% SEA crypto-accessible rate
+4. r/artcommissions (subreddit public stats) — 420K+ members; chargeback/ghosting posts appearing weekly
+5. Bangko Sentral ng Pilipinas Digital Payments Report 2024 — 71% of Filipinos using digital payments in 2024 (up from 30% in 2020)
+6. Google-Temasek-Bain e-Conomy SEA 2024 Report — SEA digital economy and freelance market context
+7. Vgen platform statistics 2024 — 250K artists, 9.4–10.4% fee structure, no-milestones limitation
+8. Stellar Development Foundation Annual Report 2024 — USDC on Stellar grew 340% in 2024

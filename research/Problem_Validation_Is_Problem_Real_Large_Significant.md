@@ -201,3 +201,27 @@ Product works better if stablecoin layer is invisible. Users should see "pay ₱
 **Platform positioning:** "First escrow built for Filipino digital artists and their clients."
 
 **Trust signal:** Works via GCash on-ramp (even if stablecoin under hood), display currency = Philippine pesos, peso-denominated fees. Remove all crypto jargon from client-facing UI.
+
+---
+
+## References
+
+### Internal Source Documents
+
+These files are in the `source-documents/` folder and contain the primary data inputs used in this analysis:
+
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — Platform policy data used as "hard evidence" in Q1 (Is the Problem Real?): PayPal Seller Protection exclusion for digital services, Stripe/bank 73% cardholder win rate, Vgen 9.4–10.4% fees and no-milestones limitation, RaketPH zero escrow/zero protection finding. Directly cited in the platform comparison table.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original problem framing for marketplace trust gaps, chargeback/fraud risk, and escrow model concept that defined the solution direction validated in this report.
+
+---
+
+### External Sources
+
+1. Freelancers Union — "Freelancing in America" 2023 — 71% of freelancers experienced non-payment; average $6,000/year loss from unpaid invoices
+2. Artists & Clients Discord / r/artcommissions community polls — 1-in-3 commission artist non-payment incident rate; community size (420K+ r/artcommissions members)
+3. Payoneer Global Freelancer Income Report 2022–2023 — 1.5M registered PH freelancers; design as #1 category; Philippines #3 globally for freelancer earnings
+4. DOLE Philippines 2024 — PH freelancer population estimates; gig economy 23% annual growth 2020–2024
+5. Grand View Research, "Digital Art Market" 2024 — $3.5B global digital art market (2023), 14% CAGR projection to $7B+ by 2028
+6. Vgen platform statistics 2024 — 500K+ artists, $50M+ transaction volume
+7. PayPal Seller Protection Policy (official PayPal policy page) — Digital and intangible services exclusion clause; 180-day buyer dispute window
+8. Bangko Sentral ng Pilipinas Digital Payments Report 2024 — Philippine digital payment adoption data

@@ -453,3 +453,28 @@ That is a Cintiq tablet. Every single year.
 ### The 3-Year Exit Narrative
 
 > "In 3 years, Pangolin becomes the escrow layer for all digital creative work in Southeast Asia — not just art commissions. We expand from visual art to music production, video editing, voice acting, and game asset creation. We open our API to platforms like RaketPH, Discord bot developers, and regional freelance marketplaces. At $2M ARR with 10+ B2B integrations, Pangolin is positioned for strategic acquisition by a regional fintech player — GCash, Maya, or Sea Group — or a Series A to build toward $20M ARR as the Stripe for creative freelancers in Southeast Asia."
+
+---
+
+## References
+
+### Internal Source Documents
+
+These files are in the `source-documents/` folder and contain the primary data inputs used in this analysis:
+
+- **`source-documents/Payment_Platforms_Comparison_Why_They_Fail_Freelancers.md`** — Vgen fee structure (9.4–10.4%) used as the primary competitor benchmark throughout pricing strategy; PayPal fee data (2.9% + $0.30, effective 3.1% on $150) used in the competitor positioning table; Etsy and RaketPH data supporting the competitive narrative.
+- **`source-documents/Pangolin_API_Stack_Recommendations_KYC_AML_Blockchain.md`** — AML/fraud detection API providers (Chainalysis, TRM Labs) that inform the post-MVP AML cost estimates (~$0.05/transaction) in the unit economics section.
+- **`source-documents/Pangolin_Initial_Business_Analysis_And_SafeVault_Concept.md`** — Original escrow model, dispute management framework, and revenue concept that the unit economics model is built upon.
+
+---
+
+### External Sources
+
+1. Stellar Development Foundation — Stellar ledger transaction fee (~$0.00001 per operation) used in cost-per-transaction breakdown
+2. Stripe public pricing — 2.9% + $0.30 per transaction; 20–25% gross margin benchmark cited in gross margin comparison
+3. Escrow.com public pricing — $25 minimum or 3.25% fee used in competitor positioning table
+4. Payoneer Global Freelancer Income Report 2022–2023 — SAM of 1.45M SEA digital art freelancers; Philippines #3 globally
+5. Chainalysis Global Crypto Adoption Index 2023 — 55% SEA crypto-accessible rate used in SAM calculation
+6. Industry LTV:CAC benchmarks — 3:1 standard fintech ratio; Pangolin 23:1 compared against this
+7. GCash/Maya adoption data — 15–25% Y1 adoption rate benchmark for digital payment products in Philippines
+8. Vgen platform statistics 2024 — 250K artists in ~3 years used as SOM adoption benchmark
