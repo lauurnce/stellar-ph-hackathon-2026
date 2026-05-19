@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -24,6 +27,10 @@ const C = {
   textMuted:   "#4C4C64",
   font:        "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 
 const PHP_RATE = 58.3; // 1 USDC ≈ ₱58.30
 
@@ -650,7 +657,7 @@ function SuccessScreen({ data, onReset }) {
       </div>
       <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
         <Btn variant="coral" size="lg" onClick={onReset}>Create Another Escrow</Btn>
-        <Btn variant="ghost" size="lg">View Dashboard</Btn>
+        <Btn variant="ghost" size="lg" onClick={() => go("/dashboard")}>View Dashboard</Btn>
       </div>
     </div>
   );

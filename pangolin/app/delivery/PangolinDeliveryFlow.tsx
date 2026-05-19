@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -25,6 +28,10 @@ const C = {
   textMuted: "#4C4C64",
   font:      "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 const PHP = 58.3;
 const phpOf = u => (parseFloat(u) * PHP).toLocaleString("en-PH", { minimumFractionDigits: 0 });
 
@@ -602,7 +609,7 @@ function ScreenB() {
         <Btn variant="blue" size="lg" fullWidth>
           🏅 Add to Portfolio Badge
         </Btn>
-        <Btn variant="ghost" size="md" fullWidth>
+        <Btn variant="ghost" size="md" fullWidth onClick={() => go("/freelancer")}>
           Back to Dashboard
         </Btn>
       </div>

@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState } from "react";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────

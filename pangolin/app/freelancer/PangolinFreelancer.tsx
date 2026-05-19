@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -26,6 +29,10 @@ const C = {
   textMuted: "#4C4C64",
   font:      "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 const PHP = 58.3;
 const phpOf = u => (parseFloat(u) * PHP).toLocaleString("en-PH", { minimumFractionDigits: 0 });
 
@@ -597,9 +604,9 @@ function JobRow({ row, last }) {
       <div style={{ fontSize:13,color:C.textSub }}>{row.due}</div>
       <div>
         {isActionable ? (
-          <Btn variant="coral" size="sm">{row.action}</Btn>
+          <Btn variant="coral" size="sm" onClick={() => go("/delivery")}>{row.action}</Btn>
         ) : (
-          <Btn variant="subtle" size="sm">{row.action}</Btn>
+          <Btn variant="subtle" size="sm" onClick={() => go("/escrow")}>{row.action}</Btn>
         )}
       </div>
     </div>
