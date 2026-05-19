@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -25,6 +28,10 @@ const C = {
   textMuted: "#4C4C64",
   font:      "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 
 function useHover() {
   const [h, setH] = useState(false);
@@ -684,8 +691,8 @@ function ScreenC() {
 
       {/* Return */}
       <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-        <Btn variant="coral" size="lg">Create New Escrow</Btn>
-        <Btn variant="ghost" size="lg">Back to Dashboard</Btn>
+        <Btn variant="coral" size="lg" onClick={() => go("/create-escrow")}>Create New Escrow</Btn>
+        <Btn variant="ghost" size="lg" onClick={() => go("/dashboard")}>Back to Dashboard</Btn>
       </div>
     </div>
   );

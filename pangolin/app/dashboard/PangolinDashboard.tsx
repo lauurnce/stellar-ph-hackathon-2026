@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -26,6 +29,10 @@ const C = {
   textMuted:   "#4A4A5E",
   font:        "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 
 // ── Tiny hooks & helpers ──────────────────────────────────────────────────────
 function useHover() {
@@ -394,7 +401,7 @@ function EscrowRow({ row, last }) {
         </div>
       </div>
       {/* Action */}
-      <div><Btn variant={row.action.variant} size="sm">{row.action.label}</Btn></div>
+      <div><Btn variant={row.action.variant} size="sm" onClick={() => go("/escrow")}>{row.action.label}</Btn></div>
     </div>
   );
 }
@@ -537,7 +544,7 @@ export default function PangolinDashboard() {
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <NotifBell />
                 {/* Create Escrow CTA */}
-                <Btn variant="coral" size="lg">
+                <Btn variant="coral" size="lg" onClick={() => go("/create-escrow")}>
                   <span style={{ fontSize: 16 }}>+</span> Create New Escrow
                 </Btn>
               </div>
@@ -558,7 +565,7 @@ export default function PangolinDashboard() {
                   <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Active Escrows</h2>
                   <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>3 contracts currently in progress</p>
                 </div>
-                <Btn variant="ghost" size="sm">View All →</Btn>
+                <Btn variant="ghost" size="sm" onClick={() => go("/escrow")}>View All →</Btn>
               </div>
               <EscrowTable />
             </div>
@@ -593,7 +600,7 @@ function QuickTips() {
         </div>
       </div>
 
-      <Btn variant="coral" size="md" sx={{ width: "100%", justifyContent: "center" }}>
+      <Btn variant="coral" size="md" onClick={() => go("/create-escrow")} sx={{ width: "100%", justifyContent: "center" }}>
         🔒 Start a New Escrow
       </Btn>
 

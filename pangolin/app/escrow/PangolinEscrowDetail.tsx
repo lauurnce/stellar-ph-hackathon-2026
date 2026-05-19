@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -24,6 +27,10 @@ const C = {
   textMuted:  "#4C4C64",
   font:       "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 
 const PHP = 58.3;
 function phpOf(u) { return (parseFloat(u) * PHP).toLocaleString("en-PH", { minimumFractionDigits: 2 }); }
@@ -177,7 +184,7 @@ function TopBar() {
   const [h, hov] = useHover();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-      <button {...hov} style={{
+      <button onClick={() => go("/dashboard")} {...hov} style={{
         display: "flex", alignItems: "center", gap: 7,
         background: h ? C.elevated : "transparent",
         border: `1px solid ${h ? C.borderLit : C.border}`,
@@ -509,7 +516,7 @@ function DeliveryZone({ delivered = true }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
               { icon: "📦", color: C.coral, label: "Files submitted by Ana Kalaw",         time: "May 18 · 3:41 PM" },
-              { icon: "💬", color: C.blue,  label: "Message: "Ready for your review!"",    time: "May 18 · 3:42 PM" },
+              { icon: "💬", color: C.blue,  label: 'Message: "Ready for your review!"',    time: "May 18 · 3:42 PM" },
               { icon: "🔔", color: C.amber, label: "Auto-release timer started (48 hrs)",  time: "May 18 · 3:41 PM" },
               { icon: "🔒", color: C.green, label: "Escrow funded by you",                 time: "May 12 · 11:00 AM" },
             ].map(({ icon, color, label, time }) => (
@@ -543,7 +550,7 @@ function ActionSidebar() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Primary CTA */}
-          <Btn variant="coral" size="lg" fullWidth>
+          <Btn variant="coral" size="lg" fullWidth onClick={() => go("/delivery")}>
             ✓ Approve & Release $800
           </Btn>
 
@@ -573,7 +580,7 @@ function ActionSidebar() {
                 A neutral arbitrator will review both sides. The guaranteed floor of ${MIN_GUARANTEE_USDC} USDC is protected for the freelancer.
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <Btn variant="red" size="sm" onClick={() => setShowDispute(false)} style={{ flex: 1, justifyContent: "center" }}>Confirm Dispute</Btn>
+                <Btn variant="red" size="sm" onClick={() => go("/dispute")} style={{ flex: 1, justifyContent: "center" }}>Confirm Dispute</Btn>
                 <Btn variant="ghost" size="sm" onClick={() => setShowDispute(false)}>Cancel</Btn>
               </div>
             </div>

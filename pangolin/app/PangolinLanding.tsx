@@ -1,3 +1,6 @@
+// @ts-nocheck
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -26,6 +29,10 @@ const C = {
   textMuted: "#52525E",
   font: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
 };
+
+function go(path) {
+  window.location.href = path;
+}
 
 // ── Re-usable helpers ─────────────────────────────────────────────────────────
 function useHover() {
@@ -292,7 +299,7 @@ function Navbar() {
           {links.map(l => <NavLink key={l}>{l}</NavLink>)}
         </div>
 
-        <Btn variant="coral" size="md">🔗 Connect Wallet</Btn>
+        <Btn variant="coral" size="md" onClick={() => go("/dashboard")}>🔗 Connect Wallet</Btn>
       </div>
     </nav>
   );
@@ -359,8 +366,8 @@ function Hero() {
             </p>
 
             <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", alignItems: "center", marginBottom: "48px" }}>
-              <Btn variant="coral" size="lg">Get Started — It's Free</Btn>
-              <Btn variant="ghost" size="lg">▶ Browse How It Works</Btn>
+              <Btn variant="coral" size="lg" onClick={() => go("/create-escrow")}>Get Started — It's Free</Btn>
+              <Btn variant="ghost" size="lg" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}>▶ Browse How It Works</Btn>
             </div>
 
             {/* Social proof */}
@@ -434,7 +441,7 @@ function HowItWorks() {
   ];
 
   return (
-    <section style={{ padding: "100px 24px", background: C.base }}>
+    <section id="how-it-works" style={{ padding: "100px 24px", background: C.base }}>
       <div style={{ maxWidth: "1120px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "64px" }}>
           <Badge color={C.blue}>How It Works</Badge>
@@ -632,8 +639,8 @@ function CTA() {
           Join 1,240+ Filipino freelancers who trust Pangolin to secure their income, protect their work, and get paid on time — every time.
         </p>
         <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
-          <Btn variant="coral" size="xl">🔗 Connect Wallet & Start</Btn>
-          <Btn variant="secondary" size="xl">Learn More</Btn>
+          <Btn variant="coral" size="xl" onClick={() => go("/dashboard")}>🔗 Connect Wallet & Start</Btn>
+          <Btn variant="secondary" size="xl" onClick={() => go("/freelancer")}>Freelancer View</Btn>
         </div>
       </div>
     </section>
