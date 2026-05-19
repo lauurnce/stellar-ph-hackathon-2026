@@ -720,6 +720,7 @@ export default function PangolinEscrowWizard() {
         data.title,
         data.description,
       );
+      if (escrowId == null) throw new Error("Contract did not return an escrow ID. Check explorer and try again.");
       const { hash: fundHash } = await fundEscrow(wallet.address, escrowId);
       setTxHash(fundHash);
       setDone(true);

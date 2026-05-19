@@ -228,7 +228,7 @@ export async function createEscrow(
       { value: freelancer, type: "address" },
       { value: amountUsdc, type: "i128" },
       { value: minGuaranteePct, type: "u32" },
-      { value: BigInt(deadline), type: "u32" },
+      { value: BigInt(deadline), type: "u64" },
       { value: title, type: "string" },
       { value: description, type: "string" },
     ]),
@@ -248,13 +248,17 @@ export async function confirmFreelancer(freelancer: string, escrowId: number): P
 }
 
 export async function submitDelivery(freelancer: string, escrowId: number, deliveryHashHex: string): Promise<{ hash: string }> {
+  if (deliveryHashHex.replace(/^0x/, "").length !== 64) {
+    throw new Error("delivery_hash must be a 32-byte hex string (64 hex chars).");
+  }
+  const hashBytes = Buffer.from(deliveryHashHex.replace(/^0x/, ""), "hex");
   const res = await signAndSubmit(
     freelancer,
     "submit_delivery",
-    buildArgs([
-      { value: escrowId, type: "u32" },
-      { value: deliveryHashHex, type: "bytes" },
-    ]),
+    [
+      nativeToScVal(escrowId, { type: "u32" }),
+      xdr.ScVal.scvBytes(hashBytes),
+    ],
   );
   return { hash: res.hash };
 }
