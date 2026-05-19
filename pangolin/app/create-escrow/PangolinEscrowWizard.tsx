@@ -2,6 +2,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
+import { createEscrow, fundEscrow } from "@/lib/contract-client";
+import { parseAmountToInt } from "@/lib/format";
+import { appConfig } from "@/lib/config";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Creation Wizard  (3-step)
@@ -511,7 +515,7 @@ function Step2({ data, setData, onNext, onBack }) {
 }
 
 // ── STEP 3: Review & Confirm ──────────────────────────────────────────────────
-function Step3({ data, onBack, onSubmit }) {
+function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
   const [confirmed, setConfirmed] = useState(false);
   const total = parseFloat(data.totalAmount) || 0;
   const fee = (total * 0.025).toFixed(2);
@@ -633,8 +637,13 @@ function Step3({ data, onBack, onSubmit }) {
       {/* CTAs */}
       <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
         <Btn variant="ghost" size="lg" onClick={onBack}>← Back</Btn>
-        <Btn variant="coral" size="xl" fullWidth disabled={!confirmed} onClick={onSubmit}>
-          🔒 Fund Escrow Now
+        {txError && (
+          <div style={{ background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#F87171", lineHeight: 1.55 }}>
+            {txError}
+          </div>
+        )}
+        <Btn variant="coral" size="xl" fullWidth disabled={!confirmed || txLoading} onClick={onSubmit}>
+          {txLoading ? "⏳ Signing & Submitting…" : "🔒 Fund Escrow Now"}
         </Btn>
       </div>
 
@@ -646,7 +655,7 @@ function Step3({ data, onBack, onSubmit }) {
 }
 
 // ── Success Screen ────────────────────────────────────────────────────────────
-function SuccessScreen({ data, onReset }) {
+function SuccessScreen({ data, onReset, txHash }) {
   return (
     <div style={{ textAlign: "center", padding: "40px 20px" }}>
       <div style={{ fontSize: 64, marginBottom: 20, animation: "bounce-in .5s cubic-bezier(.4,0,.2,1)" }}>🎉</div>
@@ -655,6 +664,11 @@ function SuccessScreen({ data, onReset }) {
         <strong style={{ color: C.text }}>{data.title}</strong> is now live.<br />
         Your freelancer has been notified and ${(parseFloat(data.totalAmount) * 1.025).toFixed(2)} USDC is locked securely on Stellar.
       </div>
+      {txHash && (
+        <div style={{ background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 20, fontSize: 12.5, color: "#34D399", fontFamily: "monospace", wordBreak: "break-all" }}>
+          ⛓️ Tx: {txHash}
+        </div>
+      )}
       <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
         <Btn variant="coral" size="lg" onClick={onReset}>Create Another Escrow</Btn>
         <Btn variant="ghost" size="lg" onClick={() => go("/dashboard")}>View Dashboard</Btn>
@@ -675,11 +689,46 @@ export default function PangolinEscrowWizard() {
   const [step, setStep] = useState(1);
   const [done, setDone] = useState(false);
   const [data, setData] = useState(INIT);
+  const [txHash, setTxHash] = useState(null);
+  const [txLoading, setTxLoading] = useState(false);
+  const [txError, setTxError] = useState(null);
   const scrollRef = useRef(null);
+  const { wallet, connectWallet } = useFreighterWallet();
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
-  const reset = () => { setStep(1); setDone(false); setData(INIT); };
+  const reset = () => { setStep(1); setDone(false); setData(INIT); setTxHash(null); setTxError(null); };
+
+  const handleSubmit = async () => {
+    if (!wallet.address) {
+      setTxError("Connect your Freighter wallet first.");
+      return;
+    }
+    setTxLoading(true);
+    setTxError(null);
+    try {
+      const amountUsdc = parseAmountToInt(data.totalAmount || "0", appConfig.assetDecimals);
+      const deadlineTs = data.deadline
+        ? Math.floor(new Date(data.deadline).getTime() / 1000)
+        : Math.floor(Date.now() / 1000) + 86400 * 30;
+      const { escrowId, hash: createHash } = await createEscrow(
+        wallet.address,
+        data.freelancerWallet,
+        amountUsdc,
+        data.minGuarantee ?? 20,
+        deadlineTs,
+        data.title,
+        data.description,
+      );
+      const { hash: fundHash } = await fundEscrow(wallet.address, escrowId);
+      setTxHash(fundHash);
+      setDone(true);
+    } catch (err) {
+      setTxError(err instanceof Error ? err.message : "Transaction failed. Try again.");
+    } finally {
+      setTxLoading(false);
+    }
+  };
 
   return (
     <>
@@ -750,13 +799,13 @@ export default function PangolinEscrowWizard() {
             {!done && <StepBar step={step} />}
 
             {done ? (
-              <SuccessScreen data={data} onReset={reset} />
+              <SuccessScreen data={data} onReset={reset} txHash={txHash} />
             ) : step === 1 ? (
               <Step1 data={data} setData={setData} onNext={() => setStep(2)} />
             ) : step === 2 ? (
               <Step2 data={data} setData={setData} onNext={() => setStep(3)} onBack={() => setStep(1)} />
             ) : (
-              <Step3 data={data} onBack={() => setStep(2)} onSubmit={() => setDone(true)} />
+              <Step3 data={data} onBack={() => setStep(2)} onSubmit={handleSubmit} txLoading={txLoading} txError={txError} />
             )}
           </div>
 

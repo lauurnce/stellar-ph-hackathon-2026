@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
+import { shortenAddress } from "@/lib/format";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Client Dashboard
@@ -134,7 +136,7 @@ const NAV_ITEMS = [
   { id: "settings",   icon: "⚙️", label: "Settings" },
 ];
 
-function Sidebar({ collapsed, onToggle, active, setActive }) {
+function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect }) {
   const W = collapsed ? 64 : 228;
   return (
     <aside style={{
@@ -191,7 +193,7 @@ function Sidebar({ collapsed, onToggle, active, setActive }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 18, cursor: "pointer",
           }}>🔗</div>
-        ) : (
+        ) : wallet?.status === "connected" && wallet.address ? (
           <div style={{
             background: `linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))`,
             border: `1px solid rgba(255,107,53,.28)`,
@@ -200,9 +202,18 @@ function Sidebar({ collapsed, onToggle, active, setActive }) {
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 5 }}>Connected Wallet</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, fontFamily: "monospace" }}>0x4f3A…c9B2</span>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, fontFamily: "monospace" }}>{shortenAddress(wallet.address)}</span>
             </div>
-            <Btn variant="coral" size="sm" sx={{ width: "100%", justifyContent: "center" }}>Disconnect</Btn>
+            <Btn variant="coral" size="sm" onClick={onDisconnect} sx={{ width: "100%", justifyContent: "center" }}>Disconnect</Btn>
+          </div>
+        ) : (
+          <div style={{
+            background: `linear-gradient(135deg,rgba(255,107,53,.06),rgba(255,107,53,.02))`,
+            border: `1px solid rgba(255,107,53,.18)`,
+            borderRadius: 13, padding: "11px 14px",
+          }}>
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 8 }}>Wallet</div>
+            <Btn variant="coral" size="sm" onClick={onConnect} sx={{ width: "100%", justifyContent: "center" }}>🔗 Connect Freighter</Btn>
           </div>
         )}
       </div>
@@ -307,6 +318,7 @@ function StatCard({ icon, label, value, sub, color = C.coral, trend }) {
 // ── Escrow Table ──────────────────────────────────────────────────────────────
 const ESCROWS = [
   {
+    id:         4821,
     project:    "Brand Identity Suite",
     freelancer: { initials: "AK", name: "Ana Kalaw",    color: "#8B5CF6" },
     status:     "In Progress",
@@ -315,6 +327,7 @@ const ESCROWS = [
     action:     { label: "View Details", variant: "subtle" },
   },
   {
+    id:         4822,
     project:    "Mobile App UI Design",
     freelancer: { initials: "MR", name: "Marco Reyes",  color: "#3B82F6" },
     status:     "Awaiting Delivery",
@@ -323,6 +336,7 @@ const ESCROWS = [
     action:     { label: "Send Reminder", variant: "ghost" },
   },
   {
+    id:         4823,
     project:    "Explainer Video Edit",
     freelancer: { initials: "LC", name: "Liza Cruz",    color: "#10B981" },
     status:     "Delivered · Review",
@@ -374,7 +388,7 @@ function EscrowRow({ row, last }) {
       {/* Project */}
       <div>
         <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 2 }}>{row.project}</div>
-        <div style={{ fontSize: 11.5, color: C.textMuted }}>Contract #PGL-{Math.floor(Math.random() * 9000 + 1000)}</div>
+        <div style={{ fontSize: 11.5, color: C.textMuted }}>Contract #PGL-{row.id}</div>
       </div>
       {/* Freelancer */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -482,6 +496,7 @@ function NotifBell() {
 export default function PangolinDashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("dashboard");
+  const { wallet, connectWallet, disconnectWallet } = useFreighterWallet();
 
   return (
     <>
@@ -515,6 +530,9 @@ export default function PangolinDashboard() {
           onToggle={() => setCollapsed(p => !p)}
           active={active}
           setActive={setActive}
+          wallet={wallet}
+          onConnect={connectWallet}
+          onDisconnect={disconnectWallet}
         />
 
         {/* ── Main ── */}

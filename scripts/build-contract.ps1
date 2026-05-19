@@ -3,8 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$contractDir = Join-Path $PSScriptRoot ".." "contract"
-$contractDir = Resolve-Path $contractDir
+$contractDir = Resolve-Path (Join-Path (Join-Path $PSScriptRoot "..") "contract")
 
 Write-Host "Building Pangolin Escrow contract..." -ForegroundColor Cyan
 Write-Host "Contract directory: $contractDir" -ForegroundColor Gray

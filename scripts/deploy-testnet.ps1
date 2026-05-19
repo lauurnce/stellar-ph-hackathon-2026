@@ -9,8 +9,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$wasmPath = Join-Path $PSScriptRoot ".." "contract" "target" "wasm32-unknown-unknown" "release" "pangolin_escrow.wasm"
-$wasmPath = $wasmPath -replace '/', '\'
+$wasmPath = Join-Path (Join-Path (Join-Path (Join-Path (Join-Path (Join-Path $PSScriptRoot "..") "contract") "target") "wasm32-unknown-unknown") "release") "pangolin_escrow.wasm"
+$wasmPath = Resolve-Path $wasmPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Path
 
 if (-not (Test-Path $wasmPath)) {
     Write-Host "ERROR: WASM file not found at: $wasmPath" -ForegroundColor Red
