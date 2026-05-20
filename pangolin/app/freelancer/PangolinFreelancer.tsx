@@ -126,6 +126,12 @@ function Avatar({ initials, size = 44, color = C.coral, emoji }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN A — Invite Landing Page
 // ════════════════════════════════════════════════════════════════════════════
+const BADGES = [
+  { icon: "⭐", label: "Top Rated",     color: "#F59E0B", desc: "Maintained 4.8+ rating",      earned: true  },
+  { icon: "🚀", label: "Fast Delivery", color: "#3B82F6", desc: "Delivered ahead of deadline",  earned: true  },
+  { icon: "🔒", label: "Trusted",       color: "#10B981", desc: "10+ completed escrows",        earned: false },
+];
+
 const DEFAULT_TOTAL_USDC = 1600;
 const DEFAULT_MIN_PCT = 60;
 const DEFAULT_MIN_USDC = DEFAULT_TOTAL_USDC * DEFAULT_MIN_PCT / 100;
