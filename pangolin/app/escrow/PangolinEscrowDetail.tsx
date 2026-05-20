@@ -34,7 +34,7 @@ function go(path) {
   window.location.href = path;
 }
 
-const ESCROW_ID = 1; // update when dynamic routing / Supabase lookup is wired
+const ESCROW_ID = 0; // update when dynamic routing / Supabase lookup is wired
 
 const PHP = 58.3;
 function phpOf(u) { return (parseFloat(u) * PHP).toLocaleString("en-PH", { minimumFractionDigits: 2 }); }
