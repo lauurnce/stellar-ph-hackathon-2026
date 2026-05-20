@@ -137,7 +137,7 @@ const getNavItems = (escrowCount = 0, messageCount = 0) => [
   { id: "settings",   icon: "⚙️", label: "Settings" },
 ];
 
-function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect }) {
+function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect, escrowCount = 0, messageCount = 0 }) {
   const W = collapsed ? 64 : 228;
   const navItems = getNavItems(escrowCount, messageCount);
   return (
@@ -656,6 +656,8 @@ export default function PangolinDashboard() {
           wallet={wallet}
           onConnect={connectWallet}
           onDisconnect={disconnectWallet}
+          escrowCount={escrows.length}
+          messageCount={0}
         />
 
         {/* ── Main ── */}
