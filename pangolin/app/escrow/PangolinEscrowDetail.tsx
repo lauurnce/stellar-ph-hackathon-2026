@@ -614,7 +614,7 @@ function ActionSidebar({ escrow, reviewAmount }) {
             <>
               {/* Primary CTA */}
               <Btn variant="coral" size="lg" fullWidth disabled={approveLoading} onClick={handleApprove}>
-                {approveLoading ? "⏳ Signing…" : "✓ Approve & Release $800"}
+                {approveLoading ? "⏳ Signing…" : `✓ Approve & Release ${escrow?.amount_usdc ? `$${Number(escrow.amount_usdc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Funds"}`}
               </Btn>
 
               {approveError && (
