@@ -524,6 +524,7 @@ function NotifBell() {
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function PangolinDashboard() {
   const { supabase, user } = useAuth();
+  const { wallet, connectWallet, disconnectWallet } = useFreighterWallet();
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("dashboard");
   const [escrows, setEscrows] = useState([]);
