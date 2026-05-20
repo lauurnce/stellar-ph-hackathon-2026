@@ -366,7 +366,7 @@ function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   );
 }
 
-function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0 }) {
+function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0, wallet = null, onConnect = null }) {
   const W = collapsed ? 64 : 228;
   const navItems = getNavItems(jobCount, messageCount);
   return (
@@ -404,10 +404,14 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
         ) : (
           <div style={{ background:"linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))",border:"1px solid rgba(255,107,53,.28)",borderRadius:13,padding:"11px 14px" }}>
             <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:5 }}>Connected Wallet</div>
-            <div style={{ display:"flex",alignItems:"center",gap:8,marginBottom:10 }}>
-              <div style={{ width:8,height:8,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}` }}/>
-              <span style={{ fontSize:12.5,fontWeight:700,color:C.text,fontFamily:"monospace" }}>G2hW…k8X3</span>
-            </div>
+            {wallet?.address ? (
+              <div style={{ display:"flex",alignItems:"center",gap:8,marginBottom:10 }}>
+                <div style={{ width:8,height:8,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}` }}/>
+                <span style={{ fontSize:12.5,fontWeight:700,color:C.text,fontFamily:"monospace" }}>{wallet.address.slice(0,4)}…{wallet.address.slice(-4)}</span>
+              </div>
+            ) : (
+              <button onClick={onConnect} style={{ fontSize:12,color:C.coral,fontWeight:600,background:"none",border:"none",cursor:"pointer",padding:"0 0 10px",fontFamily:C.font }}>Connect Wallet →</button>
+            )}
             <Btn variant="coral" size="sm" sx={{ width:"100%",justifyContent:"center" }}>GCash Withdraw</Btn>
           </div>
         )}
@@ -650,6 +654,7 @@ function JobRow({ row, last }) {
 
 function ScreenB() {
   const { supabase, user } = useAuth();
+  const { wallet, connectWallet } = useFreighterWallet();
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("dashboard");
   const [jobs, setJobs] = useState(ACTIVE_JOBS);
@@ -751,7 +756,7 @@ function ScreenB() {
 
   return (
     <div style={{ display:"flex",height:"100vh",overflow:"hidden" }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={connectWallet} />
 
       <main style={{
         flex:1,overflowY:"auto",overflowX:"hidden",
@@ -807,7 +812,9 @@ function ScreenB() {
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinFreelancer() {
   const { supabase, user } = useAuth();
-  const [screen, setScreen] = useState("A");
+  const [screen, setScreen] = useState(() =>
+    typeof window !== "undefined" && window.location.search.includes("view=dashboard") ? "B" : "A"
+  );
   const [inviteData, setInviteData] = useState(null);
 
   useEffect(() => {

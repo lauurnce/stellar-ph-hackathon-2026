@@ -688,7 +688,7 @@ function ScreenB({ escrow, milestones, supabase }) {
         <Btn variant="blue" size="lg" fullWidth>
           🏅 Add to Portfolio Badge
         </Btn>
-        <Btn variant="ghost" size="md" fullWidth onClick={() => go("/freelancer")}>
+        <Btn variant="ghost" size="md" fullWidth onClick={() => go("/freelancer?view=dashboard")}>
           Back to Dashboard
         </Btn>
       </div>
