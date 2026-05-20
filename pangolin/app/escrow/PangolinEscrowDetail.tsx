@@ -189,7 +189,7 @@ function TopBar({ contractId = "PGL-4821", title = "Website Design Escrow", stat
   const [h, hov] = useHover();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-      <button onClick={() => go("/dashboard")} {...hov} style={{
+      <button onClick={() => window.history.back()} {...hov} style={{
         display: "flex", alignItems: "center", gap: 7,
         background: h ? C.elevated : "transparent",
         border: `1px solid ${h ? C.borderLit : C.border}`,

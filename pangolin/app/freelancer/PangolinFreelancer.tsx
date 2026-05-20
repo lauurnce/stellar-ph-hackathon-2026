@@ -378,7 +378,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
       {/* Freelancer badge */}
       {!collapsed && (
         <div style={{ margin:"12px 8px 4px",background:"rgba(255,107,53,.08)",border:"1px solid rgba(255,107,53,.22)",borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8 }}>
-          <Avatar initials="AK" size={30} color={C.coral} />
+          <Avatar initials={freelancerName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "FL"} size={30} color={C.coral} />
           <div>
             <div style={{ fontSize:12.5,fontWeight:700,color:C.text }}>{freelancerName}</div>
             <div style={{ fontSize:11,color:C.coral,fontWeight:600 }}>Freelancer</div>
@@ -636,7 +636,7 @@ function JobRow({ row, last }) {
         {isActionable ? (
           <Btn variant="coral" size="sm" onClick={() => go("/delivery")}>{row.action}</Btn>
         ) : (
-          <Btn variant="subtle" size="sm" onClick={() => go("/escrow")}>{row.action}</Btn>
+          <Btn variant="subtle" size="sm" onClick={() => go("/delivery")}>{row.action}</Btn>
         )}
       </div>
     </div>
