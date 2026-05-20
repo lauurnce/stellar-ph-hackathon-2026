@@ -637,6 +637,12 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
         </Btn>
       </div>
 
+      {submitError && (
+        <div style={{ background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.28)", borderRadius: 12, padding: "12px 14px", color: "#F87171", fontSize: 12.5, lineHeight: 1.5 }}>
+          {submitError}
+        </div>
+      )}
+
       <div style={{ textAlign: "center", fontSize: 12, color: C.textMuted }}>
         Secured by Stellar Network · 3–5 second settlement · 2.5% total platform fee
       </div>
@@ -675,6 +681,7 @@ const INIT = {
 };
 
 export default function PangolinEscrowWizard() {
+  const { supabase, user } = useAuth();
   const [step, setStep] = useState(1);
   const [done, setDone] = useState(false);
   const [data, setData] = useState(INIT);

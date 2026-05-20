@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Dispute Center (Screens A · B · C)
@@ -31,6 +32,54 @@ const C = {
 
 function go(path) {
   window.location.href = path;
+}
+
+function formatUsd(value) {
+  const num = Number(value ?? 0);
+  return Number.isFinite(num) ? num.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "0";
+}
+
+function formatTimeline(dateValue) {
+  if (!dateValue) return "Pending";
+  const dt = new Date(dateValue);
+  if (Number.isNaN(dt.getTime())) return "Pending";
+  return dt.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).replace(",", " ·");
+}
+
+function EvidencePane({ side, name, color, items }) {
+  return (
+    <div style={{
+      flex: 1, background: C.elevated, border: `1px solid ${side === "client" ? "rgba(239,68,68,.28)" : "rgba(59,130,246,.28)"}`,
+      borderRadius: 14, padding: "18px", overflow: "hidden",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", background: `${color}18`, border: `2px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color }}>{name.slice(0, 2).toUpperCase()}</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{name}</div>
+          <div style={{ fontSize: 11, color: C.textMuted }}>{side === "client" ? "Complainant" : "Respondent"}</div>
+        </div>
+        <div style={{ marginLeft: "auto", padding: "3px 9px", borderRadius: "100px", fontSize: 11, fontWeight: 700, background: `${color}14`, border: `1px solid ${color}30`, color }}>{side === "client" ? "Filed" : "Responded"}</div>
+      </div>
+
+      <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.65, marginBottom: 14 }}>{items.desc}</div>
+
+      {items.files.map((f, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: C.card, border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", marginBottom: 6 }}>
+          <span style={{ fontSize: 14 }}>📄</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
+            <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace" }}>{f.hash}</div>
+          </div>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 5px ${C.green}` }} />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function useHover() {
@@ -202,10 +251,10 @@ function StatusPill({ status, color = C.red }) {
 }
 
 // ── Nav tabs ────────────────────────────────────────────────────────────────
-function NavTabs({ active, setActive }) {
+function NavTabs({ active, setActive, activeDisputeCount = 0 }) {
   const tabs = [
     { id: "A", label: "Raise Dispute",    icon: "⚠️" },
-    { id: "B", label: "Active Dispute",   icon: "🔒" },
+    { id: "B", label: `Active Dispute${activeDisputeCount ? ` (${activeDisputeCount})` : ""}`,   icon: "🔒" },
     { id: "C", label: "Resolved",         icon: "✅" },
   ];
   return (
@@ -232,7 +281,7 @@ function NavTabs({ active, setActive }) {
 }
 
 // ── SCREEN A — Raise Dispute ─────────────────────────────────────────────────
-function ScreenA({ onSubmit }) {
+function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
   const [reason, setReason] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState([]);
@@ -242,6 +291,16 @@ function ScreenA({ onSubmit }) {
 
   const reasons = ["Non-delivery of work", "Quality issues", "Missed deadline", "Communication breakdown", "Scope creep", "Other"];
   const valid = reason && desc.trim().length > 20 && confirm;
+  const minPct = Number(latestEscrow?.min_guarantee_pct ?? 0);
+  const minUsdc = Number(
+    latestEscrow?.min_guarantee_usdc ??
+    ((Number(latestEscrow?.amount_usdc ?? 0) * minPct) / 100)
+  );
+
+  const handleSubmit = async () => {
+    const evidenceUrl = files[0]?.name ? `uploaded:${files[0].name}` : null;
+    await onSubmit({ reason, evidenceUrl, description: desc });
+  };
 
   const handleDrop = e => {
     e.preventDefault(); setDragging(false);
@@ -272,7 +331,7 @@ function ScreenA({ onSubmit }) {
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 800, color: "#FCD34D", marginBottom: 4 }}>Raising a dispute will freeze the escrow</div>
           <div style={{ fontSize: 13, color: "rgba(252,211,77,.7)", lineHeight: 1.6 }}>
-            All funds are locked immediately. Neither party can withdraw until arbiters reach a resolution. The freelancer's guaranteed minimum of <strong style={{ color: "#FCD34D" }}>60% ($120 USDC)</strong> is protected regardless of outcome.
+            All funds are locked immediately. Neither party can withdraw until arbiters reach a resolution. The freelancer's guaranteed minimum of <strong style={{ color: "#FCD34D" }}>{minPct || 0}% (${formatUsd(minUsdc)} USDC)</strong> is protected regardless of outcome.
           </div>
         </div>
       </div>
@@ -285,7 +344,9 @@ function ScreenA({ onSubmit }) {
           <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🔒</div>
           <div>
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase" }}>Escrow Contract</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Website Design — $200 USDC · #PGL-4821</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
+              {loadingEscrow ? "Loading escrow…" : latestEscrow ? `${latestEscrow.title || "Latest escrow"} — $${formatUsd(latestEscrow.amount_usdc)} USDC · #PGL-${latestEscrow.id}` : "No escrow available"}
+            </div>
           </div>
           <StatusPill status="Frozen" />
         </div>
@@ -367,6 +428,7 @@ function ScreenA({ onSubmit }) {
             <Btn variant="red" size="xl" fullWidth disabled={!valid} onClick={onSubmit}>
               ⚖️ Submit Dispute
             </Btn>
+            {submitError && <div style={{ fontSize: 12, color: "#F87171", textAlign: "center" }}>{submitError}</div>}
           </div>
 
           <div style={{ textAlign: "center", fontSize: 12, color: C.textMuted }}>
@@ -405,44 +467,65 @@ function AnonAvatar({ color, label }) {
   );
 }
 
-const TIMELINE_STEPS = [
-  { id: 1, label: "Dispute Filed",       sub: "May 18 · 11:32 AM", done: true,    active: false },
-  { id: 2, label: "Evidence Submitted",  sub: "May 18 · 12:05 PM", done: true,    active: false },
-  { id: 3, label: "Under Review",        sub: "In progress…",      done: false,   active: true  },
-  { id: 4, label: "Resolution",          sub: "Est. within 72 hrs", done: false,  active: false },
-];
-
-function ScreenB() {
+function ScreenB({ activeDisputes = [], loadingDisputes, eventsByEscrow = {}, partyProfiles = {}, arbitersByDispute = {}, escrowById = {}, evidenceByDispute = {} }) {
+  const dispute = activeDisputes[0] || null;
   const countdown = useCountdown(68 * 3600 + 14 * 60 + 22);
 
-  const EvidencePane = ({ side, name, color, items }) => (
-    <div style={{
-      flex: 1, background: C.elevated, border: `1px solid ${side === "client" ? "rgba(239,68,68,.28)" : "rgba(59,130,246,.28)"}`,
-      borderRadius: 14, padding: "18px", overflow: "hidden",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: `${color}18`, border: `2px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color }}>{name.slice(0, 2).toUpperCase()}</div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{name}</div>
-          <div style={{ fontSize: 11, color: C.textMuted }}>{side === "client" ? "Complainant" : "Respondent"}</div>
-        </div>
-        <div style={{ marginLeft: "auto", padding: "3px 9px", borderRadius: "100px", fontSize: 11, fontWeight: 700, background: `${color}14`, border: `1px solid ${color}30`, color }}>{side === "client" ? "Filed" : "Responded"}</div>
+  if (loadingDisputes) {
+    return (
+      <div style={{ textAlign: "center", padding: "36px 0", color: C.textMuted }}>
+        Loading active dispute details…
       </div>
+    );
+  }
 
-      <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.65, marginBottom: 14 }}>{items.desc}</div>
-
-      {items.files.map((f, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: C.card, border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", marginBottom: 6 }}>
-          <span style={{ fontSize: 14 }}>📄</span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
-            <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace" }}>{f.hash}</div>
-          </div>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 5px ${C.green}` }} />
+  if (!dispute) {
+    return (
+      <GlassCard nohover style={{ padding: "32px", textAlign: "center" }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: C.text, marginBottom: 10 }}>No active disputes yet</div>
+        <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.7 }}>
+          You can file a dispute from the Raise Dispute tab. Any active disputes will appear here once they are created.
         </div>
-      ))}
-    </div>
+      </GlassCard>
+    );
+  }
+
+  const escrow = escrowById[dispute.escrow_id];
+  const clientName = partyProfiles[escrow?.client_id]?.display_name || "Client";
+  const freelancerName = partyProfiles[escrow?.freelancer_id]?.display_name || "Freelancer";
+  const minPct = Number(escrow?.min_guarantee_pct ?? 0);
+  const minUsdc = Number(
+    escrow?.min_guarantee_usdc ??
+    ((Number(escrow?.amount_usdc ?? 0) * minPct) / 100)
   );
+  const disputeEvents = eventsByEscrow[dispute.escrow_id] || [];
+  const filedAt = dispute.opened_at || dispute.created_at || disputeEvents[0]?.created_at;
+  const evidenceAt = disputeEvents.find(ev => {
+    const t = String(ev?.event_type || "").toLowerCase();
+    return t.includes("evidence") || t.includes("deliver");
+  })?.created_at;
+  const reviewAt = disputeEvents.find(ev => {
+    const t = String(ev?.event_type || "").toLowerCase();
+    return t.includes("review");
+  })?.created_at;
+  const timelineSteps = [
+    { id: 1, label: "Dispute Filed", sub: formatTimeline(filedAt), done: !!filedAt, active: false },
+    { id: 2, label: "Evidence Submitted", sub: formatTimeline(evidenceAt), done: !!evidenceAt, active: false },
+    { id: 3, label: "Under Review", sub: reviewAt ? formatTimeline(reviewAt) : "In progress…", done: false, active: true },
+    { id: 4, label: "Resolution", sub: "Est. within 72 hrs", done: false, active: false },
+  ];
+  const arbiterCount = (arbitersByDispute[dispute.id] || []).length;
+  const arbiterAssigned = Math.min(arbiterCount, 3);
+  const evidenceRows = evidenceByDispute[dispute.id] || [];
+  const clientEvidence = evidenceRows.filter(row => row.submitted_by && row.submitted_by === escrow?.client_id);
+  const freelancerEvidence = evidenceRows.filter(row => row.submitted_by && row.submitted_by === escrow?.freelancer_id);
+  const mapEvidence = (rows, fallbackDesc) => ({
+    desc: rows[0]?.note || fallbackDesc,
+    files: (rows.length ? rows : [{ file_name: "No uploaded files", file_hash: "N/A" }]).map(row => ({
+      name: row.file_name || row.file_url || "Evidence file",
+      hash: row.file_hash || "N/A",
+    })),
+  });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -456,7 +539,9 @@ function ScreenB() {
         <span style={{ fontSize: 22 }}>🔒</span>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: "#F87171" }}>Escrow Frozen — Dispute Under Review</div>
-          <div style={{ fontSize: 12.5, color: "rgba(248,113,113,.7)", marginTop: 2 }}>All funds are locked. No withdrawals until arbiters reach a decision.</div>
+          <div style={{ fontSize: 12.5, color: "rgba(248,113,113,.7)", marginTop: 2 }}>
+            {dispute?.reason || "Awaiting evidence review from the arbitration panel."}
+          </div>
         </div>
         <StatusPill status="Under Review" />
       </div>
@@ -471,7 +556,7 @@ function ScreenB() {
         <div>
           <span style={{ fontSize: 13, fontWeight: 700, color: C.coral }}>Guaranteed minimum protected: </span>
           <span style={{ fontSize: 13, color: C.textSub }}>Regardless of outcome, freelancer receives at least </span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: C.text }}>60% ($120 USDC)</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: C.text }}>{minPct || 0}% (${formatUsd(minUsdc)} USDC)</span>
           <span style={{ fontSize: 13, color: C.textSub }}> · Smart contract enforced.</span>
         </div>
       </div>
@@ -483,22 +568,10 @@ function ScreenB() {
           <div style={{ fontSize: 12, color: C.textMuted }}>All files hashed on-chain ⛓️</div>
         </div>
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          <EvidencePane side="client" name="Juan Miguel" color={C.red}
-            items={{
-              desc: "Freelancer delivered work that does not match the agreed-upon design brief. Multiple revisions were requested but the core layout issues remain unresolved.",
-              files: [
-                { name: "design-brief-v1.pdf", hash: "0xA4f3…c9B2" },
-                { name: "client-revision-notes.png", hash: "0x77B1…D3F4" },
-              ],
-            }} />
-          <EvidencePane side="freelancer" name="Ana Kalaw" color={C.blue}
-            items={{
-              desc: "All deliverables match the original brief. Client requested out-of-scope changes after sign-off. Screenshots of the approved wireframes are attached.",
-              files: [
-                { name: "approved-wireframes.png", hash: "0xC2D9…11AE" },
-                { name: "scope-agreement.pdf", hash: "0xF8A2…90CC" },
-              ],
-            }} />
+          <EvidencePane side="client" name={clientName} color={C.red}
+            items={mapEvidence(clientEvidence, "Client evidence has been submitted for arbiter review.")} />
+          <EvidencePane side="freelancer" name={freelancerName} color={C.blue}
+            items={mapEvidence(freelancerEvidence, "Freelancer evidence has been submitted for arbiter review.")} />
         </div>
       </GlassCard>
 
@@ -509,7 +582,7 @@ function ScreenB() {
             <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 3, letterSpacing: "-.02em" }}>Arbitration Panel</div>
             <div style={{ fontSize: 12.5, color: C.textMuted }}>Identities revealed only after resolution to prevent bias</div>
           </div>
-          <div style={{ padding: "5px 14px", borderRadius: "100px", background: "rgba(139,92,246,.14)", border: "1px solid rgba(139,92,246,.3)", fontSize: 12, fontWeight: 700, color: C.purple }}>2 of 3 Assigned</div>
+          <div style={{ padding: "5px 14px", borderRadius: "100px", background: "rgba(139,92,246,.14)", border: "1px solid rgba(139,92,246,.3)", fontSize: 12, fontWeight: 700, color: C.purple }}>{arbiterAssigned} of 3 Assigned</div>
         </div>
         <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap", marginBottom: 18 }}>
           <AnonAvatar color={C.purple} label="Arbiter #1 ✓" />
@@ -532,7 +605,7 @@ function ScreenB() {
         <div style={{ display: "flex", position: "relative" }}>
           {/* Connector */}
           <div style={{ position: "absolute", top: 20, left: "12.5%", right: "12.5%", height: 2, background: `linear-gradient(90deg,${C.green} 0%,${C.green} 50%,${C.amber} 50%,${C.border} 75%)` }} />
-          {TIMELINE_STEPS.map(({ id, label, sub, done, active }) => (
+          {timelineSteps.map(({ id, label, sub, done, active }) => (
             <div key={id} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative" }}>
               <div style={{
                 width: 40, height: 40, borderRadius: "50%", zIndex: 1, position: "relative",
@@ -584,8 +657,35 @@ function StarRating({ label }) {
   );
 }
 
-function ScreenC() {
+function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, arbitersByDispute = {} }) {
+  const dispute = resolvedDisputes[0] || null;
+  const escrow = dispute ? escrowById[dispute.escrow_id] : null;
+  const clientName = escrow ? (partyProfiles[escrow.client_id]?.display_name || "Client") : "Client";
+  const freelancerName = escrow ? (partyProfiles[escrow.freelancer_id]?.display_name || "Freelancer") : "Freelancer";
+  const freelancerAward = Number(dispute?.freelancer_award_usdc ?? 0);
+  const clientRefund = Number(dispute?.client_refund_usdc ?? 0);
+  const totalResolved = Math.max(freelancerAward + clientRefund, 1);
+  const freelancerPct = Math.round((freelancerAward / totalResolved) * 100);
+  const clientPct = Math.max(0, 100 - freelancerPct);
+  const arbiterCount = (arbitersByDispute[dispute?.id] || []).length;
   const [submitted, setSubmitted] = useState(false);
+  const platformFee = Number(escrow?.platform_fee_usdc ?? 0);
+  const txHash = dispute?.stellar_resolution_tx_hash || "N/A";
+  const minGuarantee = Number(
+    escrow?.min_guarantee_usdc ??
+    ((Number(escrow?.amount_usdc ?? 0) * Number(escrow?.min_guarantee_pct ?? 0)) / 100)
+  );
+
+  if (!dispute) {
+    return (
+      <GlassCard nohover style={{ padding: "32px", textAlign: "center" }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: C.text, marginBottom: 10 }}>No resolved disputes yet</div>
+        <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.7 }}>
+          Resolved dispute outcomes appear here once the arbitration decision is complete.
+        </div>
+      </GlassCard>
+    );
+  }
 
   const Payout = ({ party, amount, pct, color, note }) => (
     <div style={{
@@ -624,23 +724,23 @@ function ScreenC() {
 
         {/* Decision note */}
         <div style={{ background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.25)", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#34D399", marginBottom: 5 }}>Arbiter Decision (2-1 majority)</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#34D399", marginBottom: 5 }}>Arbiter Decision ({arbiterCount || 0} assigned)</div>
           <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.65 }}>
-            Work completed to approximately 75% of scope. Client's concerns about quality partially upheld. Freelancer received partial payment proportional to deliverables accepted.
+            {dispute?.resolution_note || "Resolution note unavailable. Arbiter outcome has been recorded."}
           </div>
         </div>
 
         {/* Payouts */}
         <div style={{ display: "flex", gap: 14, marginBottom: 20, flexWrap: "wrap" }}>
-          <Payout party="Ana Kalaw (Freelancer)" amount="150" pct={75} color={C.green}
-            note="Includes guaranteed minimum of $120 + awarded partial completion" />
-          <Payout party="Juan Miguel (Client)" amount="50" pct={25} color={C.blue}
+          <Payout party={`${freelancerName} (Freelancer)`} amount={formatUsd(freelancerAward)} pct={freelancerPct} color={C.green}
+            note={`Includes guaranteed minimum of $${formatUsd(minGuarantee)} + awarded partial completion`} />
+          <Payout party={`${clientName} (Client)`} amount={formatUsd(clientRefund)} pct={clientPct} color={C.blue}
             note="Refund for undelivered scope, minus platform arbitration fee" />
         </div>
 
         {/* Fee note */}
         <div style={{ fontSize: 12, color: C.textMuted, textAlign: "center", marginBottom: 20 }}>
-          Platform arbitration fee: <strong style={{ color: C.textSub }}>$5 USDC</strong> deducted from escrow · Arbiters compensated from fee pool
+          Platform arbitration fee: <strong style={{ color: C.textSub }}>${formatUsd(platformFee)} USDC</strong> deducted from escrow · Arbiters compensated from fee pool
         </div>
 
         {/* Stellar link */}
@@ -653,7 +753,7 @@ function ScreenC() {
             <span style={{ fontSize: 13, color: C.textSub }}>Transaction confirmed on Stellar</span>
           </div>
           <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(59,130,246,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(59,130,246,.2)" }}>
-            0xA4f3B2…9c1E
+            {txHash}
           </code>
           <button style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: C.blue, fontSize: 13, fontWeight: 700, fontFamily: C.font, display: "flex", alignItems: "center", gap: 6 }}>
             View on Stellar ↗
@@ -700,7 +800,150 @@ function ScreenC() {
 
 // ── Root ─────────────────────────────────────────────────────────────────────
 export default function PangolinDisputeCenter() {
+  const { supabase, user } = useAuth();
   const [screen, setScreen] = useState("A");
+  const [activeDisputeCount, setActiveDisputeCount] = useState(0);
+  const [disputes, setDisputes] = useState([]);
+  const [resolvedDisputes, setResolvedDisputes] = useState([]);
+  const [latestEscrow, setLatestEscrow] = useState(null);
+  const [loadingEscrow, setLoadingEscrow] = useState(true);
+  const [loadingDisputes, setLoadingDisputes] = useState(true);
+  const [submitError, setSubmitError] = useState(null);
+  const [eventsByEscrow, setEventsByEscrow] = useState({});
+  const [arbitersByDispute, setArbitersByDispute] = useState({});
+  const [evidenceByDispute, setEvidenceByDispute] = useState({});
+  const [partyProfiles, setPartyProfiles] = useState({});
+  const [escrowById, setEscrowById] = useState({});
+
+  const refreshLatestEscrow = async () => {
+    const { data, error } = await supabase
+      .from("escrows")
+      .select("id,title,amount_usdc,status,created_at,min_guarantee_pct,min_guarantee_usdc,client_id,freelancer_id")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!error && data) {
+      setLatestEscrow(data);
+    }
+    setLoadingEscrow(false);
+  };
+
+  const refreshDisputes = async () => {
+    const { data, error } = await supabase
+      .from("disputes")
+      .select("id,escrow_id,reason,description,status,freelancer_award_usdc,client_refund_usdc,resolution_note,stellar_resolution_tx_hash,opened_at,resolved_at")
+      .order("opened_at", { ascending: false });
+
+    if (!error && Array.isArray(data)) {
+      const active = data.filter(d => !d.resolved_at);
+      const resolved = data.filter(d => d.resolved_at);
+      setDisputes(active);
+      setResolvedDisputes(resolved);
+      setActiveDisputeCount(active.length);
+
+      const escrowIds = [...new Set(data.map(d => d.escrow_id).filter(Boolean))];
+      if (escrowIds.length) {
+        const { data: escrowRows } = await supabase
+          .from("escrows")
+          .select("id,client_id,freelancer_id,min_guarantee_pct,min_guarantee_usdc,amount_usdc")
+          .in("id", escrowIds);
+
+        const escrowMap = {};
+        (escrowRows || []).forEach(row => {
+          escrowMap[row.id] = row;
+        });
+        setEscrowById(escrowMap);
+
+        const profileIds = [...new Set((escrowRows || []).flatMap(row => [row.client_id, row.freelancer_id]).filter(Boolean))];
+        if (profileIds.length) {
+          const { data: profileRows } = await supabase
+            .from("profiles")
+            .select("id,display_name")
+            .in("id", profileIds);
+          const profileMap = {};
+          (profileRows || []).forEach(row => {
+            profileMap[row.id] = row;
+          });
+          setPartyProfiles(profileMap);
+        }
+      }
+
+      const disputeIds = data.map(d => d.id).filter(Boolean);
+      if (disputeIds.length) {
+        const { data: eventRows } = await supabase
+          .from("escrow_events")
+          .select("id,escrow_id,event_type,message,created_at")
+          .in("escrow_id", escrowIds)
+          .order("created_at", { ascending: true });
+        const groupedEvents = {};
+        (eventRows || []).forEach(row => {
+          if (!groupedEvents[row.escrow_id]) groupedEvents[row.escrow_id] = [];
+          groupedEvents[row.escrow_id].push(row);
+        });
+        setEventsByEscrow(groupedEvents);
+
+        const { data: arbiterRows } = await supabase
+          .from("dispute_arbiters")
+          .select("*")
+          .in("dispute_id", disputeIds);
+        const groupedArbiters = {};
+        (arbiterRows || []).forEach(row => {
+          if (!groupedArbiters[row.dispute_id]) groupedArbiters[row.dispute_id] = [];
+          groupedArbiters[row.dispute_id].push(row);
+        });
+        setArbitersByDispute(groupedArbiters);
+
+        const { data: evidenceRows } = await supabase
+          .from("dispute_evidence")
+          .select("id,dispute_id,submitted_by,file_url,file_name,file_hash,note,created_at")
+          .in("dispute_id", disputeIds)
+          .order("created_at", { ascending: true });
+        const groupedEvidence = {};
+        (evidenceRows || []).forEach(row => {
+          if (!groupedEvidence[row.dispute_id]) groupedEvidence[row.dispute_id] = [];
+          groupedEvidence[row.dispute_id].push(row);
+        });
+        setEvidenceByDispute(groupedEvidence);
+      }
+    }
+    setLoadingDisputes(false);
+  };
+
+  const handleSubmitDispute = async ({ reason, description }) => {
+    setSubmitError(null);
+    if (!latestEscrow?.id) {
+      setSubmitError("Unable to find an active escrow to attach the dispute to.");
+      return false;
+    }
+
+    const { error } = await supabase.from("disputes").insert({
+      escrow_id: latestEscrow.id,
+      opened_by: user?.id || null,
+      reason,
+      description: description || "",
+      status: "opened",
+      resolution_note: null,
+      resolved_at: null,
+      opened_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      setSubmitError(error.message);
+      return false;
+    }
+
+    await refreshDisputes();
+    return true;
+  };
+
+  useEffect(() => {
+    refreshLatestEscrow();
+  }, [supabase]);
+
+  useEffect(() => {
+    refreshDisputes();
+  }, [supabase]);
 
   return (
     <>
@@ -756,12 +999,15 @@ export default function PangolinDisputeCenter() {
             <div style={{ width: 120 }} />
           </div>
 
-          <NavTabs active={screen} setActive={setScreen} />
+          <NavTabs active={screen} setActive={setScreen} activeDisputeCount={activeDisputeCount} />
 
           <div key={screen} style={{ animation: "fade-up .3s ease" }}>
-            {screen === "A" && <ScreenA onSubmit={() => setScreen("B")} />}
-            {screen === "B" && <ScreenB />}
-            {screen === "C" && <ScreenC />}
+            {screen === "A" && <ScreenA onSubmit={async ({ reason, description }) => {
+              const success = await handleSubmitDispute({ reason, description });
+              if (success) setScreen("B");
+            }} submitError={submitError} latestEscrow={latestEscrow} loadingEscrow={loadingEscrow} />}
+            {screen === "B" && <ScreenB activeDisputes={disputes} loadingDisputes={loadingDisputes} eventsByEscrow={eventsByEscrow} partyProfiles={partyProfiles} arbitersByDispute={arbitersByDispute} escrowById={escrowById} evidenceByDispute={evidenceByDispute} />}
+            {screen === "C" && <ScreenC resolvedDisputes={resolvedDisputes} escrowById={escrowById} partyProfiles={partyProfiles} arbitersByDispute={arbitersByDispute} />}
           </div>
         </div>
       </div>

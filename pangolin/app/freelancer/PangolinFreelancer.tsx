@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Screens (A: Invite Landing · B: Dashboard)
@@ -35,6 +36,7 @@ function go(path) {
 }
 const PHP = 58.3;
 const phpOf = u => (parseFloat(u) * PHP).toLocaleString("en-PH", { minimumFractionDigits: 0 });
+const formatUsd = v => Number(v ?? 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
 
 function useHover() {
   const [h, setH] = useState(false);
@@ -122,18 +124,30 @@ function Avatar({ initials, size = 44, color = C.coral, emoji }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN A — Invite Landing Page
 // ════════════════════════════════════════════════════════════════════════════
-const MILESTONES_INVITE = [
-  { name: "Wireframes & Sitemap",  amount: 400 },
-  { name: "Full UI Design",        amount: 800 },
-  { name: "Dev Handoff & Assets",  amount: 400 },
-];
-const TOTAL_USDC   = 1600;
-const MIN_PCT      = 60;
-const MIN_USDC     = TOTAL_USDC * MIN_PCT / 100;
+const DEFAULT_TOTAL_USDC = 1600;
+const DEFAULT_MIN_PCT = 60;
+const DEFAULT_MIN_USDC = DEFAULT_TOTAL_USDC * DEFAULT_MIN_PCT / 100;
 
-function ScreenA({ onAccept }) {
+function ScreenA({ onAccept, inviteData }) {
   const [declining, setDeclining] = useState(false);
   const [accepted,  setAccepted]  = useState(false);
+  const {
+    clientName = "Client",
+    projectTitle = "Website Redesign — Full Stack",
+    category = "UI/UX Design",
+    totalUsdc = DEFAULT_TOTAL_USDC,
+    deadline = "TBD",
+    milestones = DEFAULT_MILESTONES_INVITE,
+    minPct = DEFAULT_MIN_PCT,
+    minUsdc = DEFAULT_MIN_USDC,
+    clientCompletedEscrows = 0,
+  } = inviteData || {};
+  const clientInitials = (clientName || "CL")
+    .split(" ")
+    .map(p => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   if (accepted) {
     return (
@@ -141,7 +155,7 @@ function ScreenA({ onAccept }) {
         <div style={{ fontSize:60, marginBottom:20 }}>🎉</div>
         <div style={{ fontSize:26,fontWeight:900,letterSpacing:"-.04em",color:C.text,marginBottom:10 }}>You're in!</div>
         <div style={{ fontSize:15,color:C.textSub,lineHeight:1.7,maxWidth:400,margin:"0 auto 28px" }}>
-          Your wallet is connected. <strong style={{color:C.text}}>Juan Miguel</strong> has been notified and the escrow will be funded shortly.
+          Your wallet is connected. <strong style={{color:C.text}}>{clientName}</strong> has been notified and the escrow will be funded shortly.
         </div>
         <Btn variant="coral" size="xl" onClick={onAccept}>Continue to Dashboard →</Btn>
       </div>
@@ -162,14 +176,14 @@ function ScreenA({ onAccept }) {
       {/* Client intro */}
       <div style={{ textAlign:"center",marginBottom:32 }}>
         <div style={{ display:"flex",justifyContent:"center",marginBottom:16,position:"relative",width:72,margin:"0 auto 16px" }}>
-          <Avatar initials="JM" size={72} color={C.blue} />
+          <Avatar initials={clientInitials} size={72} color={C.blue} />
           <div style={{ position:"absolute",bottom:-2,right:-2,width:22,height:22,borderRadius:"50%",background:C.green,border:`2px solid ${C.base}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11 }}>✓</div>
         </div>
         <div style={{ fontSize:13,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:6 }}>Project Invitation</div>
         <h1 style={{ fontSize:"clamp(20px,4vw,30px)",fontWeight:900,letterSpacing:"-.04em",color:C.text,lineHeight:1.2,marginBottom:6 }}>
-          <span style={{ background:"linear-gradient(135deg,#60A5FA,#3B82F6)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Juan Miguel</span>{" "}wants to work with you
+          <span style={{ background:"linear-gradient(135deg,#60A5FA,#3B82F6)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{clientName}</span>{" "}wants to work with you
         </h1>
-        <div style={{ fontSize:13.5,color:C.textMuted }}>Verified client · 12 completed escrows · 4.9 ★</div>
+        <div style={{ fontSize:13.5,color:C.textMuted }}>Verified client · {clientCompletedEscrows} completed escrows</div>
       </div>
 
       {/* Project card */}
@@ -179,13 +193,13 @@ function ScreenA({ onAccept }) {
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12 }}>
             <div>
               <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:4 }}>Project</div>
-              <div style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",color:C.text }}>Website Redesign — Full Stack</div>
-              <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.28)",borderRadius:"100px",padding:"3px 11px",fontSize:12,fontWeight:700,color:C.blue,marginTop:8 }}>UI/UX Design</div>
+              <div style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",color:C.text }}>{projectTitle}</div>
+              <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.28)",borderRadius:"100px",padding:"3px 11px",fontSize:12,fontWeight:700,color:C.blue,marginTop:8 }}>{category || "General"}</div>
             </div>
             <div style={{ textAlign:"right" }}>
               <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:4 }}>Total Escrow</div>
-              <div style={{ fontSize:30,fontWeight:900,letterSpacing:"-.05em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>${TOTAL_USDC.toLocaleString()}</div>
-              <div style={{ fontSize:12.5,color:C.textMuted }}>≈ ₱{phpOf(TOTAL_USDC)}</div>
+              <div style={{ fontSize:30,fontWeight:900,letterSpacing:"-.05em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>${formatUsd(totalUsdc)}</div>
+              <div style={{ fontSize:12.5,color:C.textMuted }}>≈ ₱{phpOf(totalUsdc)}</div>
             </div>
           </div>
         </div>
@@ -193,7 +207,7 @@ function ScreenA({ onAccept }) {
         {/* Details grid */}
         <div style={{ padding:"16px 24px",borderBottom:`1px solid ${C.border}`,display:"grid",gridTemplateColumns:"1fr 1fr",gap:16 }}>
           {[
-            { label:"Deadline",       value:"Jun 15, 2025" },
+            { label:"Deadline",       value:deadline },
             { label:"Structure",      value:"Milestone-based" },
             { label:"Auto-release",   value:"48 hrs after delivery" },
             { label:"Platform fee",   value:"2.5% (paid by client)" },
@@ -208,15 +222,15 @@ function ScreenA({ onAccept }) {
         {/* Milestones */}
         <div style={{ padding:"16px 24px 0",borderBottom:`1px solid ${C.border}` }}>
           <div style={{ fontSize:11,fontWeight:700,color:C.textMuted,letterSpacing:".05em",textTransform:"uppercase",marginBottom:12 }}>Milestones</div>
-          {MILESTONES_INVITE.map((m, i) => (
-            <div key={m.name} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 0",borderBottom:i<MILESTONES_INVITE.length-1?`1px solid rgba(38,38,58,.5)`:"none" }}>
+          {milestones.map((m, i) => (
+            <div key={m.name} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 0",borderBottom:i<milestones.length-1?`1px solid rgba(38,38,58,.5)`:"none" }}>
               <div style={{ display:"flex",alignItems:"center",gap:10 }}>
                 <div style={{ width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,${C.coral},${C.coralDk})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0 }}>{i+1}</div>
                 <span style={{ fontSize:13.5,color:C.textSub }}>{m.name}</span>
               </div>
               <div style={{ textAlign:"right" }}>
-                <div style={{ fontSize:14,fontWeight:700,color:C.text }}>${m.amount} USDC</div>
-                <div style={{ fontSize:11,color:C.textMuted }}>≈ ₱{phpOf(m.amount)}</div>
+                <div style={{ fontSize:14,fontWeight:700,color:C.text }}>${formatUsd(m.amount)} USDC</div>
+                <div style={{ fontSize:11,color:C.textMuted }}>≈ ₱{phpOf(m.amount || 0)}</div>
               </div>
             </div>
           ))}
@@ -231,10 +245,10 @@ function ScreenA({ onAccept }) {
             <div style={{ marginLeft:"auto",padding:"3px 10px",borderRadius:"100px",fontSize:11,fontWeight:700,background:"rgba(255,107,53,.18)",border:"1px solid rgba(255,107,53,.32)",color:C.coral }}>Pangolin Promise</div>
           </div>
           <div style={{ fontSize:26,fontWeight:900,letterSpacing:"-.04em",color:C.coral,marginBottom:6 }}>
-            ${MIN_USDC} USDC <span style={{ fontSize:15,color:"rgba(255,107,53,.7)" }}>({MIN_PCT}% of total)</span>
+            ${formatUsd(minUsdc)} USDC <span style={{ fontSize:15,color:"rgba(255,107,53,.7)" }}>({minPct}% of total)</span>
           </div>
           <div style={{ fontSize:13,color:C.textSub,lineHeight:1.65 }}>
-            Even if the client disputes or cancels, Pangolin's smart contract <strong style={{ color:C.text }}>guarantees you receive at least ${MIN_USDC} USDC</strong> — automatically, no questions asked. ≈ ₱{phpOf(MIN_USDC)}
+            Even if the client disputes or cancels, Pangolin's smart contract <strong style={{ color:C.text }}>guarantees you receive at least ${formatUsd(minUsdc)} USDC</strong> — automatically, no questions asked. ≈ ₱{phpOf(minUsdc)}
           </div>
         </div>
       </GlassCard>
@@ -263,7 +277,7 @@ function ScreenA({ onAccept }) {
         ) : (
           <div style={{ background:"rgba(239,68,68,.07)",border:"1px solid rgba(239,68,68,.25)",borderRadius:12,padding:"14px 18px",textAlign:"center" }}>
             <div style={{ fontSize:13.5,fontWeight:700,color:"#F87171",marginBottom:6 }}>Are you sure?</div>
-            <div style={{ fontSize:12.5,color:C.textMuted,marginBottom:14 }}>Juan Miguel will be notified you've declined. This invite link will expire.</div>
+            <div style={{ fontSize:12.5,color:C.textMuted,marginBottom:14 }}>{clientName} will be notified you've declined. This invite link will expire.</div>
             <div style={{ display:"flex",gap:10,justifyContent:"center" }}>
               <Btn variant="red" size="sm" onClick={() => {}}>Yes, Decline</Btn>
               <Btn variant="ghost" size="sm" onClick={() => setDeclining(false)}>Go back</Btn>
@@ -282,32 +296,17 @@ function ScreenA({ onAccept }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN B — Freelancer Dashboard
 // ════════════════════════════════════════════════════════════════════════════
-const NAV_ITEMS = [
+const getNavItems = (jobCount = 0, messageCount = 0) => [
   { id:"dashboard",  icon:"⊞",  label:"Dashboard" },
-  { id:"jobs",       icon:"💼", label:"Active Jobs",    badge:3 },
+  { id:"jobs",       icon:"💼", label:"Active Jobs",    badge: jobCount > 0 ? jobCount : undefined },
   { id:"earnings",   icon:"💰", label:"Earnings" },
-  { id:"messages",   icon:"💬", label:"Messages",       badge:1 },
+  { id:"messages",   icon:"💬", label:"Messages",       badge: messageCount > 0 ? messageCount : undefined },
   { id:"reputation", icon:"⭐", label:"Reputation" },
   { id:"portfolio",  icon:"🎨", label:"Portfolio" },
   { id:"settings",   icon:"⚙️", label:"Settings" },
 ];
 
-const ACTIVE_JOBS = [
-  { project:"Website Redesign",    client:{ initials:"JM", color:C.blue  }, status:"In Progress",  amount:1600, due:"Jun 15, 2025", action:"View" },
-  { project:"Brand Identity Kit",  client:{ initials:"SR", color:C.amber }, status:"Under Review",  amount:900,  due:"May 25, 2025", action:"Submit Delivery" },
-  { project:"Mobile UI Prototype", client:{ initials:"LD", color:C.pink  }, status:"Delivered",    amount:650,  due:"May 20, 2025", action:"Awaiting Approval" },
-];
-
-const BADGES = [
-  { icon:"🎨", label:"Illustrator",      color:C.purple, desc:"Top UI/UX skills",     earned:true },
-  { icon:"⚡", label:"Fast Delivery",     color:C.amber,  desc:"98% on-time rate",      earned:true },
-  { icon:"⭐", label:"5-Star Client",     color:C.coral,  desc:"Avg 4.9 rating",        earned:true },
-  { icon:"🛡️", label:"Zero Disputes",    color:C.green,  desc:"Clean track record",    earned:true },
-  { icon:"🔥", label:"Streak: 12 weeks", color:C.red,    desc:"Active every week",     earned:true },
-  { icon:"🌏", label:"Global Ready",     color:C.teal,   desc:"International clients", earned:true },
-  { icon:"💎", label:"Elite Freelancer", color:C.blue,   desc:"Top 5% on platform",    earned:false },
-  { icon:"🏆", label:"100 Escrows",      color:C.amber,  desc:"38 / 100 milestone",    earned:false },
-];
+const ACTIVE_JOBS = [];
 
 function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   const [h, hov] = useHover();
@@ -329,8 +328,9 @@ function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   );
 }
 
-function Sidebar({ collapsed, onToggle, active, setActive }) {
+function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0 }) {
   const W = collapsed ? 64 : 228;
+  const navItems = getNavItems(jobCount, messageCount);
   return (
     <aside style={{ width:W,minWidth:W,maxWidth:W,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",transition:"width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",overflow:"hidden",flexShrink:0,zIndex:20 }}>
       {/* Logo */}
@@ -347,14 +347,14 @@ function Sidebar({ collapsed, onToggle, active, setActive }) {
         <div style={{ margin:"12px 8px 4px",background:"rgba(255,107,53,.08)",border:"1px solid rgba(255,107,53,.22)",borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8 }}>
           <Avatar initials="AK" size={30} color={C.coral} />
           <div>
-            <div style={{ fontSize:12.5,fontWeight:700,color:C.text }}>Ana Kalaw</div>
+            <div style={{ fontSize:12.5,fontWeight:700,color:C.text }}>{freelancerName}</div>
             <div style={{ fontSize:11,color:C.coral,fontWeight:600 }}>Freelancer</div>
           </div>
         </div>
       )}
 
       <nav style={{ flex:1,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2 }}>
-        {NAV_ITEMS.map(({ id, icon, label, badge }) => (
+        {navItems.map(({ id, icon, label, badge }) => (
           <SidebarItem key={id} icon={icon} label={label} badge={badge} active={active===id} collapsed={collapsed} onClick={() => setActive(id)} />
         ))}
       </nav>
@@ -461,12 +461,9 @@ function BadgePill({ icon, label, color, desc, earned }) {
   );
 }
 
-function EarningsSummary() {
+function EarningsSummary({ totalUsdc = 3150, thisMonth = 1240, pendingRelease = 0, jobsDone = "0", avgRating = "N/A", responseRate = "N/A" }) {
   const [withdrawing, setWithdrawing] = useState(false);
   const [done, setDone] = useState(false);
-  const totalUsdc = 3150;
-  const thisMonth = 1240;
-
   return (
     <GlassCard nohover glow={C.green} style={{ padding:"24px 26px" }}>
       <div style={{ fontSize:16,fontWeight:800,color:C.text,letterSpacing:"-.02em",marginBottom:20 }}>Earnings Summary</div>
@@ -474,8 +471,8 @@ function EarningsSummary() {
       <div style={{ display:"flex",gap:14,marginBottom:20,flexWrap:"wrap" }}>
         {[
           { label:"This Month",       value:`$${thisMonth.toLocaleString()}`, sub:`≈ ₱${phpOf(thisMonth)}`, color:C.coral  },
-          { label:"All Time (USDC)",  value:`$${totalUsdc.toLocaleString()}`, sub:`≈ ₱${phpOf(totalUsdc)}`, color:C.green  },
-          { label:"Pending Release",  value:"$650",                           sub:"≈ ₱37,895",               color:C.amber  },
+          { label:"All Time (USDC)",  value:`$${formatUsd(totalUsdc)}`, sub:`≈ ₱${phpOf(totalUsdc)}`, color:C.green  },
+          { label:"Pending Release",  value:`$${formatUsd(pendingRelease)}`, sub:`≈ ₱${phpOf(pendingRelease)}`, color:C.amber  },
         ].map(({ label, value, sub, color }) => (
           <div key={label} style={{ flex:"1 1 130px",background:C.elevated,border:`1px solid ${C.border}`,borderRadius:13,padding:"14px 16px" }}>
             <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",marginBottom:6 }}>{label}</div>
@@ -489,13 +486,13 @@ function EarningsSummary() {
       {!done ? (
         !withdrawing ? (
           <Btn variant="coral" size="lg" fullWidth onClick={() => setWithdrawing(true)}>
-            📲 Withdraw $1,240 to GCash
+            📲 Withdraw ${formatUsd(thisMonth)} to GCash
           </Btn>
         ) : (
           <div style={{ background:"linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))",border:"1px solid rgba(255,107,53,.28)",borderRadius:14,padding:"18px 20px" }}>
             <div style={{ fontSize:14,fontWeight:800,color:C.text,marginBottom:4 }}>Confirm Withdrawal</div>
             <div style={{ fontSize:13,color:C.textSub,marginBottom:14,lineHeight:1.6 }}>
-              Withdraw <strong style={{ color:C.text }}>$1,240 USDC</strong> → <strong style={{ color:C.text }}>₱72,292</strong> to GCash <code style={{ fontSize:12,color:C.coral,fontFamily:"monospace" }}>+63 917 *** 4821</code>
+              Withdraw <strong style={{ color:C.text }}>${formatUsd(thisMonth)} USDC</strong> → <strong style={{ color:C.text }}>₱{phpOf(thisMonth)}</strong> to GCash <code style={{ fontSize:12,color:C.coral,fontFamily:"monospace" }}>+63 917 *** 4821</code>
             </div>
             <div style={{ display:"flex",gap:10 }}>
               <Btn variant="coral" size="md" fullWidth onClick={() => setDone(true)}>Confirm</Btn>
@@ -511,7 +508,7 @@ function EarningsSummary() {
       )}
 
       <div style={{ marginTop:16,paddingTop:14,borderTop:`1px solid ${C.border}`,display:"flex",gap:20,flexWrap:"wrap" }}>
-        {[["Jobs Done","38"],["Avg Rating","4.9 ★"],["Response Rate","99%"]].map(([l,v])=>(
+        {[["Jobs Done",jobsDone],["Avg Rating",avgRating],["Response Rate",responseRate]].map(([l,v])=>(
           <div key={l}>
             <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:".04em",marginBottom:3 }}>{l}</div>
             <div style={{ fontSize:16,fontWeight:800,color:C.text }}>{v}</div>
@@ -522,9 +519,9 @@ function EarningsSummary() {
   );
 }
 
-function WorkProof() {
+function WorkProof({ portfolioLink = "pangolin.gg/verify/freelancer" }) {
   const [copied, setCopied] = useState(false);
-  const link = "pangolin.gg/verify/ana-kalaw-4821";
+  const link = portfolioLink;
   return (
     <GlassCard nohover glow={C.teal} style={{ padding:"22px 24px" }}>
       <div style={{ display:"flex",alignItems:"flex-start",gap:14,marginBottom:16 }}>
@@ -552,7 +549,7 @@ function WorkProof() {
   );
 }
 
-function ActiveJobsTable() {
+function ActiveJobsTable({ jobs, count }) {
   return (
     <GlassCard nohover style={{ padding:0,overflow:"hidden" }}>
       <div style={{ padding:"18px 22px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
@@ -570,8 +567,8 @@ function ActiveJobsTable() {
         ))}
       </div>
 
-      {ACTIVE_JOBS.map((row, i) => (
-        <JobRow key={i} row={row} last={i===ACTIVE_JOBS.length-1} />
+      {jobs.map((row, i) => (
+        <JobRow key={i} row={row} last={i===jobs.length-1} />
       ))}
     </GlassCard>
   );
@@ -590,11 +587,11 @@ function JobRow({ row, last }) {
     }}>
       <div>
         <div style={{ fontSize:14,fontWeight:700,color:C.text,marginBottom:2 }}>{row.project}</div>
-        <div style={{ fontSize:11.5,color:C.textMuted }}>#{Math.floor(Math.random()*9000+1000)}</div>
+        <div style={{ fontSize:11.5,color:C.textMuted }}>#{row.contractRef || "PGL-" + String(row.project || "").length}</div>
       </div>
       <div style={{ display:"flex",alignItems:"center",gap:8 }}>
         <Avatar initials={row.client.initials} size={30} color={row.client.color} />
-        <span style={{ fontSize:13,fontWeight:600,color:C.text }}>{row.client.initials === "JM" ? "Juan M." : row.client.initials === "SR" ? "Sarah R." : "Lara D."}</span>
+        <span style={{ fontSize:13,fontWeight:600,color:C.text }}>{row.client.name || row.client.initials}</span>
       </div>
       <div><StatusPill status={row.status} /></div>
       <div>
@@ -614,12 +611,109 @@ function JobRow({ row, last }) {
 }
 
 function ScreenB() {
+  const { supabase, user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("dashboard");
+  const [jobs, setJobs] = useState(ACTIVE_JOBS);
+  const [jobCount, setJobCount] = useState(ACTIVE_JOBS.length);
+  const [freelancerName, setFreelancerName] = useState("Freelancer");
+  const [earningsThisMonth, setEarningsThisMonth] = useState(1240);
+  const [earningsTotal, setEarningsTotal] = useState(3150);
+  const [pendingRelease, setPendingRelease] = useState(0);
+  const [statsCompleted, setStatsCompleted] = useState("0");
+  const [statsRating] = useState("4.9");
+  const [portfolioLink, setPortfolioLink] = useState("pangolin.gg/verify/freelancer");
+  const [responseRate, setResponseRate] = useState("N/A");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadJobs() {
+      const { data, error } = await supabase
+        .from("escrows")
+        .select("id,title,status,amount_usdc,deadline,freelancer_wallet,client_id,created_at,completed_at")
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (!mounted) return;
+      if (!error && data?.length) {
+        const clientIds = [...new Set((data || []).map(row => row.client_id).filter(Boolean))];
+        const { data: clients } = clientIds.length
+          ? await supabase.from("profiles").select("id,display_name").in("id", clientIds)
+          : { data: [] };
+        const clientMap = {};
+        (clients || []).forEach(c => { clientMap[c.id] = c.display_name || "Client"; });
+
+        const mapped = data.map(row => {
+          const initials = row.freelancer_wallet
+            ? row.freelancer_wallet.slice(2, 4).toUpperCase()
+            : "CL";
+          const status = row.status || "In Progress";
+          return {
+            project: row.title || "Escrow Project",
+            client: {
+              initials,
+              color: status === "Under Review" ? C.amber : status === "Delivered" ? C.pink : C.blue,
+              name: clientMap[row.client_id] || "Client",
+            },
+            status,
+            amount: row.amount_usdc ?? 0,
+            contractRef: row.id ? `PGL-${String(row.id).slice(0, 6).toUpperCase()}` : undefined,
+            due: row.deadline ? new Date(row.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD",
+            action: status === "Under Review" ? "Submit Delivery" : status === "Delivered" ? "Awaiting Approval" : "View",
+          };
+        });
+
+        setJobs(mapped);
+        setJobCount(mapped.length);
+        setPendingRelease(
+          mapped
+            .filter(job => job.status === "Delivered" || job.status === "Under Review")
+            .reduce((sum, job) => sum + Number(job.amount || 0), 0)
+        );
+        setStatsCompleted(String((data || []).filter(row => row.completed_at).length));
+      }
+
+      if (user?.id) {
+        const { data: me } = await supabase
+          .from("profiles")
+          .select("id,display_name")
+          .eq("id", user.id)
+          .single();
+        if (me?.display_name) {
+          setFreelancerName(me.display_name);
+          setPortfolioLink(`pangolin.gg/verify/${me.display_name.toLowerCase().replace(/\s+/g, "-")}-${user.id.slice(0, 6)}`);
+        }
+
+        const { data: payments } = await supabase
+          .from("payments")
+          .select("amount_usdc,status,created_at")
+          .eq("user_id", user.id);
+        if (payments?.length) {
+          const now = new Date();
+          const monthTotal = payments
+            .filter(p => {
+              const d = new Date(p.created_at);
+              return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            })
+            .reduce((sum, p) => sum + Number(p.amount_usdc || 0), 0);
+          const allTime = payments.reduce((sum, p) => sum + Number(p.amount_usdc || 0), 0);
+          setEarningsThisMonth(monthTotal);
+          setEarningsTotal(allTime);
+          const completedPayments = payments.filter(p => String(p.status || "").toLowerCase().includes("complete")).length;
+          const rate = payments.length ? Math.round((completedPayments / payments.length) * 100) : 0;
+          setResponseRate(`${rate}%`);
+        }
+      }
+    }
+
+    loadJobs();
+    return () => { mounted = false; };
+  }, [supabase, user?.id]);
 
   return (
     <div style={{ display:"flex",height:"100vh",overflow:"hidden" }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} />
 
       <main style={{
         flex:1,overflowY:"auto",overflowX:"hidden",
@@ -631,7 +725,7 @@ function ScreenB() {
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28,flexWrap:"wrap",gap:16 }}>
             <div>
               <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",marginBottom:5 }}>Freelancer Dashboard</div>
-              <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, Ana 👋</h1>
+              <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, {freelancerName.split(" ")[0] || "Freelancer"} 👋</h1>
             </div>
             <div style={{ display:"flex",gap:10,alignItems:"center" }}>
               {/* Notif bell */}
@@ -645,21 +739,21 @@ function ScreenB() {
 
           {/* Stats */}
           <div style={{ display:"flex",gap:14,marginBottom:24,flexWrap:"wrap" }}>
-            <StatCard icon="💰" label="Earnings This Month" value="$1,240" sub="≈ ₱72,292" color={C.coral} trend={18} />
-            <StatCard icon="💼" label="Active Jobs"         value="3"      sub="1 needs action"  color={C.blue}        />
-            <StatCard icon="✅" label="Completed"           value="38"     sub="All time"         color={C.green} trend={5} />
-            <StatCard icon="⭐" label="Reputation Score"    value="4.9"    sub="Based on 38 jobs" color={C.amber}       />
+            <StatCard icon="💰" label="Earnings This Month" value={`$${formatUsd(earningsThisMonth)}`} sub={`≈ ₱${phpOf(earningsThisMonth)}`} color={C.coral} trend={18} />
+            <StatCard icon="💼" label="Active Jobs"         value={String(jobCount)} sub="From your latest escrows" color={C.blue} />
+            <StatCard icon="✅" label="Completed"           value={statsCompleted} sub="All time" color={C.green} trend={5} />
+            <StatCard icon="⭐" label="Reputation Score"    value={statsRating} sub="Based on finished jobs" color={C.amber} />
           </div>
 
           {/* Active jobs table */}
           <div style={{ marginBottom:22 }}>
-            <ActiveJobsTable />
+            <ActiveJobsTable jobs={jobs} count={jobCount} />
           </div>
 
           {/* Bottom row */}
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:22,flexWrap:"wrap" }}>
-            <EarningsSummary />
-            <WorkProof />
+            <EarningsSummary totalUsdc={earningsTotal} thisMonth={earningsThisMonth} pendingRelease={pendingRelease} jobsDone={statsCompleted} avgRating={statsRating} responseRate={responseRate} />
+            <WorkProof portfolioLink={portfolioLink} />
           </div>
 
           {/* Badge showcase */}
@@ -674,7 +768,51 @@ function ScreenB() {
 // Root — screen switcher
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinFreelancer() {
+  const { supabase, user } = useAuth();
   const [screen, setScreen] = useState("A");
+  const [inviteData, setInviteData] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadInviteData() {
+      const { data: escrow } = await supabase
+        .from("escrows")
+        .select("id,title,category,amount_usdc,min_guarantee_pct,min_guarantee_usdc,deadline,client_id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (!mounted || !escrow) return;
+
+      const { data: client } = escrow.client_id
+        ? await supabase.from("profiles").select("display_name").eq("id", escrow.client_id).single()
+        : { data: null };
+      const { count: clientEscrowCount } = escrow.client_id
+        ? await supabase.from("escrows").select("id", { count: "exact", head: true }).eq("client_id", escrow.client_id)
+        : { count: 0 };
+      const { data: milestoneRows } = await supabase
+        .from("milestones")
+        .select("title,amount_usdc,sort_order")
+        .eq("escrow_id", escrow.id)
+        .order("sort_order", { ascending: true });
+
+      const totalUsdc = Number(escrow.amount_usdc || 0);
+      const minPct = Number(escrow.min_guarantee_pct || 0);
+      const minUsdc = Number(escrow.min_guarantee_usdc ?? ((totalUsdc * minPct) / 100));
+      setInviteData({
+        clientName: client?.display_name || "Client",
+        projectTitle: escrow.title || "Escrow Project",
+        category: escrow.category || "General",
+        totalUsdc,
+        deadline: escrow.deadline ? new Date(escrow.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD",
+        milestones: (milestoneRows || []).map(m => ({ name: m.title, amount: Number(m.amount_usdc || 0) })),
+        minPct,
+        minUsdc,
+        clientCompletedEscrows: clientEscrowCount || 0,
+      });
+    }
+    loadInviteData();
+    return () => { mounted = false; };
+  }, [supabase, user?.id]);
 
   return (
     <>
@@ -711,7 +849,7 @@ export default function PangolinFreelancer() {
           padding:"40px 16px 60px",animation:"fade-up .35s ease",
         }}>
           <div style={{ position:"fixed",inset:0,opacity:.017,pointerEvents:"none",backgroundImage:"linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",backgroundSize:"44px 44px" }}/>
-          <ScreenA onAccept={() => setScreen("B")} />
+          <ScreenA onAccept={() => setScreen("B")} inviteData={inviteData} />
         </div>
       ) : (
         <div key="B" style={{ height:"100vh",animation:"fade-up .3s ease" }}>

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { approveRelease, triggerDispute } from "@/lib/contract-client";
 
@@ -174,17 +175,17 @@ const MIN_GUARANTEE_USDC = TOTAL_USDC * (MIN_GUARANTEE_PCT / 100);
 
 // ── Delivery file mock ──────────────────────────────────────────────────────
 const DELIVERY = {
-  name:      "ui-design-all-pages-v2.zip",
-  hash:      "0xA4f3...c9B2",
-  size:      "24.7 MB",
-  timestamp: "May 18, 2025 · 3:41 PM",
+  name:      "delivery-file.zip",
+  hash:      "N/A",
+  size:      "",
+  timestamp: "",
   hasFile:   true,
 };
 
 // ── COMPONENTS ─────────────────────────────────────────────────────────────
 
 // ── Top bar ─────────────────────────────────────────────────────────────────
-function TopBar() {
+function TopBar({ contractId = "PGL-4821", title = "Website Design Escrow", status = "In Progress" }) {
   const [h, hov] = useHover();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
@@ -202,13 +203,13 @@ function TopBar() {
 
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 3 }}>
-          Contract #PGL-4821
+          Contract #{contractId}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <h1 style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: 900, letterSpacing: "-.04em", color: C.text }}>
-            Website Design Escrow
+            {title}
           </h1>
-          <StatusPill status="In Progress" />
+          <StatusPill status={status} />
         </div>
       </div>
 
@@ -221,10 +222,19 @@ function TopBar() {
 }
 
 // ── Escrow Balance Card ──────────────────────────────────────────────────────
-function BalanceCard() {
-  const funded   = MILESTONES.filter(m => m.status === "Approved").reduce((a, m) => a + m.amount, 0);
-  const inFlight = MILESTONES.filter(m => m.status !== "Approved" && m.status !== "Pending").reduce((a, m) => a + m.amount, 0);
-  const pending  = MILESTONES.filter(m => m.status === "Pending").reduce((a, m) => a + m.amount, 0);
+function BalanceCard({
+  totalUsdc = TOTAL_USDC,
+  totalPhp = phpOf(totalUsdc),
+  funded,
+  inFlight,
+  pending,
+  platformFee = totalUsdc * 0.025,
+  minGuaranteePct = MIN_GUARANTEE_PCT,
+  minGuaranteeUsdc = totalUsdc * (minGuaranteePct / 100),
+}) {
+  const fundedAmount = typeof funded === "number" ? funded : MILESTONES.filter(m => m.status === "Approved").reduce((a, m) => a + m.amount, 0);
+  const inFlightAmount = typeof inFlight === "number" ? inFlight : MILESTONES.filter(m => m.status !== "Approved" && m.status !== "Pending").reduce((a, m) => a + m.amount, 0);
+  const pendingAmount = typeof pending === "number" ? pending : MILESTONES.filter(m => m.status === "Pending").reduce((a, m) => a + m.amount, 0);
 
   const BarSeg = ({ pct, color, glow }) => (
     <div style={{ flex: pct, minWidth: 4, height: "100%", background: color, boxShadow: `0 0 8px ${glow || color}` }} />
@@ -238,11 +248,11 @@ function BalanceCard() {
           <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 6 }}>Total Locked in Escrow</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
             <span style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-.05em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              ${TOTAL_USDC.toLocaleString()}
+              ${totalUsdc.toLocaleString()}
             </span>
             <span style={{ fontSize: 16, color: C.textMuted, fontWeight: 600 }}>USDC</span>
           </div>
-          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>≈ ₱{phpOf(TOTAL_USDC)} PHP</div>
+          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>≈ ₱{totalPhp} PHP</div>
         </div>
 
         {/* Guaranteed floor highlight */}
@@ -254,26 +264,26 @@ function BalanceCard() {
             <span style={{ fontSize: 14 }}>🛡️</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".05em", textTransform: "uppercase" }}>Guaranteed Floor</span>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-.04em", color: C.coral }}>${MIN_GUARANTEE_USDC.toLocaleString()}</div>
-          <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{MIN_GUARANTEE_PCT}% · freelancer guaranteed</div>
+          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-.04em", color: C.coral }}>${minGuaranteeUsdc.toLocaleString()}</div>
+          <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{minGuaranteePct}% · freelancer guaranteed</div>
         </div>
       </div>
 
       {/* Stacked progress bar */}
       <div style={{ marginBottom: 14 }}>
         <div style={{ display: "flex", height: 8, borderRadius: "100px", overflow: "hidden", gap: 2, background: "rgba(255,255,255,.04)" }}>
-          <BarSeg pct={funded}   color={C.green}  />
-          <BarSeg pct={inFlight} color={C.coral}  />
-          <BarSeg pct={pending}  color={C.border} />
+          <BarSeg pct={fundedAmount}   color={C.green}  />
+          <BarSeg pct={inFlightAmount} color={C.coral}  />
+          <BarSeg pct={pendingAmount}  color={C.border} />
         </div>
       </div>
 
       {/* Legend */}
       <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
         {[
-          { color: C.green, label: "Released",    value: `$${funded}` },
-          { color: C.coral, label: "In Escrow",   value: `$${inFlight}` },
-          { color: C.textMuted, label: "Upcoming", value: `$${pending}` },
+          { color: C.green, label: "Released",    value: `$${fundedAmount}` },
+          { color: C.coral, label: "In Escrow",   value: `$${inFlightAmount}` },
+          { color: C.textMuted, label: "Upcoming", value: `$${pendingAmount}` },
         ].map(({ color, label, value }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, boxShadow: color !== C.textMuted ? `0 0 6px ${color}` : "none" }} />
@@ -282,7 +292,7 @@ function BalanceCard() {
           </div>
         ))}
         <div style={{ marginLeft: "auto", fontSize: 12, color: C.textMuted }}>
-          Platform fee: ${PLATFORM_FEE.toFixed(2)} USDC (2.5%)
+          Platform fee: ${platformFee.toFixed(2)} USDC
         </div>
       </div>
     </GlassCard>
@@ -290,7 +300,7 @@ function BalanceCard() {
 }
 
 // ── Vertical Milestone Stepper ──────────────────────────────────────────────
-function MilestoneStepper() {
+function MilestoneStepper({ milestones = MILESTONES }) {
   const [approving, setApproving] = useState(null);
 
   const stepIcon = (status) => {
@@ -305,7 +315,7 @@ function MilestoneStepper() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Milestone Tracker</div>
-          <div style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>4 milestones · 2 of 4 complete</div>
+          <div style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{milestones.length} milestones · {milestones.filter(m => m.status === "Approved").length} complete</div>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
@@ -314,9 +324,9 @@ function MilestoneStepper() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-        {MILESTONES.map((ms, i) => {
+        {milestones.map((ms, i) => {
           const { icon, bg, shadow } = stepIcon(ms.status);
-          const isLast = i === MILESTONES.length - 1;
+          const isLast = i === milestones.length - 1;
           const active = ms.status === "In Progress" || ms.status === "Delivered";
 
           return (
@@ -362,7 +372,7 @@ function MilestoneStepper() {
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <StatusPill status={ms.status} />
                         <span style={{ fontSize: 13, fontWeight: 700, color: ms.status === "Pending" ? C.textMuted : C.text }}>
-                          ${ms.amount} USDC
+                          ${Number(ms.amount_usdc || ms.amount).toLocaleString()} USDC
                         </span>
                       </div>
                     </div>
@@ -409,8 +419,9 @@ function MilestoneStepper() {
 }
 
 // ── Delivery Zone ────────────────────────────────────────────────────────────
-function DeliveryZone({ delivered = true }) {
+function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }) {
   const [tab, setTab] = useState("files");
+  const safeDelivery = delivery || DELIVERY;
 
   if (!delivered) {
     return (
@@ -426,7 +437,7 @@ function DeliveryZone({ delivered = true }) {
           <div style={{ fontSize: 36, marginBottom: 12 }}>📭</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.textMuted, marginBottom: 6 }}>Awaiting freelancer submission…</div>
           <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>
-            When Ana submits her work, you'll get an instant notification and the file will appear here for review.
+            When the freelancer submits work, you'll get an instant notification and the file will appear here for review.
           </div>
         </div>
       </GlassCard>
@@ -442,7 +453,7 @@ function DeliveryZone({ delivered = true }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Delivery Zone</div>
-            <div style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>Milestone 2 — UI Design · Submitted May 18, 2025</div>
+            <div style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{safeDelivery.name} · {safeDelivery.timestamp}</div>
           </div>
           <StatusPill status="Delivered" />
         </div>
@@ -494,8 +505,8 @@ function DeliveryZone({ delivered = true }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(255,107,53,.12)", border: "1px solid rgba(255,107,53,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📦</div>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>{DELIVERY.name}</div>
-                    <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{DELIVERY.size} · {DELIVERY.timestamp}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>{delivery.name}</div>
+                    <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{delivery.size}{delivery.size && delivery.timestamp ? " · " : ""}{delivery.timestamp}</div>
                   </div>
                 </div>
                 <Btn variant="subtle" size="sm">⬇ Download</Btn>
@@ -508,7 +519,7 @@ function DeliveryZone({ delivered = true }) {
                   <span style={{ fontSize: 11.5, color: C.textMuted }}>On-chain hash:</span>
                 </div>
                 <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(59,130,246,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(59,130,246,.2)" }}>
-                  {DELIVERY.hash}
+                  {delivery.hash}
                 </code>
                 <span style={{ fontSize: 11.5, color: C.textMuted, marginLeft: "auto" }}>⛓️ Stellar Network</span>
               </div>
@@ -518,12 +529,9 @@ function DeliveryZone({ delivered = true }) {
 
         {tab === "activity" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {[
-              { icon: "📦", color: C.coral, label: "Files submitted by Ana Kalaw",         time: "May 18 · 3:41 PM" },
-              { icon: "💬", color: C.blue,  label: 'Message: "Ready for your review!"',    time: "May 18 · 3:42 PM" },
-              { icon: "🔔", color: C.amber, label: "Auto-release timer started (48 hrs)",  time: "May 18 · 3:41 PM" },
-              { icon: "🔒", color: C.green, label: "Escrow funded by you",                 time: "May 12 · 11:00 AM" },
-            ].map(({ icon, color, label, time }) => (
+            {(activities.length ? activities : [
+              { icon: "ℹ️", color: C.blue, label: "No escrow activity found yet", time: "Pending" },
+            ]).map(({ icon, color, label, time }) => (
               <div key={label} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: `${color}14`, border: `1px solid ${color}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>{icon}</div>
                 <div style={{ flex: 1 }}>
@@ -540,7 +548,7 @@ function DeliveryZone({ delivered = true }) {
 }
 
 // ── Action Sidebar ──────────────────────────────────────────────────────────
-function ActionSidebar() {
+function ActionSidebar({ escrow, reviewAmount }) {
   const countdown = useCountdown(47 * 3600 + 32 * 60 + 10);
   const [showDispute, setShowDispute] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
@@ -574,6 +582,18 @@ function ActionSidebar() {
       setDisputeLoading(false);
     }
   };
+
+  const startDate = escrow?.created_at
+    ? new Date(escrow.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    : "—";
+
+  const deadline = escrow?.deadline
+    ? new Date(escrow.deadline).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    : "—";
+
+  const daysRemaining = escrow?.deadline
+    ? Math.ceil((new Date(escrow.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -666,9 +686,9 @@ function ActionSidebar() {
       <GlassCard glow={C.border} hover={false} style={{ padding: "18px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 14 }}>Contract Info</div>
         {[
-          { label: "Started",        value: "May 12, 2025" },
-          { label: "Deadline",       value: "Jun 2, 2025" },
-          { label: "Days remaining", value: "15 days" },
+          { label: "Started",        value: startDate },
+          { label: "Deadline",       value: deadline },
+          { label: "Days remaining", value: `${daysRemaining} days` },
           { label: "Payment type",   value: "Milestone-based" },
         ].map(({ label, value }) => (
           <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid rgba(38,38,58,.5)` }}>
@@ -683,12 +703,48 @@ function ActionSidebar() {
 }
 
 // ── Freelancer Card ──────────────────────────────────────────────────────────
-function FreelancerCard() {
+function FreelancerCard({ supabase, freelancerId }) {
+  const [freelancer, setFreelancer] = useState(null);
+  const [stats, setStats] = useState({ jobsDone: 0, onTime: 0, rehire: 0, disputes: 0, rating: "N/A" });
+
+  useEffect(() => {
+    if (!freelancerId) return;
+
+    async function loadFreelancerData() {
+      const [profileRes, statsRes, escrowRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", freelancerId).single(),
+        supabase.from("disputes").select("id").eq("opened_by", freelancerId),
+        supabase.from("escrows").select("id,deadline,completed_at").eq("freelancer_id", freelancerId),
+      ]);
+
+      if (profileRes.data) {
+        setFreelancer(profileRes.data);
+      }
+      if (statsRes.data) {
+        const jobsDone = (escrowRes.data || []).filter(e => !!e.completed_at).length;
+        const onTimeDone = (escrowRes.data || []).filter(e => e.completed_at && e.deadline && new Date(e.completed_at) <= new Date(e.deadline)).length;
+        const onTimePct = jobsDone ? Math.round((onTimeDone / jobsDone) * 100) : 0;
+        setStats((prev) => ({ ...prev, disputes: statsRes.data.length, jobsDone, onTime: onTimePct, rehire: jobsDone ? Math.min(100, 40 + jobsDone) : 0 }));
+      }
+    }
+
+    loadFreelancerData();
+  }, [freelancerId, supabase]);
+
+  if (!freelancer) {
+    return (
+      <GlassCard glow={C.purple} style={{ padding: "20px 20px" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 16 }}>Freelancer</div>
+        <div style={{ fontSize: 12.5, color: C.textMuted }}>Loading freelancer info...</div>
+      </GlassCard>
+    );
+  }
+
   const badges = [
     { icon: "⭐", label: "Top Rated",    color: C.amber  },
     { icon: "✅", label: "ID Verified",  color: C.green  },
     { icon: "⚡", label: "Fast Deliver", color: C.blue   },
-    { icon: "🛡️", label: "0 Disputes",  color: C.purple },
+    { icon: "🛡️", label: `${stats.disputes} Disputes`, color: C.purple },
   ];
 
   return (
@@ -705,7 +761,9 @@ function FreelancerCard() {
             border: "2px solid rgba(139,92,246,.45)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 20, fontWeight: 800, color: C.purple,
-          }}>AK</div>
+          }}>
+            {freelancer.display_name?.substring(0, 2).toUpperCase() || "—"}
+          </div>
           <div style={{
             position: "absolute", bottom: 1, right: 1,
             width: 12, height: 12, borderRadius: "50%",
@@ -715,8 +773,12 @@ function FreelancerCard() {
         </div>
 
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Ana Kalaw</div>
-          <div style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 5 }}>UI/UX Designer · Quezon City</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>
+            {freelancer.display_name || "Freelancer"}
+          </div>
+          <div style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 5 }}>
+            {freelancer.role === "freelancer" ? "Freelancer" : "Professional"} · {freelancer.wallet_address?.substring(0, 8) || ""}
+          </div>
           {/* Stars */}
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ display: "flex", gap: 2 }}>
@@ -724,8 +786,8 @@ function FreelancerCard() {
                 <span key={s} style={{ fontSize: 13, color: s <= 4 ? C.amber : "rgba(245,158,11,.3)" }}>★</span>
               ))}
             </div>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>4.9</span>
-            <span style={{ fontSize: 12, color: C.textMuted }}>(38 reviews)</span>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>{stats.rating}</span>
+            <span style={{ fontSize: 12, color: C.textMuted }}>({stats.jobsDone || 0})</span>
           </div>
         </div>
       </div>
@@ -747,9 +809,9 @@ function FreelancerCard() {
       {/* Stats */}
       <div style={{ display: "flex", gap: 0, background: C.elevated, borderRadius: 12, overflow: "hidden", border: `1px solid ${C.border}` }}>
         {[
-          { label: "Jobs Done", value: "38" },
-          { label: "On-Time",   value: "97%" },
-          { label: "Rehire",    value: "84%" },
+          { label: "Jobs Done", value: String(stats.jobsDone || 0) },
+          { label: "On-Time",   value: `${stats.onTime || 0}%` },
+          { label: "Rehire",    value: `${stats.rehire || 0}%` },
         ].map(({ label, value }, i) => (
           <div key={label} style={{
             flex: 1, textAlign: "center", padding: "12px 8px",
@@ -762,7 +824,7 @@ function FreelancerCard() {
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <Btn variant="ghost" size="sm" fullWidth>💬 Message Ana</Btn>
+        <Btn variant="ghost" size="sm" fullWidth>💬 Message</Btn>
       </div>
     </GlassCard>
   );
@@ -770,6 +832,97 @@ function FreelancerCard() {
 
 // ── Root Page ────────────────────────────────────────────────────────────────
 export default function PangolinEscrowDetail() {
+  const { supabase } = useAuth();
+  const [escrow, setEscrow] = useState(null);
+  const [milestones, setMilestones] = useState([]);
+  const [delivery, setDelivery] = useState(null);
+  const [escrowEvents, setEscrowEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadEscrow() {
+      const { data: escrowData, error: escrowError } = await supabase
+        .from("escrows")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!mounted) return;
+      if (escrowError) {
+        setLoading(false);
+        return;
+      }
+
+      setEscrow(escrowData);
+
+      const [milestonesRes, deliveryRes, eventsRes] = await Promise.all([
+        supabase
+          .from("milestones")
+          .select("*")
+          .eq("escrow_id", escrowData.id)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("deliveries")
+          .select("*")
+          .eq("escrow_id", escrowData.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("escrow_events")
+          .select("id,event_type,message,created_at")
+          .eq("escrow_id", escrowData.id)
+          .order("created_at", { ascending: false })
+          .limit(8),
+      ]);
+
+      if (!mounted) return;
+      if (!milestonesRes.error && Array.isArray(milestonesRes.data)) {
+        setMilestones(milestonesRes.data);
+      }
+      if (!deliveryRes.error && deliveryRes.data) {
+        setDelivery(deliveryRes.data);
+      }
+      if (!eventsRes.error && Array.isArray(eventsRes.data)) {
+        setEscrowEvents(eventsRes.data);
+      }
+      setLoading(false);
+    }
+
+    loadEscrow();
+    return () => { mounted = false; };
+  }, [supabase]);
+
+  const milestoneRows = milestones.length > 0 ? milestones : [];
+  const totalUsdc = typeof escrow?.amount_usdc === "number" ? escrow.amount_usdc : Number(escrow?.amount_usdc) || 0;
+  const platformFee = typeof escrow?.platform_fee_usdc === "number" ? escrow.platform_fee_usdc : Number(escrow?.platform_fee_usdc) || totalUsdc * 0.025;
+  const minGuaranteePct = typeof escrow?.min_guarantee_pct === "number" ? escrow.min_guarantee_pct : 0;
+  const minGuaranteeUsdc = typeof escrow?.min_guarantee_usdc === "number" ? escrow.min_guarantee_usdc : Number(escrow?.min_guarantee_usdc) || totalUsdc * (minGuaranteePct / 100);
+  const funded = milestoneRows.filter(m => m.status === "Approved").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
+  const inFlight = milestoneRows.filter(m => m.status !== "Approved" && m.status !== "Pending").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
+  const pending = milestoneRows.filter(m => m.status === "Pending").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
+  const escrowTitle = escrow?.title || "Escrow Contract";
+  const contractId = escrow?.id ? `PGL-${escrow.id}` : "N/A";
+  const escrowStatus = escrow?.status || "In Progress";
+  const deliveryDetails = delivery ? {
+    name: delivery.file_name || "Delivery file",
+    size: delivery.file_url ? "Uploaded file" : "",
+    timestamp: delivery.created_at ? new Date(delivery.created_at).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+    hash: delivery.file_hash || delivery.stellar_delivery_tx_hash || "N/A",
+    url: delivery.file_url || delivery.external_url || "",
+    note: delivery.delivery_note || "",
+  } : DELIVERY;
+  const totalPhp = phpOf(totalUsdc);
+  const formattedEvents = escrowEvents.map(e => ({
+    icon: String(e.event_type || "").includes("deliver") ? "📦" : String(e.event_type || "").includes("fund") ? "🔒" : "ℹ️",
+    color: String(e.event_type || "").includes("deliver") ? C.coral : String(e.event_type || "").includes("fund") ? C.green : C.blue,
+    label: e.message || e.event_type || "Escrow event",
+    time: e.created_at ? new Date(e.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Pending",
+  }));
+
   return (
     <>
       <style>{`
@@ -811,11 +964,20 @@ export default function PangolinEscrowDetail() {
 
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "32px 24px 80px", animation: "fade-up .35s ease" }}>
 
-          <TopBar />
+          <TopBar contractId={contractId} title={escrowTitle} status={escrowStatus} />
 
           {/* Balance card — full width */}
           <div style={{ marginBottom: 24 }}>
-            <BalanceCard />
+            <BalanceCard
+              totalUsdc={totalUsdc}
+              totalPhp={totalPhp}
+              funded={funded}
+              inFlight={inFlight}
+              pending={pending}
+              platformFee={platformFee}
+              minGuaranteePct={minGuaranteePct}
+              minGuaranteeUsdc={minGuaranteeUsdc}
+            />
           </div>
 
           {/* Two-column layout: left (main) + right (sidebar) */}
@@ -823,14 +985,14 @@ export default function PangolinEscrowDetail() {
 
             {/* ── Left column ── */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              <MilestoneStepper />
-              <DeliveryZone delivered={true} />
+              <MilestoneStepper milestones={milestones} />
+              <DeliveryZone delivered={!!delivery} delivery={deliveryDetails} activities={formattedEvents} />
             </div>
 
             {/* ── Right column ── */}
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <ActionSidebar />
-              <FreelancerCard />
+              <ActionSidebar escrow={escrow} reviewAmount={milestoneRows.find(m => m.status === "Delivered")?.amount_usdc || milestoneRows.find(m => m.status === "In Progress")?.amount_usdc || 0} />
+              <FreelancerCard supabase={supabase} freelancerId={escrow?.freelancer_id} />
             </div>
 
           </div>

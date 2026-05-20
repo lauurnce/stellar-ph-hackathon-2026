@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Delivery Flow
@@ -108,7 +109,8 @@ function FieldFocus({ children, accentColor = C.coral }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN A — Submit Delivery
 // ════════════════════════════════════════════════════════════════════════════
-function ScreenA({ onSubmit }) {
+function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestones }) {
+  const { supabase, user } = useAuth();
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [link, setLink] = useState("");
@@ -120,9 +122,18 @@ function ScreenA({ onSubmit }) {
   const [linkFocused, setLinkFocused] = useState(false);
   const [notesFocused, setNotesFocused] = useState(false);
 
+  const loading = loadingEscrow || loadingMilestones;
   const hasContent = files.length > 0 || link.trim().length > 0;
   const hasNotes = notes.trim().length > 0;
-  const valid = hasContent;
+  const valid = hasContent && !!escrow?.id && !loading;
+
+  const milestoneCount = milestones.length || 1;
+  const currentMilestone = milestones.find(m => m.status !== "Approved") || milestones[0] || {};
+  const currentIndex = milestones.findIndex(m => m.id === currentMilestone.id);
+  const milestoneStep = currentIndex >= 0 ? currentIndex + 1 : 1;
+  const milestoneLabel = `Milestone ${milestoneStep} of ${milestoneCount}`;
+  const milestoneName = currentMilestone.name || "Delivery";
+  const milestoneAmount = Number(currentMilestone.amount_usdc ?? currentMilestone.amount ?? escrow?.amount_usdc ?? 0);
 
   const addFiles = newFiles => {
     const mapped = Array.from(newFiles).slice(0, 5 - files.length).map(f => ({
@@ -163,6 +174,24 @@ function ScreenA({ onSubmit }) {
       setPhase(p.label);
       setProgress(p.pct);
     }
+
+    if (!escrow?.id) {
+      setSubmitting(false);
+      return;
+    }
+
+    const fileRecord = files[0] || null;
+    await supabase.from("deliveries").insert({
+      escrow_id: escrow.id,
+      milestone_id: currentMilestone?.id || null,
+      submitted_by: user?.id || null,
+      file_name: fileRecord ? fileRecord.name : null,
+      external_url: link || null,
+      file_hash: fileRecord ? fileRecord.hash : null,
+      delivery_note: notes || null,
+      stellar_delivery_tx_hash: null,
+    });
+
     await new Promise(r => setTimeout(r, 400));
     onSubmit();
   };
@@ -196,17 +225,17 @@ function ScreenA({ onSubmit }) {
           border: "1px solid rgba(255,107,53,.28)", borderRadius: 12, padding: "10px 16px",
         }}>
           <div style={{ display: "flex", gap: 5 }}>
-            {[1, 2, 3].map(n => (
-              <div key={n} style={{ width: 22, height: 22, borderRadius: "50%", background: n <= 2 ? `linear-gradient(135deg,${C.coral},${C.coralDk})` : C.elevated, border: n <= 2 ? "none" : `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: n <= 2 ? "#fff" : C.textMuted }}>
-                {n < 2 ? "✓" : n}
+            {Array.from({ length: milestoneCount }, (_, idx) => (
+              <div key={idx} style={{ width: 22, height: 22, borderRadius: "50%", background: idx < milestoneStep ? `linear-gradient(135deg,${C.coral},${C.coralDk})` : C.elevated, border: idx < milestoneStep ? "none" : `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: idx < milestoneStep ? "#fff" : C.textMuted }}>
+                {idx + 1 === milestoneStep ? "●" : idx < milestoneStep ? "✓" : idx + 1}
               </div>
             ))}
           </div>
           <div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: C.coral }}>Milestone 2 of 3:</span>
-            <span style={{ fontSize: 13, color: C.textSub, marginLeft: 6 }}>Design System</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.coral }}>{milestoneLabel}</span>
+            <span style={{ fontSize: 13, color: C.textSub, marginLeft: 6 }}>{milestoneName}</span>
           </div>
-          <div style={{ marginLeft: 8, fontSize: 13, fontWeight: 800, color: C.text }}>$800 USDC</div>
+          <div style={{ marginLeft: 8, fontSize: 13, fontWeight: 800, color: C.text }}>${milestoneAmount.toFixed(2)} USDC</div>
         </div>
       </div>
 
@@ -451,10 +480,9 @@ function AnimatedCheck() {
   );
 }
 
-function TxHash() {
-  const hash = "0x4f3A2b9C8e1D7F56aB0c3E2d91f4A7B8C9e2D3F4";
+function TxHash({ hash = "—" }) {
   const [copied, setCopied] = useState(false);
-  const display = hash.slice(0, 10) + "…" + hash.slice(-8);
+  const display = hash && hash.length > 18 ? hash.slice(0, 10) + "…" + hash.slice(-8) : hash;
 
   return (
     <div style={{
@@ -539,8 +567,36 @@ function BadgeCard() {
   );
 }
 
-function ScreenB() {
-  const USDC = 200;
+function ScreenB({ escrow, milestones, supabase }) {
+  const [clientProfile, setClientProfile] = useState(null);
+  const [freelancerProfile, setFreelancerProfile] = useState(null);
+  const [txHash, setTxHash] = useState("—");
+
+  const milestone = milestones.find(m => m.status !== "Approved") || milestones[0] || {};
+  const milestoneIndex = milestones.findIndex(m => m.id === milestone.id);
+  const milestoneNumber = milestoneIndex >= 0 ? milestoneIndex + 1 : 1;
+  const received = Number(milestone.amount_usdc ?? milestone.amount ?? escrow?.amount_usdc ?? 0);
+  const total = Number(escrow?.amount_usdc ?? received);
+  const remaining = Math.max(0, total - received);
+  const milestoneLabel = milestone.name ? `Milestone ${milestoneNumber} — ${milestone.name}` : "Current milestone";
+
+  useEffect(() => {
+    if (!escrow || !supabase) return;
+
+    async function loadProfiles() {
+      const [clientRes, freelancerRes, deliveryRes] = await Promise.all([
+        escrow.client_id ? supabase.from("profiles").select("display_name").eq("id", escrow.client_id).single() : null,
+        escrow.freelancer_id ? supabase.from("profiles").select("display_name,wallet_address").eq("id", escrow.freelancer_id).single() : null,
+        supabase.from("deliveries").select("stellar_delivery_tx_hash").eq("escrow_id", escrow.id).single(),
+      ]);
+
+      if (clientRes?.data) setClientProfile(clientRes.data);
+      if (freelancerRes?.data) setFreelancerProfile(freelancerRes.data);
+      if (deliveryRes?.data?.stellar_delivery_tx_hash) setTxHash(deliveryRes.data.stellar_delivery_tx_hash);
+    }
+
+    loadProfiles();
+  }, [escrow, supabase]);
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "20px 16px 60px", textAlign: "center" }}>
@@ -559,11 +615,11 @@ function ScreenB() {
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           marginBottom: 8,
         }}>
-          ${USDC.toFixed(2)}
+          ${received.toFixed(2)}
           <span style={{ fontSize: "0.35em", letterSpacing: "-.02em", marginLeft: 8, opacity: .8 }}>USDC</span>
         </div>
         <div style={{ fontSize: 20, color: C.textMuted, fontWeight: 600, letterSpacing: "-.02em" }}>
-          ≈ ₱{phpOf(USDC)}
+          ≈ ₱{phpOf(received)}
         </div>
       </div>
 
@@ -578,9 +634,9 @@ function ScreenB() {
         <div style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 12 }}>Transaction Details</div>
 
         {[
-          { label: "From",      value: "Juan Miguel (Client)" },
-          { label: "To",        value: "Ana Kalaw — G2hW…k8X3" },
-          { label: "Milestone", value: "Milestone 2 — Design System" },
+          { label: "From",      value: clientProfile ? `${clientProfile.display_name} (Client)` : "—" },
+          { label: "To",        value: freelancerProfile ? `${freelancerProfile.display_name} — ${freelancerProfile.wallet_address?.slice(0, 6)}…${freelancerProfile.wallet_address?.slice(-4)}` : "—" },
+          { label: "Milestone", value: milestoneLabel },
           { label: "Timestamp", value: new Date().toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" }) },
           { label: "Network",   value: "Stellar Mainnet" },
         ].map(({ label, value }) => (
@@ -592,7 +648,7 @@ function ScreenB() {
 
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 8 }}>Transaction Hash</div>
-          <TxHash />
+          <TxHash hash={txHash} />
         </div>
       </GlassCard>
 
@@ -604,7 +660,7 @@ function ScreenB() {
       {/* CTAs */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12, animation: "fade-up .5s ease .75s both" }}>
         <Btn variant="coral" size="xl" fullWidth>
-          📲 Withdraw $200 to GCash
+          📲 Withdraw ${received.toFixed(2)} to GCash
         </Btn>
         <Btn variant="blue" size="lg" fullWidth>
           🏅 Add to Portfolio Badge
@@ -617,7 +673,7 @@ function ScreenB() {
       {/* Remaining escrow note */}
       <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(255,107,53,.06)", border: "1px solid rgba(255,107,53,.18)", borderRadius: 12 }}>
         <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.6 }}>
-          <strong style={{ color: C.coral }}>$800 USDC</strong> remaining in escrow · Milestone 3 begins when client confirms.
+          <strong style={{ color: C.coral }}>${remaining.toFixed(2)} USDC</strong> remaining in escrow · Milestone {milestoneNumber + 1} begins when client confirms.
         </div>
       </div>
     </div>
@@ -628,7 +684,52 @@ function ScreenB() {
 // Root
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinDeliveryFlow() {
+  const { supabase } = useAuth();
   const [screen, setScreen] = useState("A");
+  const [escrow, setEscrow] = useState(null);
+  const [milestones, setMilestones] = useState([]);
+  const [loadingEscrow, setLoadingEscrow] = useState(true);
+  const [loadingMilestones, setLoadingMilestones] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadEscrow() {
+      const { data, error } = await supabase
+        .from("escrows")
+        .select("id,title,status,amount_usdc,deadline,client_id,freelancer_id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!mounted) return;
+      if (!error && data) {
+        setEscrow(data);
+
+        const { data: milestoneData, error: milestoneError } = await supabase
+          .from("milestones")
+          .select("id,title,amount_usdc,status,sort_order")
+          .eq("escrow_id", data.id)
+          .order("sort_order", { ascending: true });
+
+        if (!mounted) return;
+        if (!milestoneError && Array.isArray(milestoneData)) {
+          setMilestones(
+            milestoneData.map(m => ({
+              ...m,
+              name: m.title,
+            }))
+          );
+        }
+      }
+
+      setLoadingEscrow(false);
+      setLoadingMilestones(false);
+    }
+
+    loadEscrow();
+    return () => { mounted = false; };
+  }, [supabase]);
 
   return (
     <>
@@ -707,8 +808,8 @@ export default function PangolinDeliveryFlow() {
         {/* Screen content */}
         <div key={screen} style={{ animation: "fade-up .32s ease" }}>
           {screen === "A"
-            ? <ScreenA onSubmit={() => setScreen("B")} />
-            : <ScreenB />
+            ? <ScreenA onSubmit={() => setScreen("B")} escrow={escrow} milestones={milestones} loadingEscrow={loadingEscrow} loadingMilestones={loadingMilestones} />
+            : <ScreenB escrow={escrow} milestones={milestones} supabase={supabase} />
           }
         </div>
       </div>
