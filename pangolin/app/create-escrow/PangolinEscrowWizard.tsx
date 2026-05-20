@@ -496,16 +496,6 @@ function Step2({ data, setData, onNext, onBack }) {
         <Input value={data.deadline} onChange={e => setData({ ...data, deadline: e.target.value })} type="date" />
       </div>
 
-      {/* Auto-release toggle */}
-      <div style={{ background: C.elevated, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "16px 20px" }}>
-        <Toggle
-          on={data.autoRelease ?? true}
-          setOn={v => setData({ ...data, autoRelease: v })}
-          label="48-Hour Auto-Release"
-          sub="Payment releases automatically if client doesn't respond within 48 hrs of delivery"
-        />
-      </div>
-
       <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
         <Btn variant="ghost" size="lg" onClick={onBack}>← Back</Btn>
         <Btn variant="coral" size="xl" fullWidth disabled={!valid} onClick={handleNext}>Next: Review →</Btn>
@@ -557,7 +547,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
           <Row label="Freelancer Wallet"  value={data.freelancerWallet || "Invite Link"} mono                  />
           <Row label="Payment Structure"  value={data.milestonesEnabled ? "Milestone-based" : "Single Payment"}/>
           <Row label="Deadline"           value={data.deadline || "—"}                                         />
-          <Row label="Auto-Release"       value={(data.autoRelease ?? true) ? "✅ 48 hrs after delivery" : "Manual"} />
+          <Row label="Auto-Release"       value="✅ 48 hrs after delivery" />
         </div>
 
         {/* Financial breakdown */}
@@ -682,7 +672,6 @@ const INIT = {
   title: "", category: "", description: "", freelancerWallet: "",
   totalAmount: "", minGuarantee: 60, deadline: "",
   milestonesEnabled: false, milestones: [{ name: "", amount: "" }],
-  autoRelease: true,
 };
 
 export default function PangolinEscrowWizard() {

@@ -2,6 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
+import { approveRelease, triggerDispute } from "@/lib/contract-client";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Detail Page (Client View)
@@ -31,6 +33,8 @@ const C = {
 function go(path) {
   window.location.href = path;
 }
+
+const ESCROW_ID = 1; // update when dynamic routing / Supabase lookup is wired
 
 const PHP = 58.3;
 function phpOf(u) { return (parseFloat(u) * PHP).toLocaleString("en-PH", { minimumFractionDigits: 2 }); }
@@ -539,6 +543,37 @@ function DeliveryZone({ delivered = true }) {
 function ActionSidebar() {
   const countdown = useCountdown(47 * 3600 + 32 * 60 + 10);
   const [showDispute, setShowDispute] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [approveError, setApproveError] = useState(null);
+  const [approveTxHash, setApproveTxHash] = useState(null);
+  const [disputeLoading, setDisputeLoading] = useState(false);
+  const [disputeError, setDisputeError] = useState(null);
+  const { wallet } = useFreighterWallet();
+
+  const handleApprove = async () => {
+    if (!wallet?.address) { setApproveError("Connect Freighter wallet first."); return; }
+    setApproveLoading(true); setApproveError(null);
+    try {
+      const { hash } = await approveRelease(wallet.address, ESCROW_ID);
+      setApproveTxHash(hash);
+    } catch (err) {
+      setApproveError(err instanceof Error ? err.message : "Transaction failed.");
+    } finally {
+      setApproveLoading(false);
+    }
+  };
+
+  const handleDispute = async () => {
+    if (!wallet?.address) { setDisputeError("Connect Freighter wallet first."); return; }
+    setDisputeLoading(true); setDisputeError(null);
+    try {
+      const { hash } = await triggerDispute(wallet.address, ESCROW_ID);
+      go(`/dispute?tx=${hash}`);
+    } catch (err) {
+      setDisputeError(err instanceof Error ? err.message : "Transaction failed.");
+      setDisputeLoading(false);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -549,41 +584,63 @@ function ActionSidebar() {
         <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 20 }}>Milestone 2 is awaiting your review</div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Primary CTA */}
-          <Btn variant="coral" size="lg" fullWidth onClick={() => go("/delivery")}>
-            ✓ Approve & Release $800
-          </Btn>
-
-          {/* Secondary */}
-          <Btn variant="blue" size="md" fullWidth>
-            ↩ Request Changes
-          </Btn>
-
-          {/* Destructive */}
-          {!showDispute ? (
-            <button onClick={() => setShowDispute(true)} style={{
-              background: "transparent", border: `1px solid rgba(239,68,68,.25)`,
-              borderRadius: 11, padding: "9px 16px", color: "rgba(239,68,68,.7)",
-              fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: C.font,
-              transition: "all .15s",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
-              onMouseEnter={e => { e.target.style.background = "rgba(239,68,68,.08)"; e.target.style.borderColor = "rgba(239,68,68,.45)"; e.target.style.color = "#F87171"; }}
-              onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = "rgba(239,68,68,.25)"; e.target.style.color = "rgba(239,68,68,.7)"; }}
-            >
-              ⚖️ Raise a Dispute
-            </button>
-          ) : (
-            <div style={{ background: "rgba(239,68,68,.07)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 12, padding: "14px 16px" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#F87171", marginBottom: 6 }}>Raise a Dispute?</div>
-              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: 12 }}>
-                A neutral arbitrator will review both sides. The guaranteed floor of ${MIN_GUARANTEE_USDC} USDC is protected for the freelancer.
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn variant="red" size="sm" onClick={() => go("/dispute")} style={{ flex: 1, justifyContent: "center" }}>Confirm Dispute</Btn>
-                <Btn variant="ghost" size="sm" onClick={() => setShowDispute(false)}>Cancel</Btn>
-              </div>
+          {/* Success state */}
+          {approveTxHash ? (
+            <div style={{ background: "rgba(16,185,129,.1)", border: "1px solid rgba(16,185,129,.3)", borderRadius: 12, padding: "14px 16px", fontSize: 12.5, color: "#34D399", fontFamily: "monospace", wordBreak: "break-all" }}>
+              ✓ Released · Tx: {approveTxHash}
             </div>
+          ) : (
+            <>
+              {/* Primary CTA */}
+              <Btn variant="coral" size="lg" fullWidth disabled={approveLoading} onClick={handleApprove}>
+                {approveLoading ? "⏳ Signing…" : "✓ Approve & Release $800"}
+              </Btn>
+
+              {approveError && (
+                <div style={{ background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#F87171", lineHeight: 1.5 }}>
+                  {approveError}
+                </div>
+              )}
+
+              {/* Secondary */}
+              <Btn variant="blue" size="md" fullWidth>
+                ↩ Request Changes
+              </Btn>
+
+              {/* Destructive */}
+              {!showDispute ? (
+                <button onClick={() => setShowDispute(true)} style={{
+                  background: "transparent", border: `1px solid rgba(239,68,68,.25)`,
+                  borderRadius: 11, padding: "9px 16px", color: "rgba(239,68,68,.7)",
+                  fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: C.font,
+                  transition: "all .15s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,.08)"; e.currentTarget.style.borderColor = "rgba(239,68,68,.45)"; e.currentTarget.style.color = "#F87171"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(239,68,68,.25)"; e.currentTarget.style.color = "rgba(239,68,68,.7)"; }}
+                >
+                  ⚖️ Raise a Dispute
+                </button>
+              ) : (
+                <div style={{ background: "rgba(239,68,68,.07)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 12, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#F87171", marginBottom: 6 }}>Raise a Dispute?</div>
+                  <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: 12 }}>
+                    A neutral arbitrator will review both sides. The guaranteed floor of ${MIN_GUARANTEE_USDC} USDC is protected for the freelancer.
+                  </div>
+                  {disputeError && (
+                    <div style={{ background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#F87171", marginBottom: 10 }}>
+                      {disputeError}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Btn variant="red" size="sm" disabled={disputeLoading} onClick={handleDispute} style={{ flex: 1, justifyContent: "center" }}>
+                      {disputeLoading ? "⏳ Signing…" : "Confirm Dispute"}
+                    </Btn>
+                    <Btn variant="ghost" size="sm" onClick={() => setShowDispute(false)}>Cancel</Btn>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </GlassCard>
@@ -601,16 +658,8 @@ function ActionSidebar() {
           {countdown}
         </div>
         <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55 }}>
-          Payment releases automatically if no action is taken. Approve or request changes before then.
+          Payment releases automatically if no action is taken within 48 hours of delivery.
         </div>
-        <button style={{
-          marginTop: 12, background: "transparent", border: "none",
-          color: C.amber, fontSize: 12, fontWeight: 600, cursor: "pointer",
-          fontFamily: C.font, padding: 0, textDecoration: "underline",
-          textDecorationColor: "rgba(245,158,11,.4)",
-        }}>
-          Disable auto-release
-        </button>
       </div>
 
       {/* Quick stats */}
