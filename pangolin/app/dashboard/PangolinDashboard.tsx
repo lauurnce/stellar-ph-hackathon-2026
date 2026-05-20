@@ -126,17 +126,18 @@ function Btn({ variant = "coral", size = "md", children, onClick, style: sx = {}
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
+const getNavItems = (escrowCount = 0, messageCount = 0) => [
   { id: "dashboard",  icon: "⊞",  label: "Dashboard" },
-  { id: "projects",   icon: "📁", label: "Projects / Escrows", badge: 3 },
-  { id: "messages",   icon: "💬", label: "Messages",           badge: 2 },
+  { id: "projects",   icon: "📁", label: "Projects / Escrows", badge: escrowCount > 0 ? escrowCount : undefined },
+  { id: "messages",   icon: "💬", label: "Messages",           badge: messageCount > 0 ? messageCount : undefined },
   { id: "reputation", icon: "⭐", label: "Reputation" },
   { id: "disputes",   icon: "⚖️", label: "Disputes" },
   { id: "settings",   icon: "⚙️", label: "Settings" },
 ];
 
-function Sidebar({ collapsed, onToggle, active, setActive, connectedWallet }) {
+function Sidebar({ collapsed, onToggle, active, setActive, connectedWallet, escrowCount = 0, messageCount = 0 }) {
   const W = collapsed ? 64 : 228;
+  const navItems = getNavItems(escrowCount, messageCount);
   return (
     <aside style={{
       width: W, minWidth: W, maxWidth: W,
@@ -175,7 +176,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, connectedWallet }) {
 
       {/* Nav items */}
       <nav style={{ flex: 1, padding: "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
-        {NAV_ITEMS.map(({ id, icon, label, badge }) => (
+        {navItems.map(({ id, icon, label, badge }) => (
           <SidebarItem key={id} icon={icon} label={label} badge={badge}
             active={active === id} collapsed={collapsed}
             onClick={() => setActive(id)} />
@@ -643,6 +644,8 @@ export default function PangolinDashboard() {
           active={active}
           setActive={setActive}
           connectedWallet={userProfile?.wallet_address}
+          escrowCount={escrows.length}
+          messageCount={0}
         />
 
         {/* ── Main ── */}

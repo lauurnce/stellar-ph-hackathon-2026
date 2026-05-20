@@ -124,11 +124,6 @@ function Avatar({ initials, size = 44, color = C.coral, emoji }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN A — Invite Landing Page
 // ════════════════════════════════════════════════════════════════════════════
-const DEFAULT_MILESTONES_INVITE = [
-  { name: "Wireframes & Sitemap",  amount: 400 },
-  { name: "Full UI Design",        amount: 800 },
-  { name: "Dev Handoff & Assets",  amount: 400 },
-];
 const DEFAULT_TOTAL_USDC = 1600;
 const DEFAULT_MIN_PCT = 60;
 const DEFAULT_MIN_USDC = DEFAULT_TOTAL_USDC * DEFAULT_MIN_PCT / 100;
@@ -301,32 +296,17 @@ function ScreenA({ onAccept, inviteData }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN B — Freelancer Dashboard
 // ════════════════════════════════════════════════════════════════════════════
-const NAV_ITEMS = [
+const getNavItems = (jobCount = 0, messageCount = 0) => [
   { id:"dashboard",  icon:"⊞",  label:"Dashboard" },
-  { id:"jobs",       icon:"💼", label:"Active Jobs",    badge:3 },
+  { id:"jobs",       icon:"💼", label:"Active Jobs",    badge: jobCount > 0 ? jobCount : undefined },
   { id:"earnings",   icon:"💰", label:"Earnings" },
-  { id:"messages",   icon:"💬", label:"Messages",       badge:1 },
+  { id:"messages",   icon:"💬", label:"Messages",       badge: messageCount > 0 ? messageCount : undefined },
   { id:"reputation", icon:"⭐", label:"Reputation" },
   { id:"portfolio",  icon:"🎨", label:"Portfolio" },
   { id:"settings",   icon:"⚙️", label:"Settings" },
 ];
 
-const ACTIVE_JOBS = [
-  { project:"Website Redesign",    client:{ initials:"JM", color:C.blue  }, status:"In Progress",  amount:1600, due:"TBD", action:"View" },
-  { project:"Brand Identity Kit",  client:{ initials:"SR", color:C.amber }, status:"Under Review",  amount:900,  due:"TBD", action:"Submit Delivery" },
-  { project:"Mobile UI Prototype", client:{ initials:"LD", color:C.pink  }, status:"Delivered",    amount:650,  due:"TBD", action:"Awaiting Approval" },
-];
-
-const BADGES = [
-  { icon:"🎨", label:"Illustrator",      color:C.purple, desc:"Top UI/UX skills",     earned:true },
-  { icon:"⚡", label:"Fast Delivery",     color:C.amber,  desc:"98% on-time rate",      earned:true },
-  { icon:"⭐", label:"5-Star Client",     color:C.coral,  desc:"Avg 4.9 rating",        earned:true },
-  { icon:"🛡️", label:"Zero Disputes",    color:C.green,  desc:"Clean track record",    earned:true },
-  { icon:"🔥", label:"Streak: 12 weeks", color:C.red,    desc:"Active every week",     earned:true },
-  { icon:"🌏", label:"Global Ready",     color:C.teal,   desc:"International clients", earned:true },
-  { icon:"💎", label:"Elite Freelancer", color:C.blue,   desc:"Top 5% on platform",    earned:false },
-  { icon:"🏆", label:"100 Escrows",      color:C.amber,  desc:"38 / 100 milestone",    earned:false },
-];
+const ACTIVE_JOBS = [];
 
 function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   const [h, hov] = useHover();
@@ -348,8 +328,9 @@ function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   );
 }
 
-function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer" }) {
+function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0 }) {
   const W = collapsed ? 64 : 228;
+  const navItems = getNavItems(jobCount, messageCount);
   return (
     <aside style={{ width:W,minWidth:W,maxWidth:W,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",transition:"width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",overflow:"hidden",flexShrink:0,zIndex:20 }}>
       {/* Logo */}
@@ -373,7 +354,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
       )}
 
       <nav style={{ flex:1,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2 }}>
-        {NAV_ITEMS.map(({ id, icon, label, badge }) => (
+        {navItems.map(({ id, icon, label, badge }) => (
           <SidebarItem key={id} icon={icon} label={label} badge={badge} active={active===id} collapsed={collapsed} onClick={() => setActive(id)} />
         ))}
       </nav>
@@ -732,7 +713,7 @@ function ScreenB() {
 
   return (
     <div style={{ display:"flex",height:"100vh",overflow:"hidden" }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} />
 
       <main style={{
         flex:1,overflowY:"auto",overflowX:"hidden",
