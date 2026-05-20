@@ -367,22 +367,22 @@ function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   );
 }
 
-function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0, wallet = null, onConnect = null }) {
+function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0, wallet = null, onConnect = null, isMobile, onClose }) {
   const W = collapsed ? 64 : 228;
   const navItems = getNavItems(jobCount, messageCount);
   return (
-    <aside style={{ width:W,minWidth:W,maxWidth:W,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",transition:"width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",overflow:"hidden",flexShrink:0,zIndex:20 }}>
+    <aside className={isMobile ? "mobile-sidebar-inner" : "desktop-sidebar"} style={{ width:isMobile ? "240px" : W,minWidth:isMobile ? "240px" : W,maxWidth:isMobile ? "240px" : W,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",transition:isMobile ? "none" : "width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",overflow:"hidden",flexShrink:0,zIndex:20,height:"100%" }}>
       {/* Logo */}
-      <div style={{ height:62,display:"flex",alignItems:"center",padding:collapsed?"0 0 0 16px":"0 16px",borderBottom:`1px solid ${C.border}`,gap:10,flexShrink:0 }}>
+      <div style={{ height:62,display:"flex",alignItems:"center",padding:(collapsed && !isMobile)?"0 0 0 16px":"0 16px",borderBottom:`1px solid ${C.border}`,gap:10,flexShrink:0 }}>
         <span style={{ fontSize:22,flexShrink:0 }}>🐧</span>
-        {!collapsed && <span style={{ fontSize:17,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",whiteSpace:"nowrap" }}>Pangolin</span>}
-        <button onClick={onToggle} style={{ marginLeft:"auto",background:"transparent",border:"none",color:C.textMuted,cursor:"pointer",fontSize:16,flexShrink:0,padding:"4px 6px",borderRadius:8 }}>
-          {collapsed?"›":"‹"}
+        {(!collapsed || isMobile) && <span style={{ fontSize:17,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",whiteSpace:"nowrap" }}>Pangolin</span>}
+        <button onClick={isMobile ? onClose : onToggle} style={{ marginLeft:"auto",background:"transparent",border:"none",color:C.textMuted,cursor:"pointer",fontSize:16,flexShrink:0,padding:"4px 6px",borderRadius:8 }}>
+          {isMobile ? "✕" : collapsed ? "›" : "‹"}
         </button>
       </div>
 
       {/* Freelancer badge */}
-      {!collapsed && (
+      {(!collapsed || isMobile) && (
         <div style={{ margin:"12px 8px 4px",background:"rgba(255,107,53,.08)",border:"1px solid rgba(255,107,53,.22)",borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8 }}>
           <Avatar initials={freelancerName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "FL"} size={30} color={C.coral} />
           <div>
@@ -394,13 +394,13 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
 
       <nav style={{ flex:1,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2 }}>
         {navItems.map(({ id, icon, label, badge }) => (
-          <SidebarItem key={id} icon={icon} label={label} badge={badge} active={active===id} collapsed={collapsed} onClick={() => setActive(id)} />
+          <SidebarItem key={id} icon={icon} label={label} badge={badge} active={active===id} collapsed={isMobile ? false : collapsed} onClick={() => { setActive(id); if (isMobile && onClose) onClose(); }} />
         ))}
       </nav>
 
       {/* Wallet */}
       <div style={{ padding:"12px 8px",borderTop:`1px solid ${C.border}`,flexShrink:0 }}>
-        {collapsed ? (
+        {(collapsed && !isMobile) ? (
           <div style={{ width:40,height:40,borderRadius:12,margin:"0 auto",background:`rgba(255,107,53,.12)`,border:`1px solid rgba(255,107,53,.28)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer" }}>🔗</div>
         ) : (
           <div style={{ background:"linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))",border:"1px solid rgba(255,107,53,.28)",borderRadius:13,padding:"11px 14px" }}>
@@ -411,7 +411,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
                 <span style={{ fontSize:12.5,fontWeight:700,color:C.text,fontFamily:"monospace" }}>{wallet.address.slice(0,4)}…{wallet.address.slice(-4)}</span>
               </div>
             ) : (
-              <button onClick={onConnect} style={{ fontSize:12,color:C.coral,fontWeight:600,background:"none",border:"none",cursor:"pointer",padding:"0 0 10px",fontFamily:C.font }}>Connect Wallet →</button>
+              <button onClick={() => { if (onConnect) onConnect(); if (isMobile && onClose) onClose(); }} style={{ fontSize:12,color:C.coral,fontWeight:600,background:"none",border:"none",cursor:"pointer",padding:"0 0 10px",fontFamily:C.font }}>Connect Wallet →</button>
             )}
             <Btn variant="coral" size="sm" sx={{ width:"100%",justifyContent:"center" }}>GCash Withdraw</Btn>
           </div>
@@ -598,21 +598,25 @@ function ActiveJobsTable({ jobs, count }) {
       <div style={{ padding:"18px 22px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
         <div>
           <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>Active Jobs</div>
-          <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>3 contracts in progress</div>
+          <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>{count} contracts in progress</div>
         </div>
         <Btn variant="ghost" size="sm">View All →</Btn>
       </div>
 
-      {/* Header */}
-      <div style={{ display:"grid",gridTemplateColumns:"2fr 1.4fr 1.5fr 1fr 1.1fr 1.2fr",padding:"11px 22px",borderBottom:`1px solid ${C.border}`,background:"rgba(255,255,255,.02)" }}>
-        {["Project","Client","Status","Amount","Due Date","Action"].map(h => (
-          <div key={h} style={{ fontSize:11,fontWeight:700,color:C.textMuted,letterSpacing:".05em",textTransform:"uppercase" }}>{h}</div>
-        ))}
-      </div>
+      <div style={{ overflowX: "auto" }}>
+        <div style={{ minWidth: 780 }}>
+          {/* Header */}
+          <div style={{ display:"grid",gridTemplateColumns:"2fr 1.4fr 1.5fr 1fr 1.1fr 1.2fr",padding:"11px 22px",borderBottom:`1px solid ${C.border}`,background:"rgba(255,255,255,.02)" }}>
+            {["Project","Client","Status","Amount","Due Date","Action"].map(h => (
+              <div key={h} style={{ fontSize:11,fontWeight:700,color:C.textMuted,letterSpacing:".05em",textTransform:"uppercase" }}>{h}</div>
+            ))}
+          </div>
 
-      {jobs.map((row, i) => (
-        <JobRow key={i} row={row} last={i===jobs.length-1} />
-      ))}
+          {jobs.map((row, i) => (
+            <JobRow key={i} row={row} last={i===jobs.length-1} />
+          ))}
+        </div>
+      </div>
     </GlassCard>
   );
 }
@@ -657,6 +661,7 @@ function ScreenB() {
   const { supabase, user } = useAuth();
   const { wallet, connectWallet } = useFreighterWallet();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState("dashboard");
   const [jobs, setJobs] = useState(ACTIVE_JOBS);
   const [jobCount, setJobCount] = useState(ACTIVE_JOBS.length);
@@ -756,55 +761,91 @@ function ScreenB() {
   }, [supabase, user?.id]);
 
   return (
-    <div style={{ display:"flex",height:"100vh",overflow:"hidden" }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={connectWallet} />
-
-      <main style={{
-        flex:1,overflowY:"auto",overflowX:"hidden",
-        background:`radial-gradient(ellipse 60% 40% at 70% 10%, rgba(255,107,53,.05) 0%, transparent 60%),radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20,184,166,.04) 0%, transparent 60%),${C.base}`,
-      }}>
-        <div style={{ maxWidth:1060,margin:"0 auto",padding:"28px 28px 60px" }}>
-
-          {/* Greeting */}
-          <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28,flexWrap:"wrap",gap:16 }}>
-            <div>
-              <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",marginBottom:5 }}>Freelancer Dashboard</div>
-              <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, {freelancerName.split(" ")[0] || "Freelancer"} 👋</h1>
-            </div>
-            <div style={{ display:"flex",gap:10,alignItems:"center" }}>
-              {/* Notif bell */}
-              <div style={{ width:40,height:40,borderRadius:12,background:C.elevated,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",position:"relative" }}>
-                🔔
-                <div style={{ position:"absolute",top:6,right:6,width:9,height:9,borderRadius:"50%",background:C.coral,border:`2px solid ${C.surface}`,boxShadow:`0 0 8px ${C.coral}` }}/>
-              </div>
-              <Btn variant="coral" size="md">+ Submit New Delivery</Btn>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div style={{ display:"flex",gap:14,marginBottom:24,flexWrap:"wrap" }}>
-            <StatCard icon="💰" label="Earnings This Month" value={`$${formatUsd(earningsThisMonth)}`} sub={`≈ ₱${phpOf(earningsThisMonth)}`} color={C.coral} trend={18} />
-            <StatCard icon="💼" label="Active Jobs"         value={String(jobCount)} sub="From your latest escrows" color={C.blue} />
-            <StatCard icon="✅" label="Completed"           value={statsCompleted} sub="All time" color={C.green} trend={5} />
-            <StatCard icon="⭐" label="Reputation Score"    value={statsRating} sub="Based on finished jobs" color={C.amber} />
-          </div>
-
-          {/* Active jobs table */}
-          <div style={{ marginBottom:22 }}>
-            <ActiveJobsTable jobs={jobs} count={jobCount} />
-          </div>
-
-          {/* Bottom row */}
-          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:22,flexWrap:"wrap" }}>
-            <EarningsSummary totalUsdc={earningsTotal} thisMonth={earningsThisMonth} pendingRelease={pendingRelease} jobsDone={statsCompleted} avgRating={statsRating} responseRate={responseRate} />
-            <WorkProof portfolioLink={portfolioLink} />
-          </div>
-
-          {/* Badge showcase */}
-          <BadgeShowcase />
+    <>
+      {/* Mobile Top Header */}
+      <header className="mobile-header" style={{ display: "none" }}>
+        <button onClick={() => setMobileMenuOpen(true)} style={{ background: "transparent", border: "none", color: C.text, fontSize: 24, cursor: "pointer" }}>
+          ☰
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 22 }}>🐧</span>
+          <span style={{ fontSize: 16, fontWeight: 800, background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
         </div>
-      </main>
-    </div>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${C.coral}22,${C.coral}0A)`, border: `1.5px solid ${C.coral}45`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 750, color: C.coral }}>
+          {freelancerName.substring(0, 2).toUpperCase() || "FL"}
+        </div>
+      </header>
+
+      {/* Mobile Sidebar Slide-out Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
+      <div className={`mobile-sidebar ${mobileMenuOpen ? "open" : ""}`}>
+        <Sidebar
+          collapsed={false}
+          onToggle={() => setMobileMenuOpen(false)}
+          active={active}
+          setActive={setActive}
+          freelancerName={freelancerName}
+          jobCount={jobCount}
+          messageCount={0}
+          wallet={wallet}
+          onConnect={connectWallet}
+          isMobile={true}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+      </div>
+
+      <div className="dashboard-main-container">
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={connectWallet} isMobile={false} />
+
+        <main style={{
+          flex:1,overflowY:"auto",overflowX:"hidden",
+          background:`radial-gradient(ellipse 60% 40% at 70% 10%, rgba(255,107,53,.05) 0%, transparent 60%),radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20,184,166,.04) 0%, transparent 60%),${C.base}`,
+        }}>
+          <div className="dashboard-inner-wrapper" style={{ maxWidth:1060,margin:"0 auto",padding:"28px 28px 60px" }}>
+
+            {/* Greeting */}
+            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28,flexWrap:"wrap",gap:16 }}>
+              <div>
+                <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",marginBottom:5 }}>Freelancer Dashboard</div>
+                <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, {freelancerName.split(" ")[0] || "Freelancer"} 👋</h1>
+              </div>
+              <div style={{ display:"flex",gap:10,alignItems:"center" }}>
+                {/* Notif bell */}
+                <div style={{ width:40,height:40,borderRadius:12,background:C.elevated,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",position:"relative" }}>
+                  🔔
+                  <div style={{ position:"absolute",top:6,right:6,width:9,height:9,borderRadius:"50%",background:C.coral,border:`2px solid ${C.surface}`,boxShadow:`0 0 8px ${C.coral}` }}/>
+                </div>
+                <Btn variant="coral" size="md">+ Submit New Delivery</Btn>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{ display:"flex",gap:14,marginBottom:24,flexWrap:"wrap" }}>
+              <StatCard icon="💰" label="Earnings This Month" value={`$${formatUsd(earningsThisMonth)}`} sub={`≈ ₱${phpOf(earningsThisMonth)}`} color={C.coral} trend={18} />
+              <StatCard icon="💼" label="Active Jobs"         value={String(jobCount)} sub="From your latest escrows" color={C.blue} />
+              <StatCard icon="✅" label="Completed"           value={statsCompleted} sub="All time" color={C.green} trend={5} />
+              <StatCard icon="⭐" label="Reputation Score"    value={statsRating} sub="Based on finished jobs" color={C.amber} />
+            </div>
+
+            {/* Active jobs table */}
+            <div style={{ marginBottom:22 }}>
+              <ActiveJobsTable jobs={jobs} count={jobCount} />
+            </div>
+
+            {/* Bottom row */}
+            <div className="freelancer-bottom-grid" style={{ display:"grid",gap:18,marginBottom:22 }}>
+              <EarningsSummary totalUsdc={earningsTotal} thisMonth={earningsThisMonth} pendingRelease={pendingRelease} jobsDone={statsCompleted} avgRating={statsRating} responseRate={responseRate} />
+              <WorkProof portfolioLink={portfolioLink} />
+            </div>
+
+            {/* Badge showcase */}
+            <BadgeShowcase />
+          </div>
+        </main>
+      </div>
+    </>
   );
 }
 
@@ -874,6 +915,83 @@ export default function PangolinFreelancer() {
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0D0D0F; }
         ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+
+        /* Mobile Responsive Navigation Drawer & Layout CSS */
+        @media (max-width: 768px) {
+          .desktop-sidebar {
+            display: none !important;
+          }
+          .mobile-sidebar {
+            position: fixed !important;
+            top: 0;
+            left: -240px;
+            width: 240px !important;
+            min-width: 240px !important;
+            max-width: 240px !important;
+            height: 100vh !important;
+            z-index: 200 !important;
+            transition: left .25s ease-in-out !important;
+            display: flex !important;
+          }
+          .mobile-sidebar.open {
+            left: 0 !important;
+          }
+          .mobile-sidebar-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 199;
+          }
+          .mobile-header {
+            display: flex !important;
+            height: 60px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: #111115;
+            border-bottom: 1px solid #242430;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+          }
+          .dashboard-main-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: #0D0D0F;
+            flex-direction: column !important;
+          }
+          .dashboard-inner-wrapper {
+            padding: 20px 16px 60px !important;
+          }
+          .freelancer-bottom-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .mobile-sidebar {
+            display: none !important;
+          }
+          .mobile-sidebar-backdrop {
+            display: none !important;
+          }
+          .mobile-header {
+            display: none !important;
+          }
+          .dashboard-main-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: #0D0D0F;
+          }
+          .freelancer-bottom-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
       `}</style>
 
       {/* Screen switcher tab */}

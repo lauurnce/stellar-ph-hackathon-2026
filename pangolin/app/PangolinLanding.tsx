@@ -300,15 +300,22 @@ function Navbar() {
         </div>
 
         <Btn variant="coral" size="md" onClick={() => go("/dashboard")}>🔗 Connect Wallet</Btn>
+        <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
+        {menuOpen && (
+          <div className="mobile-nav">
+            {links.map(l => <NavLink key={l} onClick={() => setMenuOpen(false)}>{l}</NavLink>)}
+            <Btn variant="coral" size="md" onClick={() => { setMenuOpen(false); go("/dashboard"); }}>🔗 Connect Wallet</Btn>
+          </div>
+        )}
       </div>
     </nav>
   );
 }
 
-function NavLink({ children }) {
+function NavLink({ children, onClick }) {
   const [h, hov] = useHover();
   return (
-    <a href="#" {...hov} style={{
+    <a href="#" onClick={onClick} {...hov} style={{
       padding: "8px 16px", borderRadius: "10px", fontSize: "14px", fontWeight: 500,
       color: h ? C.text : C.textSub,
       background: h ? "rgba(255,255,255,.05)" : "transparent",
@@ -734,6 +741,30 @@ export default function PangolinLanding() {
         ::-webkit-scrollbar-thumb { background: #252530; border-radius: 3px; }
         @media (max-width: 700px) {
           .desktop-nav { display: none !important; }
+          .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            background: rgba(13,13,15,0.95);
+            position: fixed;
+            top: 68px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 24px;
+            gap: 16px;
+            z-index: 99;
+          }
+          .hamburger {
+            display: block;
+            cursor: pointer;
+            font-size: 24px;
+            color: #F5F5F7;
+            background: none;
+            border: none;
+          }
+        }
+        @media (min-width: 701px) {
+          .hamburger { display: none !important; }
         }
       `}</style>
 

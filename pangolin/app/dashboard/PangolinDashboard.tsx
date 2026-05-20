@@ -137,28 +137,31 @@ const getNavItems = (escrowCount = 0, messageCount = 0) => [
   { id: "settings",   icon: "⚙️", label: "Settings" },
 ];
 
-function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect, escrowCount = 0, messageCount = 0 }) {
+function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect, escrowCount = 0, messageCount = 0, isMobile, onClose }) {
   const W = collapsed ? 64 : 228;
   const navItems = getNavItems(escrowCount, messageCount);
   return (
-    <aside style={{
-      width: W, minWidth: W, maxWidth: W,
+    <aside className={isMobile ? "mobile-sidebar-inner" : "desktop-sidebar"} style={{
+      width: isMobile ? "240px" : W,
+      minWidth: isMobile ? "240px" : W,
+      maxWidth: isMobile ? "240px" : W,
       background: C.surface,
       borderRight: `1px solid ${C.border}`,
       display: "flex", flexDirection: "column",
-      transition: "width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",
+      transition: isMobile ? "none" : "width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",
       overflow: "hidden", flexShrink: 0, position: "relative",
       zIndex: 20,
+      height: "100%",
     }}>
       {/* Logo row */}
       <div style={{
         height: 62, display: "flex", alignItems: "center",
-        padding: collapsed ? "0 0 0 16px" : "0 16px",
+        padding: (collapsed && !isMobile) ? "0 0 0 16px" : "0 16px",
         borderBottom: `1px solid ${C.border}`,
         gap: 10, flexShrink: 0,
       }}>
         <span style={{ fontSize: 22, flexShrink: 0 }}>🐧</span>
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <span style={{
             fontSize: 17, fontWeight: 800, letterSpacing: "-.03em",
             background: "linear-gradient(135deg,#FF6B35,#FF9A6C)",
@@ -166,13 +169,13 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
             whiteSpace: "nowrap",
           }}>Pangolin</span>
         )}
-        <button onClick={onToggle} style={{
+        <button onClick={isMobile ? onClose : onToggle} style={{
           marginLeft: "auto", background: "transparent", border: "none",
           color: C.textMuted, cursor: "pointer", fontSize: 16, flexShrink: 0,
           padding: "4px 6px", borderRadius: 8,
           transition: "color .15s",
         }}>
-          {collapsed ? "›" : "‹"}
+          {isMobile ? "✕" : collapsed ? "›" : "‹"}
         </button>
       </div>
 
@@ -180,14 +183,14 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
       <nav style={{ flex: 1, padding: "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
         {navItems.map(({ id, icon, label, badge }) => (
           <SidebarItem key={id} icon={icon} label={label} badge={badge}
-            active={active === id} collapsed={collapsed}
-            onClick={() => setActive(id)} />
+            active={active === id} collapsed={isMobile ? false : collapsed}
+            onClick={() => { setActive(id); if (isMobile && onClose) onClose(); }} />
         ))}
       </nav>
 
       {/* Wallet */}
       <div style={{ padding: "12px 8px", borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
-        {collapsed ? (
+        {(collapsed && !isMobile) ? (
           <div style={{
             width: 40, height: 40, borderRadius: 12, margin: "0 auto",
             background: `linear-gradient(135deg,${C.coral}22,${C.coral}0A)`,
@@ -206,7 +209,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
               <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, fontFamily: "monospace" }}>{shortenAddress(wallet.address)}</span>
             </div>
-            <Btn variant="coral" size="sm" onClick={onDisconnect} sx={{ width: "100%", justifyContent: "center" }}>Disconnect</Btn>
+            <Btn variant="coral" size="sm" onClick={() => { onDisconnect(); if (isMobile && onClose) onClose(); }} sx={{ width: "100%", justifyContent: "center" }}>Disconnect</Btn>
           </div>
         ) : (
           <div style={{
@@ -215,7 +218,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
             borderRadius: 13, padding: "11px 14px",
           }}>
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 8 }}>Wallet</div>
-            <Btn variant="coral" size="sm" onClick={onConnect} sx={{ width: "100%", justifyContent: "center" }}>🔗 Connect Freighter</Btn>
+            <Btn variant="coral" size="sm" onClick={() => { onConnect(); if (isMobile && onClose) onClose(); }} sx={{ width: "100%", justifyContent: "center" }}>🔗 Connect Freighter</Btn>
           </div>
         )}
       </div>
@@ -364,31 +367,35 @@ function EscrowTable({ rows, loading, error }) {
       background: "linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))",
       border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden",
     }}>
-      {/* Table header */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1.6fr 1.5fr 1fr 1.2fr 1.3fr",
-        padding: "13px 24px",
-        borderBottom: `1px solid ${C.border}`,
-        background: "rgba(255,255,255,.02)",
-      }}>
-        {cols.map(c => (
-          <div key={c} style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".06em", textTransform: "uppercase" }}>{c}</div>
-        ))}
-      </div>
+      <div style={{ overflowX: "auto" }}>
+        <div style={{ minWidth: 780 }}>
+          {/* Table header */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1.6fr 1.5fr 1fr 1.2fr 1.3fr",
+            padding: "13px 24px",
+            borderBottom: `1px solid ${C.border}`,
+            background: "rgba(255,255,255,.02)",
+          }}>
+            {cols.map(c => (
+              <div key={c} style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".06em", textTransform: "uppercase" }}>{c}</div>
+            ))}
+          </div>
 
-      {/* Rows */}
-      {loading ? (
-        <TableMessage title="Loading escrows..." message="Reading the latest contracts from Supabase." />
-      ) : error ? (
-        <TableMessage title="Could not load escrows" message={error} tone="error" />
-      ) : rows.length === 0 ? (
-        <TableMessage title="No escrows yet" message="Create your first escrow and it will appear here." actionLabel="Create Escrow" />
-      ) : (
-        rows.map((row, i) => (
-          <EscrowRow key={row.id || i} row={row} last={i === rows.length - 1} />
-        ))
-      )}
+          {/* Rows */}
+          {loading ? (
+            <TableMessage title="Loading escrows..." message="Reading the latest contracts from Supabase." />
+          ) : error ? (
+            <TableMessage title="Could not load escrows" message={error} tone="error" />
+          ) : rows.length === 0 ? (
+            <TableMessage title="No escrows yet" message="Create your first escrow and it will appear here." actionLabel="Create Escrow" />
+          ) : (
+            rows.map((row, i) => (
+              <EscrowRow key={row.id || i} row={row} last={i === rows.length - 1} />
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -526,6 +533,7 @@ export default function PangolinDashboard() {
   const { supabase, user } = useAuth();
   const { wallet, connectWallet, disconnectWallet } = useFreighterWallet();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState("dashboard");
   const [escrows, setEscrows] = useState([]);
   const [loadingEscrows, setLoadingEscrows] = useState(true);
@@ -643,9 +651,112 @@ export default function PangolinDashboard() {
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: ${C.base}; }
         ::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 3px; }
+
+        /* Mobile Responsive Navigation Drawer & Layout CSS */
+        @media (max-width: 768px) {
+          .desktop-sidebar {
+            display: none !important;
+          }
+          .mobile-sidebar {
+            position: fixed !important;
+            top: 0;
+            left: -240px;
+            width: 240px !important;
+            min-width: 240px !important;
+            max-width: 240px !important;
+            height: 100vh !important;
+            z-index: 200 !important;
+            transition: left .25s ease-in-out !important;
+            display: flex !important;
+          }
+          .mobile-sidebar.open {
+            left: 0 !important;
+          }
+          .mobile-sidebar-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 199;
+          }
+          .mobile-header {
+            display: flex !important;
+            height: 60px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: #111115;
+            border-bottom: 1px solid #242430;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+          }
+          .dashboard-main-container {
+            flex-direction: column !important;
+            overflow: auto !important;
+            height: auto !important;
+          }
+          .dashboard-inner-wrapper {
+            padding: 20px 16px 60px !important;
+          }
+          .dashboard-bottom-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .mobile-sidebar {
+            display: none !important;
+          }
+          .mobile-sidebar-backdrop {
+            display: none !important;
+          }
+          .mobile-header {
+            display: none !important;
+          }
+          .dashboard-bottom-grid {
+            grid-template-columns: 1fr 320px;
+          }
+        }
       `}</style>
 
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: C.base }}>
+      {/* Mobile Top Header */}
+      <header className="mobile-header" style={{ display: "none" }}>
+        <button onClick={() => setMobileMenuOpen(true)} style={{ background: "transparent", border: "none", color: C.text, fontSize: 24, cursor: "pointer" }}>
+          ☰
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 22 }}>🐧</span>
+          <span style={{ fontSize: 16, fontWeight: 800, background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
+        </div>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${C.coral}22,${C.coral}0A)`, border: `1.5px solid ${C.coral}45`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 750, color: C.coral }}>
+          {userProfile?.display_name?.substring(0, 2).toUpperCase() || "U"}
+        </div>
+      </header>
+
+      {/* Mobile Sidebar Slide-out Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
+      <div className={`mobile-sidebar ${mobileMenuOpen ? "open" : ""}`}>
+        <Sidebar
+          collapsed={false}
+          onToggle={() => setMobileMenuOpen(false)}
+          active={active}
+          setActive={setActive}
+          wallet={wallet}
+          onConnect={connectWallet}
+          onDisconnect={disconnectWallet}
+          escrowCount={escrows.length}
+          messageCount={0}
+          isMobile={true}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+      </div>
+
+      <div className="dashboard-main-container" style={{ display: "flex", height: "100vh", overflow: "hidden", background: C.base }}>
 
         {/* ── Sidebar ── */}
         <Sidebar
@@ -658,6 +769,7 @@ export default function PangolinDashboard() {
           onDisconnect={disconnectWallet}
           escrowCount={escrows.length}
           messageCount={0}
+          isMobile={false}
         />
 
         {/* ── Main ── */}
@@ -669,7 +781,7 @@ export default function PangolinDashboard() {
           animation: "slide-in .35s ease",
         }}>
           {/* Inner padding wrapper */}
-          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 32px 60px" }}>
+          <div className="dashboard-inner-wrapper" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 32px 60px" }}>
 
             {/* ── Top Bar ── */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
@@ -714,7 +826,7 @@ export default function PangolinDashboard() {
             </div>
 
             {/* ── Bottom row: Activity + Quick Tips ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, flexWrap: "wrap" }}>
+            <div className="dashboard-bottom-grid" style={{ display: "grid", gap: 20 }}>
               <ActivityFeed activities={activities} loading={loadingActivities} />
               <QuickTips />
             </div>

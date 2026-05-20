@@ -946,6 +946,16 @@ export default function PangolinEscrowDetail() {
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0D0D0F; }
         ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+
+        /* Escrow Detail Responsiveness Media Queries */
+        @media (max-width: 850px) {
+          .escrow-detail-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .escrow-detail-inner {
+            padding: 20px 16px 60px !important;
+          }
+        }
       `}</style>
 
       <div style={{
@@ -963,7 +973,7 @@ export default function PangolinEscrowDetail() {
           backgroundSize: "44px 44px",
         }} />
 
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "32px 24px 80px", animation: "fade-up .35s ease" }}>
+        <div className="escrow-detail-inner" style={{ maxWidth: 1160, margin: "0 auto", padding: "32px 24px 80px", animation: "fade-up .35s ease" }}>
 
           <TopBar contractId={contractId} title={escrowTitle} status={escrowStatus} />
 
@@ -982,7 +992,7 @@ export default function PangolinEscrowDetail() {
           </div>
 
           {/* Two-column layout: left (main) + right (sidebar) */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "start" }}>
+          <div className="escrow-detail-grid" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "start" }}>
 
             {/* ── Left column ── */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
