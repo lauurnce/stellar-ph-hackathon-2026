@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/AuthGuard";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Dispute Center (Screens A · B · C)
@@ -946,7 +947,8 @@ export default function PangolinDisputeCenter() {
   }, [supabase]);
 
   return (
-    <>
+    <AuthGuard>
+      <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1012,5 +1014,6 @@ export default function PangolinDisputeCenter() {
         </div>
       </div>
     </>
+    </AuthGuard>
   );
 }

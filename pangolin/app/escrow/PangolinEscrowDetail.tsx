@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { approveRelease, triggerDispute } from "@/lib/contract-client";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/AuthGuard";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Detail Page (Client View)
@@ -925,7 +926,8 @@ export default function PangolinEscrowDetail() {
   }));
 
   return (
-    <>
+    <AuthGuard>
+      <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1011,5 +1013,6 @@ export default function PangolinEscrowDetail() {
         </div>
       </div>
     </>
+    </AuthGuard>
   );
 }

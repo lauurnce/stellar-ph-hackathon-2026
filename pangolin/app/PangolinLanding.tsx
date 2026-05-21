@@ -181,6 +181,7 @@ function MascotBox({ style = {} }) {
         background: "radial-gradient(ellipse at 50% 60%, rgba(63,208,201,.18) 0%, rgba(46,175,125,.1) 40%, transparent 70%)",
         borderRadius: "50%",
         filter: "blur(20px)",
+        animation: "mascot-glow 6s ease-in-out infinite",
       }} />
       <img
         src="/pangolin-mascot.png"
@@ -193,6 +194,7 @@ function MascotBox({ style = {} }) {
           zIndex: 1,
           filter: "drop-shadow(0 8px 32px rgba(63,208,201,.3))",
           maxWidth: "520px",
+          animation: "mascot-float 6s ease-in-out infinite",
         }}
       />
     </div>
@@ -248,7 +250,7 @@ function Navbar() {
 
           {/* Desktop CTA */}
           <div className="desktop-nav">
-            <Btn variant="primary" size="md" onClick={() => go("/dashboard")}>Connect Wallet</Btn>
+            <Btn variant="primary" size="md" onClick={() => go("/login")}>Get Started</Btn>
           </div>
 
           {/* Hamburger */}
@@ -327,9 +329,9 @@ function Navbar() {
           <Btn
             variant="primary" size="lg"
             style={{ width: "100%", justifyContent: "center" }}
-            onClick={() => { setMenuOpen(false); go("/dashboard"); }}
+            onClick={() => { setMenuOpen(false); go("/login"); }}
           >
-            🔗 Connect Wallet
+            Get Started
           </Btn>
         </div>
       </div>
@@ -398,7 +400,7 @@ function Hero() {
             </p>
 
             <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", alignItems: "center", marginBottom: "48px" }}>
-              <Btn variant="primary" size="lg" onClick={() => go("/create-escrow")}>Get Started — It's Free</Btn>
+              <Btn variant="primary" size="lg" onClick={() => go("/login")}>Get Started — It's Free</Btn>
             </div>
 
             {/* Social proof */}
@@ -684,8 +686,8 @@ function CTA() {
           Join 1,240+ Filipino freelancers who trust Pangolin to secure their income, protect their work, and get paid on time — every time.
         </p>
         <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
-          <Btn variant="primary" size="xl" onClick={() => go("/dashboard")}>Connect Wallet</Btn>
-          <Btn variant="secondary" size="xl" onClick={() => go("/freelancer")}>Freelancer View</Btn>
+          <Btn variant="primary" size="xl" onClick={() => go("/login")}>Get Started Free</Btn>
+          <Btn variant="secondary" size="xl" onClick={() => go("/login")}>Freelancer Login</Btn>
         </div>
       </div>
     </section>
@@ -768,6 +770,14 @@ export default function PangolinLanding() {
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50%       { transform: translateY(-10px); }
+        }
+        @keyframes mascot-float {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-18px); }
+        }
+        @keyframes mascot-glow {
+          0%, 100% { opacity: .6; transform: scale(1); }
+          50%       { opacity: 1; transform: scale(1.12); }
         }
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; transform: scale(1); }
