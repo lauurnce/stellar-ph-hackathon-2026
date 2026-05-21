@@ -10,26 +10,26 @@ import { useAuth } from "@/hooks/useAuth";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Creation Wizard  (3-step)
-   Dark #0D0D0F · Coral #FF6B35 · Inter · Fully self-contained JSX
+   Dark #02353C · Coral #2EAF7D · Inter · Fully self-contained JSX
 ───────────────────────────────────────────────────────────────────────────── */
 
 const C = {
-  base:        "#0D0D0F",
-  surface:     "#111116",
-  elevated:    "#17171F",
-  card:        "#1D1D28",
-  border:      "#26263A",
-  borderLight: "#333348",
-  coral:       "#FF6B35",
-  coralDark:   "#D9521A",
-  coralSoft:   "rgba(255,107,53,0.12)",
-  blue:        "#3B82F6",
-  green:       "#10B981",
+  base:        "#02353C",
+  surface:     "#032F36",
+  elevated:    "#054048",
+  card:        "#065060",
+  border:      "#0A5560",
+  borderLight: "#1A7080",
+  coral:       "#2EAF7D",
+  coralDark:   "#228A62",
+  coralSoft:   "rgba(46,175,125,0.12)",
+  blue:        "#3FD0C9",
+  green:       "#449342",
   amber:       "#F59E0B",
   purple:      "#8B5CF6",
-  text:        "#F0F0F8",
-  textSub:     "#8888A8",
-  textMuted:   "#4C4C64",
+  text:        "#C1F6ED",
+  textSub:     "#7ECFC6",
+  textMuted:   "#3A8A82",
   font:        "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
 
@@ -67,7 +67,7 @@ function Input({ value, onChange, placeholder, type = "text", prefix, style: sx 
       display: "flex", alignItems: "center",
       background: C.elevated, border: `1.5px solid ${focused ? C.coral + "70" : C.border}`,
       borderRadius: 12, overflow: "hidden",
-      boxShadow: focused ? `0 0 0 3px rgba(255,107,53,.12)` : "none",
+      boxShadow: focused ? `0 0 0 3px rgba(46,175,125,.12)` : "none",
       transition: "all .18s ease",
     }}>
       {prefix && (
@@ -107,7 +107,7 @@ function Select({ value, onChange, options, placeholder }) {
           color: value ? C.text : C.textMuted,
           fontSize: 14, padding: "13px 40px 13px 16px",
           fontFamily: C.font, cursor: "pointer", appearance: "none",
-          boxShadow: focused ? `0 0 0 3px rgba(255,107,53,.12)` : "none",
+          boxShadow: focused ? `0 0 0 3px rgba(46,175,125,.12)` : "none",
           transition: "all .18s ease",
         }}
       >
@@ -131,7 +131,7 @@ function Textarea({ value, onChange, placeholder, rows = 4 }) {
         borderRadius: 12, outline: "none", resize: "vertical",
         color: C.text, fontSize: 14, padding: "13px 16px",
         fontFamily: C.font, lineHeight: 1.6, caretColor: C.coral,
-        boxShadow: focused ? `0 0 0 3px rgba(255,107,53,.12)` : "none",
+        boxShadow: focused ? `0 0 0 3px rgba(46,175,125,.12)` : "none",
         transition: "border-color .18s, box-shadow .18s",
       }}
     />
@@ -152,7 +152,7 @@ function Toggle({ on, setOn, label, sub }) {
         background: on ? `linear-gradient(135deg,${C.coral},${C.coralDark})` : C.border,
         border: "none", cursor: "pointer", position: "relative", flexShrink: 0,
         transition: "background .2s ease",
-        boxShadow: on ? `0 4px 14px rgba(255,107,53,.35)` : "none",
+        boxShadow: on ? `0 4px 14px rgba(46,175,125,.35)` : "none",
       }}>
         <div style={{
           width: 20, height: 20, borderRadius: "50%", background: "#fff",
@@ -176,14 +176,14 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, styl
   };
   const variants = {
     coral: {
-      background: isDisabled ? "#3A2218" : h ? `linear-gradient(135deg,#FF7C48,${C.coralDark})` : `linear-gradient(135deg,${C.coral},${C.coralDark})`,
+      background: isDisabled ? "#3A2218" : h ? `linear-gradient(135deg,#3FD0C9,${C.coralDark})` : `linear-gradient(135deg,${C.coral},${C.coralDark})`,
       color: isDisabled ? "#6B3820" : "#fff", border: "none",
-      boxShadow: isDisabled ? "none" : h ? "0 12px 40px rgba(255,107,53,.5),0 0 0 1px rgba(255,107,53,.35)" : "0 6px 24px rgba(255,107,53,.32),0 0 0 1px rgba(255,107,53,.22)",
+      boxShadow: isDisabled ? "none" : h ? "0 12px 40px rgba(46,175,125,.5),0 0 0 1px rgba(46,175,125,.35)" : "0 6px 24px rgba(46,175,125,.32),0 0 0 1px rgba(46,175,125,.22)",
     },
     ghost: {
-      background: h ? "rgba(255,107,53,.07)" : "transparent",
+      background: h ? "rgba(46,175,125,.07)" : "transparent",
       color: h ? C.coral : C.textSub,
-      border: `1px solid ${h ? "rgba(255,107,53,.28)" : C.border}`,
+      border: `1px solid ${h ? "rgba(46,175,125,.28)" : C.border}`,
       boxShadow: "none",
     },
     subtle: {
@@ -254,7 +254,7 @@ function StepBar({ step }) {
                 border: `2px solid ${done ? C.green : active ? C.coral : C.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: done ? 16 : 14, fontWeight: 800, color: (done || active) ? "#fff" : C.textMuted,
-                boxShadow: active ? `0 0 24px rgba(255,107,53,.45),0 0 0 4px rgba(255,107,53,.12)` : done ? `0 0 16px rgba(16,185,129,.3)` : "none",
+                boxShadow: active ? `0 0 24px rgba(46,175,125,.45),0 0 0 4px rgba(46,175,125,.12)` : done ? `0 0 16px rgba(68,147,66,.3)` : "none",
                 transition: "all .3s ease", zIndex: 2, position: "relative",
               }}>
                 {done ? "✓" : idx}
@@ -387,8 +387,8 @@ function Step2({ data, setData, onNext, onBack }) {
 
       {/* Minimum Guaranteed Payment — KEY FEATURE */}
       <div style={{
-        background: `linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))`,
-        border: `1.5px solid rgba(255,107,53,.28)`,
+        background: `linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))`,
+        border: `1.5px solid rgba(46,175,125,.28)`,
         borderRadius: 16, padding: "20px 22px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
@@ -397,14 +397,14 @@ function Step2({ data, setData, onNext, onBack }) {
           <Tooltip tip="Even if a dispute occurs or the client cancels, the freelancer is guaranteed to receive at least this percentage of the total escrow. Pangolin's smart contract enforces this automatically — no exceptions.">
             <div style={{
               width: 18, height: 18, borderRadius: "50%",
-              background: "rgba(255,107,53,.2)", border: "1px solid rgba(255,107,53,.35)",
+              background: "rgba(46,175,125,.2)", border: "1px solid rgba(46,175,125,.35)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 11, fontWeight: 800, color: C.coral, cursor: "help",
             }}>?</div>
           </Tooltip>
           <div style={{
             marginLeft: "auto", padding: "3px 10px", borderRadius: "100px", fontSize: 11, fontWeight: 700,
-            background: "rgba(255,107,53,.18)", color: C.coral, border: "1px solid rgba(255,107,53,.3)",
+            background: "rgba(46,175,125,.18)", color: C.coral, border: "1px solid rgba(46,175,125,.3)",
           }}>Pangolin's Core Feature</div>
         </div>
 
@@ -419,18 +419,18 @@ function Step2({ data, setData, onNext, onBack }) {
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           background: "rgba(0,0,0,.25)", borderRadius: 12, padding: "14px 18px",
-          border: `1px solid rgba(255,107,53,.18)`,
+          border: `1px solid rgba(46,175,125,.18)`,
         }}>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: "-.05em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{minPct}%</div>
+            <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: "-.05em", background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{minPct}%</div>
             <div style={{ fontSize: 11, color: C.textMuted }}>Guaranteed</div>
           </div>
-          <div style={{ width: 1, height: 48, background: "rgba(255,107,53,.2)" }} />
+          <div style={{ width: 1, height: 48, background: "rgba(46,175,125,.2)" }} />
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: "-.03em", color: total > 0 ? C.text : C.textMuted }}>{total > 0 ? `$${minUSDC}` : "$—"}</div>
             <div style={{ fontSize: 11, color: C.textMuted }}>USDC minimum</div>
           </div>
-          <div style={{ width: 1, height: 48, background: "rgba(255,107,53,.2)" }} />
+          <div style={{ width: 1, height: 48, background: "rgba(46,175,125,.2)" }} />
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-.02em", color: total > 0 ? C.textSub : C.textMuted }}>{total > 0 ? `₱${(parseFloat(minUSDC) * PHP_RATE).toLocaleString("en-PH", { minimumFractionDigits: 0 })}` : "₱—"}</div>
             <div style={{ fontSize: 11, color: C.textMuted }}>PHP equivalent</div>
@@ -559,12 +559,12 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
           <Row label={`Platform Fee (2.5%)`} value={`+ $${fee} USDC`}                                         />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0 10px" }}>
             <span style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>Total You Pay</span>
-            <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-.04em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>${totalWithFee} USDC</span>
+            <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-.04em", background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>${totalWithFee} USDC</span>
           </div>
         </div>
 
         {/* Minimum guarantee highlight */}
-        <div style={{ margin: "0 22px 20px", background: `linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))`, border: `1px solid rgba(255,107,53,.28)`, borderRadius: 13, padding: "14px 18px" }}>
+        <div style={{ margin: "0 22px 20px", background: `linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))`, border: `1px solid rgba(46,175,125,.28)`, borderRadius: 13, padding: "14px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span>🛡️</span>
             <span style={{ fontSize: 13, fontWeight: 800, color: C.text }}>Guaranteed Minimum</span>
@@ -596,12 +596,12 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
 
       {/* Blockchain transparency note */}
       <div style={{
-        display: "flex", gap: 14, background: "rgba(59,130,246,.08)",
-        border: `1px solid rgba(59,130,246,.25)`, borderRadius: 13, padding: "15px 18px",
+        display: "flex", gap: 14, background: "rgba(63,208,201,.08)",
+        border: `1px solid rgba(63,208,201,.25)`, borderRadius: 13, padding: "15px 18px",
       }}>
         <span style={{ fontSize: 20, flexShrink: 0 }}>⛓️</span>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#93C5FD", marginBottom: 4 }}>Blockchain Transparency</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#7ECFC6", marginBottom: 4 }}>Blockchain Transparency</div>
           <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.6 }}>
             Funds are locked in a Stellar smart contract — visible to both parties, controlled by neither until release conditions are met. <strong style={{ color: C.text }}>Freelancer is notified automatically upon funding.</strong>
           </div>
@@ -615,7 +615,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
           background: confirmed ? C.coral : "transparent",
           border: `2px solid ${confirmed ? C.coral : C.border}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "all .15s", boxShadow: confirmed ? `0 0 12px rgba(255,107,53,.35)` : "none",
+          transition: "all .15s", boxShadow: confirmed ? `0 0 12px rgba(46,175,125,.35)` : "none",
           cursor: "pointer",
         }}>
           {confirmed && <span style={{ fontSize: 12, color: "#fff", fontWeight: 800 }}>✓</span>}
@@ -656,7 +656,7 @@ function SuccessScreen({ data, onReset, txHash }) {
         Your freelancer has been notified and ${(parseFloat(data.totalAmount) * 1.025).toFixed(2)} USDC is locked securely on Stellar.
       </div>
       {txHash && (
-        <div style={{ background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 20, fontSize: 12.5, color: "#34D399", fontFamily: "monospace", wordBreak: "break-all" }}>
+        <div style={{ background: "rgba(68,147,66,.08)", border: "1px solid rgba(68,147,66,.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 20, fontSize: 12.5, color: "#7ECFC6", fontFamily: "monospace", wordBreak: "break-all" }}>
           ⛓️ Tx: {txHash}
         </div>
       )}
@@ -745,26 +745,26 @@ export default function PangolinEscrowWizard() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body, #root { min-height: 100%; }
-        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #0D0D0F; color: #F0F0F8; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #02353C; color: #C1F6ED; -webkit-font-smoothing: antialiased; }
         input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
-        input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 4px; background: rgba(255,107,53,.25); outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#FF6B35,#D9521A); cursor: pointer; box-shadow: 0 4px 14px rgba(255,107,53,.5); }
+        input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 4px; background: rgba(46,175,125,.25); outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#2EAF7D,#228A62); cursor: pointer; box-shadow: 0 4px 14px rgba(46,175,125,.5); }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-        select option { background: #1D1D28; }
+        select option { background: #032F36; }
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
         @keyframes bounce-in { 0%{transform:scale(.5);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
         @keyframes fade-up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0D0D0F; }
-        ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #02353C; }
+        ::-webkit-scrollbar-thumb { background: #0A5560; border-radius: 3px; }
       `}</style>
 
       {/* Page wrapper */}
       <div ref={scrollRef} style={{
         minHeight: "100vh", overflowY: "auto",
-        background: `radial-gradient(ellipse 70% 50% at 15% 15%, rgba(255,107,53,.07) 0%, transparent 55%),
-                     radial-gradient(ellipse 60% 45% at 85% 85%, rgba(59,130,246,.05) 0%, transparent 55%),
-                     #0D0D0F`,
+        background: `radial-gradient(ellipse 70% 50% at 15% 15%, rgba(46,175,125,.07) 0%, transparent 55%),
+                     radial-gradient(ellipse 60% 45% at 85% 85%, rgba(63,208,201,.05) 0%, transparent 55%),
+                     #02353C`,
         padding: "48px 16px 80px",
       }}>
         {/* Grid texture */}
@@ -792,9 +792,9 @@ export default function PangolinEscrowWizard() {
               ← Dashboard
             </button>
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#1D1D28,#17171F)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "10px 20px", boxShadow: "0 0 0 1px rgba(255,107,53,.08)" }}>
-              <span style={{ fontSize: 22 }}>🐧</span>
-              <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-.03em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#054048,#032F36)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "10px 20px", boxShadow: "0 0 0 1px rgba(63,208,201,.1)" }}>
+              <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
+              <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-.03em", background: "linear-gradient(135deg,#3FD0C9,#C1F6ED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
             </div>
 
             <div style={{ width: 120 }} />

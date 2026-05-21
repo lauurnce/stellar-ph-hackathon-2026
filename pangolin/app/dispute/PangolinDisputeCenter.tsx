@@ -6,27 +6,27 @@ import { useAuth } from "@/hooks/useAuth";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Dispute Center (Screens A · B · C)
-   Dark #0D0D0F · Coral #FF6B35 · Red #EF4444 · Inter · Self-contained JSX
+   Dark #02353C · Coral #2EAF7D · Red #EF4444 · Inter · Self-contained JSX
 ───────────────────────────────────────────────────────────────────────────── */
 
 const C = {
-  base:      "#0D0D0F",
-  surface:   "#111116",
-  elevated:  "#17171F",
-  card:      "#1D1D28",
-  border:    "#26263A",
-  borderLit: "#363650",
-  coral:     "#FF6B35",
-  coralDk:   "#D9521A",
+  base:      "#02353C",
+  surface:   "#032F36",
+  elevated:  "#054048",
+  card:      "#065060",
+  border:    "#0A5560",
+  borderLit: "#1A7080",
+  coral:     "#2EAF7D",
+  coralDk:   "#228A62",
   red:       "#EF4444",
   redMuted:  "rgba(239,68,68,0.12)",
   amber:     "#F59E0B",
-  blue:      "#3B82F6",
-  green:     "#10B981",
+  blue:      "#3FD0C9",
+  green:     "#449342",
   purple:    "#8B5CF6",
-  text:      "#F0F0F8",
-  textSub:   "#8888A8",
-  textMuted: "#4C4C64",
+  text:      "#C1F6ED",
+  textSub:   "#7ECFC6",
+  textMuted: "#3A8A82",
   font:      "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
 
@@ -54,7 +54,7 @@ function formatTimeline(dateValue) {
 function EvidencePane({ side, name, color, items }) {
   return (
     <div style={{
-      flex: 1, background: C.elevated, border: `1px solid ${side === "client" ? "rgba(239,68,68,.28)" : "rgba(59,130,246,.28)"}`,
+      flex: 1, background: C.elevated, border: `1px solid ${side === "client" ? "rgba(239,68,68,.28)" : "rgba(63,208,201,.28)"}`,
       borderRadius: 14, padding: "18px", overflow: "hidden",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${C.border}` }}>
@@ -105,28 +105,28 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, full
       shd: dis ? "none" : h ? "0 10px 36px rgba(239,68,68,.5)" : "0 5px 20px rgba(239,68,68,.3)",
     },
     coral: {
-      bg:  dis ? "#2A1508" : h ? "linear-gradient(135deg,#FF7C48,#D9521A)" : "linear-gradient(135deg,#FF6B35,#D9521A)",
+      bg:  dis ? "#2A1508" : h ? "linear-gradient(135deg,#3FD0C9,#228A62)" : "linear-gradient(135deg,#2EAF7D,#228A62)",
       col: dis ? "#6B3820" : "#fff", bd: "none",
-      shd: dis ? "none" : h ? "0 10px 36px rgba(255,107,53,.5)" : "0 5px 20px rgba(255,107,53,.3)",
+      shd: dis ? "none" : h ? "0 10px 36px rgba(46,175,125,.5)" : "0 5px 20px rgba(46,175,125,.3)",
     },
     ghost: {
-      bg:  h ? "rgba(255,107,53,.07)" : "transparent",
+      bg:  h ? "rgba(46,175,125,.07)" : "transparent",
       col: h ? C.coral : C.textSub,
-      bd: `1px solid ${h ? "rgba(255,107,53,.28)" : C.border}`, shd: "none",
+      bd: `1px solid ${h ? "rgba(46,175,125,.28)" : C.border}`, shd: "none",
     },
     subtle: {
       bg: h ? C.card : C.elevated, col: C.text,
       bd: `1px solid ${h ? C.borderLit : C.border}`, shd: "none",
     },
     blue: {
-      bg:  h ? "linear-gradient(135deg,#5A9BFF,#3B82F6)" : "linear-gradient(135deg,#3B82F6,#2563EB)",
+      bg:  h ? "linear-gradient(135deg,#3FD0C9,#3FD0C9)" : "linear-gradient(135deg,#3FD0C9,#2AADA7)",
       col: "#fff", bd: "none",
-      shd: h ? "0 8px 28px rgba(59,130,246,.45)" : "0 4px 16px rgba(59,130,246,.28)",
+      shd: h ? "0 8px 28px rgba(63,208,201,.45)" : "0 4px 16px rgba(63,208,201,.28)",
     },
     green: {
-      bg:  h ? "linear-gradient(135deg,#34D399,#059669)" : "linear-gradient(135deg,#10B981,#059669)",
+      bg:  h ? "linear-gradient(135deg,#7ECFC6,#2EAF7D)" : "linear-gradient(135deg,#449342,#2EAF7D)",
       col: "#fff", bd: "none",
-      shd: h ? "0 8px 28px rgba(16,185,129,.45)" : "0 4px 16px rgba(16,185,129,.28)",
+      shd: h ? "0 8px 28px rgba(68,147,66,.45)" : "0 4px 16px rgba(68,147,66,.28)",
     },
   }[variant] || {};
 
@@ -230,7 +230,7 @@ function StatusPill({ status, color = C.red }) {
   const configs = {
     "Frozen":      { bg: "rgba(239,68,68,.14)",  bd: "rgba(239,68,68,.35)",  tx: "#F87171",  dot: C.red   },
     "Under Review":{ bg: "rgba(245,158,11,.14)", bd: "rgba(245,158,11,.35)", tx: "#FCD34D",  dot: C.amber },
-    "Resolved":    { bg: "rgba(16,185,129,.14)",  bd: "rgba(16,185,129,.35)", tx: "#34D399",  dot: C.green },
+    "Resolved":    { bg: "rgba(68,147,66,.14)",  bd: "rgba(68,147,66,.35)", tx: "#7ECFC6",  dot: C.green },
     "Filed":       { bg: "rgba(239,68,68,.14)",  bd: "rgba(239,68,68,.35)",  tx: "#F87171",  dot: C.red   },
   };
   const s = configs[status] || { bg: `${color}14`, bd: `${color}35`, tx: color, dot: color };
@@ -548,8 +548,8 @@ function ScreenB({ activeDisputes = [], loadingDisputes, eventsByEscrow = {}, pa
 
       {/* Guaranteed minimum note */}
       <div style={{
-        background: "linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))",
-        border: `1px solid rgba(255,107,53,.28)`, borderRadius: 14, padding: "14px 18px",
+        background: "linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))",
+        border: `1px solid rgba(46,175,125,.28)`, borderRadius: 14, padding: "14px 18px",
         display: "flex", gap: 12, alignItems: "center",
       }}>
         <span style={{ fontSize: 18 }}>🛡️</span>
@@ -609,11 +609,11 @@ function ScreenB({ activeDisputes = [], loadingDisputes, eventsByEscrow = {}, pa
             <div key={id} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative" }}>
               <div style={{
                 width: 40, height: 40, borderRadius: "50%", zIndex: 1, position: "relative",
-                background: done ? `linear-gradient(135deg,${C.green},#059669)` : active ? `linear-gradient(135deg,${C.amber},#D97706)` : C.elevated,
+                background: done ? `linear-gradient(135deg,${C.green},#2EAF7D)` : active ? `linear-gradient(135deg,${C.amber},#D97706)` : C.elevated,
                 border: `2px solid ${done ? C.green : active ? C.amber : C.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: done ? 16 : 14, color: (done || active) ? "#fff" : C.textMuted,
-                boxShadow: done ? `0 0 20px rgba(16,185,129,.4)` : active ? `0 0 20px rgba(245,158,11,.4),0 0 0 4px rgba(245,158,11,.12)` : "none",
+                boxShadow: done ? `0 0 20px rgba(68,147,66,.4)` : active ? `0 0 20px rgba(245,158,11,.4),0 0 0 4px rgba(245,158,11,.12)` : "none",
                 transition: "all .3s",
               }}>{done ? "✓" : active ? "⚡" : id}</div>
               <div style={{ marginTop: 10, fontSize: 12.5, fontWeight: done || active ? 700 : 500, color: done ? C.green : active ? C.amber : C.textMuted }}>{label}</div>
@@ -706,8 +706,8 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
 
       {/* Resolution banner */}
       <div style={{
-        background: "linear-gradient(135deg,rgba(16,185,129,.14),rgba(16,185,129,.05))",
-        border: `1px solid rgba(16,185,129,.35)`, borderRadius: 18, padding: "24px 28px",
+        background: "linear-gradient(135deg,rgba(68,147,66,.14),rgba(68,147,66,.05))",
+        border: `1px solid rgba(68,147,66,.35)`, borderRadius: 18, padding: "24px 28px",
         textAlign: "center",
       }}>
         <div style={{ fontSize: 44, marginBottom: 12 }}>⚖️</div>
@@ -723,8 +723,8 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
         <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 20, letterSpacing: "-.02em" }}>Resolution Summary</div>
 
         {/* Decision note */}
-        <div style={{ background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.25)", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#34D399", marginBottom: 5 }}>Arbiter Decision ({arbiterCount || 0} assigned)</div>
+        <div style={{ background: "rgba(68,147,66,.08)", border: "1px solid rgba(68,147,66,.25)", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#7ECFC6", marginBottom: 5 }}>Arbiter Decision ({arbiterCount || 0} assigned)</div>
           <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.65 }}>
             {dispute?.resolution_note || "Resolution note unavailable. Arbiter outcome has been recorded."}
           </div>
@@ -745,14 +745,14 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
 
         {/* Stellar link */}
         <div style={{
-          background: "rgba(59,130,246,.08)", border: "1px solid rgba(59,130,246,.25)",
+          background: "rgba(63,208,201,.08)", border: "1px solid rgba(63,208,201,.25)",
           borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.blue, boxShadow: `0 0 6px ${C.blue}` }} />
             <span style={{ fontSize: 13, color: C.textSub }}>Transaction confirmed on Stellar</span>
           </div>
-          <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(59,130,246,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(59,130,246,.2)" }}>
+          <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(63,208,201,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(63,208,201,.2)" }}>
             {txHash}
           </code>
           <button style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: C.blue, fontSize: 13, fontWeight: 700, fontFamily: C.font, display: "flex", alignItems: "center", gap: 6 }}>
@@ -779,8 +779,8 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
         </GlassCard>
       ) : (
         <div style={{
-          background: "linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.04))",
-          border: "1px solid rgba(16,185,129,.25)", borderRadius: 16, padding: "24px",
+          background: "linear-gradient(135deg,rgba(68,147,66,.1),rgba(68,147,66,.04))",
+          border: "1px solid rgba(68,147,66,.25)", borderRadius: 16, padding: "24px",
           textAlign: "center",
         }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🙏</div>
@@ -951,21 +951,21 @@ export default function PangolinDisputeCenter() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body, #root { min-height: 100%; }
-        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #0D0D0F; color: #F0F0F8; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #02353C; color: #C1F6ED; -webkit-font-smoothing: antialiased; }
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.7)} }
         @keyframes fade-up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        select option { background: #1D1D28; }
+        select option { background: #032F36; }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0D0D0F; }
-        ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #02353C; }
+        ::-webkit-scrollbar-thumb { background: #0A5560; border-radius: 3px; }
       `}</style>
 
       <div style={{
         minHeight: "100vh", overflowX: "hidden",
         background: `
           radial-gradient(ellipse 65% 45% at 10% 10%, rgba(239,68,68,.06) 0%, transparent 55%),
-          radial-gradient(ellipse 55% 40% at 85% 80%, rgba(255,107,53,.05) 0%, transparent 55%),
-          #0D0D0F`,
+          radial-gradient(ellipse 55% 40% at 85% 80%, rgba(46,175,125,.05) 0%, transparent 55%),
+          #02353C`,
         padding: "36px 16px 80px",
       }}>
         {/* Grid texture */}
@@ -989,9 +989,9 @@ export default function PangolinDisputeCenter() {
               ← Dashboard
             </button>
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#1D1D28,#17171F)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "10px 20px", boxShadow: "0 0 0 1px rgba(255,107,53,.08)" }}>
-              <span style={{ fontSize: 22 }}>🐧</span>
-              <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-.03em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#054048,#032F36)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "10px 20px", boxShadow: "0 0 0 1px rgba(63,208,201,.1)" }}>
+              <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
+              <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-.03em", background: "linear-gradient(135deg,#3FD0C9,#C1F6ED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
               <span style={{ fontSize: 13, color: C.textMuted, marginLeft: 4 }}>Dispute Center</span>
             </div>
 

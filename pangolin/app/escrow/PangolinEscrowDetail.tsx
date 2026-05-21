@@ -9,26 +9,26 @@ import { useAuth } from "@/hooks/useAuth";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Detail Page (Client View)
-   Dark #0D0D0F · Coral #FF6B35 · Inter · Fully self-contained JSX
+   Dark #02353C · Coral #2EAF7D · Inter · Fully self-contained JSX
 ───────────────────────────────────────────────────────────────────────────── */
 
 const C = {
-  base:       "#0D0D0F",
-  surface:    "#111116",
-  elevated:   "#17171F",
-  card:       "#1D1D28",
-  border:     "#26263A",
-  borderLit:  "#363650",
-  coral:      "#FF6B35",
-  coralDark:  "#D9521A",
-  blue:       "#3B82F6",
-  green:      "#10B981",
+  base:       "#02353C",
+  surface:    "#032F36",
+  elevated:   "#054048",
+  card:       "#065060",
+  border:     "#0A5560",
+  borderLit:  "#1A7080",
+  coral:      "#2EAF7D",
+  coralDark:  "#228A62",
+  blue:       "#3FD0C9",
+  green:      "#449342",
   amber:      "#F59E0B",
   purple:     "#8B5CF6",
   red:        "#EF4444",
-  text:       "#F0F0F8",
-  textSub:    "#8888A8",
-  textMuted:  "#4C4C64",
+  text:       "#C1F6ED",
+  textSub:    "#7ECFC6",
+  textMuted:  "#3A8A82",
   font:       "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
 
@@ -54,10 +54,10 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, full
   const rad = { sm: "9px",     md: "11px",       lg: "13px",     xl: "14px"      }[size] || "11px";
 
   const bg = {
-    coral:  dis ? "#2A1508" : h ? "linear-gradient(135deg,#FF7C48,#D9521A)" : "linear-gradient(135deg,#FF6B35,#D9521A)",
-    blue:   h ? "rgba(59,130,246,.14)" : "transparent",
+    coral:  dis ? "#2A1508" : h ? "linear-gradient(135deg,#3FD0C9,#228A62)" : "linear-gradient(135deg,#2EAF7D,#228A62)",
+    blue:   h ? "rgba(63,208,201,.14)" : "transparent",
     red:    h ? "rgba(239,68,68,.12)"  : "transparent",
-    ghost:  h ? "rgba(255,107,53,.08)" : "transparent",
+    ghost:  h ? "rgba(46,175,125,.08)" : "transparent",
     subtle: h ? C.card : C.elevated,
   }[variant];
   const col = {
@@ -66,14 +66,14 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, full
   }[variant];
   const bdr = {
     coral:  "none",
-    blue:   `1.5px solid ${h ? C.blue : "rgba(59,130,246,.45)"}`,
+    blue:   `1.5px solid ${h ? C.blue : "rgba(63,208,201,.45)"}`,
     red:    `1.5px solid ${h ? "rgba(239,68,68,.5)" : "rgba(239,68,68,.3)"}`,
-    ghost:  `1px solid ${h ? "rgba(255,107,53,.3)" : C.border}`,
+    ghost:  `1px solid ${h ? "rgba(46,175,125,.3)" : C.border}`,
     subtle: `1px solid ${h ? C.borderLit : C.border}`,
   }[variant];
   const shd = {
-    coral: dis ? "none" : h ? "0 10px 36px rgba(255,107,53,.48),0 0 0 1px rgba(255,107,53,.32)" : "0 5px 20px rgba(255,107,53,.3),0 0 0 1px rgba(255,107,53,.2)",
-    blue:  h ? "0 4px 16px rgba(59,130,246,.2)" : "none",
+    coral: dis ? "none" : h ? "0 10px 36px rgba(46,175,125,.48),0 0 0 1px rgba(46,175,125,.32)" : "0 5px 20px rgba(46,175,125,.3),0 0 0 1px rgba(46,175,125,.2)",
+    blue:  h ? "0 4px 16px rgba(63,208,201,.2)" : "none",
     red:   "none", ghost: "none", subtle: "none",
   }[variant];
 
@@ -94,10 +94,10 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, full
 
 function StatusPill({ status }) {
   const map = {
-    "In Progress":   { bg: "rgba(59,130,246,.14)", bd: "rgba(59,130,246,.35)", tx: "#60A5FA", dot: C.blue },
-    "Funded":        { bg: "rgba(16,185,129,.14)", bd: "rgba(16,185,129,.35)", tx: "#34D399", dot: C.green },
-    "Delivered":     { bg: "rgba(255,107,53,.14)", bd: "rgba(255,107,53,.35)", tx: "#FF8C5A", dot: C.coral },
-    "Approved":      { bg: "rgba(16,185,129,.14)", bd: "rgba(16,185,129,.35)", tx: "#34D399", dot: C.green },
+    "In Progress":   { bg: "rgba(63,208,201,.14)", bd: "rgba(63,208,201,.35)", tx: "#7ECFC6", dot: C.blue },
+    "Funded":        { bg: "rgba(68,147,66,.14)", bd: "rgba(68,147,66,.35)", tx: "#7ECFC6", dot: C.green },
+    "Delivered":     { bg: "rgba(46,175,125,.14)", bd: "rgba(46,175,125,.35)", tx: "#FF8C5A", dot: C.coral },
+    "Approved":      { bg: "rgba(68,147,66,.14)", bd: "rgba(68,147,66,.35)", tx: "#7ECFC6", dot: C.green },
     "Pending":       { bg: "rgba(76,76,100,.25)",  bd: "rgba(76,76,100,.4)",   tx: C.textMuted, dot: C.textMuted },
     "Awaiting":      { bg: "rgba(245,158,11,.14)", bd: "rgba(245,158,11,.35)", tx: "#FCD34D", dot: C.amber },
     "Disputed":      { bg: "rgba(239,68,68,.14)",  bd: "rgba(239,68,68,.35)",  tx: "#F87171", dot: C.red },
@@ -247,7 +247,7 @@ function BalanceCard({
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 6 }}>Total Locked in Escrow</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-.05em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <span style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-.05em", background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               ${totalUsdc.toLocaleString()}
             </span>
             <span style={{ fontSize: 16, color: C.textMuted, fontWeight: 600 }}>USDC</span>
@@ -257,8 +257,8 @@ function BalanceCard({
 
         {/* Guaranteed floor highlight */}
         <div style={{
-          background: `linear-gradient(135deg,rgba(255,107,53,.12),rgba(255,107,53,.05))`,
-          border: `1px solid rgba(255,107,53,.3)`, borderRadius: 14, padding: "14px 18px",
+          background: `linear-gradient(135deg,rgba(46,175,125,.12),rgba(46,175,125,.05))`,
+          border: `1px solid rgba(46,175,125,.3)`, borderRadius: 14, padding: "14px 18px",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
             <span style={{ fontSize: 14 }}>🛡️</span>
@@ -362,7 +362,7 @@ function MilestoneStepper({ milestones = MILESTONES }) {
               }}>
                 <div style={{
                   background: active ? `linear-gradient(135deg,rgba(26,26,40,.98),rgba(20,20,32,.98))` : "transparent",
-                  border: active ? `1px solid ${ms.status === "Delivered" ? "rgba(255,107,53,.35)" : "rgba(59,130,246,.3)"}` : "none",
+                  border: active ? `1px solid ${ms.status === "Delivered" ? "rgba(46,175,125,.35)" : "rgba(63,208,201,.3)"}` : "none",
                   borderRadius: 14, padding: active ? "14px 18px" : "0 4px",
                   transition: "all .2s",
                 }}>
@@ -479,7 +479,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
             {/* Preview thumbnail */}
             <div style={{
               height: 160, borderRadius: 14, overflow: "hidden",
-              background: "linear-gradient(135deg,rgba(255,107,53,.08),rgba(59,130,246,.06))",
+              background: "linear-gradient(135deg,rgba(46,175,125,.08),rgba(63,208,201,.06))",
               border: `1px solid ${C.border}`,
               display: "flex", alignItems: "center", justifyContent: "center",
               position: "relative",
@@ -490,7 +490,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
                   {[C.red, C.amber, C.green].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />)}
                 </div>
                 <div style={{ height: 8, background: "rgba(255,255,255,.08)", borderRadius: 4, marginBottom: 6, width: "60%" }} />
-                <div style={{ height: 40, background: "rgba(255,107,53,.1)", borderRadius: 6, border: `1px solid rgba(255,107,53,.2)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ height: 40, background: "rgba(46,175,125,.1)", borderRadius: 6, border: `1px solid rgba(46,175,125,.2)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ fontSize: 11, color: C.coral, fontWeight: 700 }}>Design Preview</span>
                 </div>
               </div>
@@ -503,7 +503,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
             <div style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: 13, padding: "14px 18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(255,107,53,.12)", border: "1px solid rgba(255,107,53,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📦</div>
+                  <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(46,175,125,.12)", border: "1px solid rgba(46,175,125,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📦</div>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>{delivery.name}</div>
                     <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{delivery.size}{delivery.size && delivery.timestamp ? " · " : ""}{delivery.timestamp}</div>
@@ -518,7 +518,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.blue, boxShadow: `0 0 6px ${C.blue}` }} />
                   <span style={{ fontSize: 11.5, color: C.textMuted }}>On-chain hash:</span>
                 </div>
-                <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(59,130,246,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(59,130,246,.2)" }}>
+                <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(63,208,201,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(63,208,201,.2)" }}>
                   {delivery.hash}
                 </code>
                 <span style={{ fontSize: 11.5, color: C.textMuted, marginLeft: "auto" }}>⛓️ Stellar Network</span>
@@ -607,7 +607,7 @@ function ActionSidebar({ escrow, reviewAmount }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Success state */}
           {approveTxHash ? (
-            <div style={{ background: "rgba(16,185,129,.1)", border: "1px solid rgba(16,185,129,.3)", borderRadius: 12, padding: "14px 16px", fontSize: 12.5, color: "#34D399", fontFamily: "monospace", wordBreak: "break-all" }}>
+            <div style={{ background: "rgba(68,147,66,.1)", border: "1px solid rgba(68,147,66,.3)", borderRadius: 12, padding: "14px 16px", fontSize: 12.5, color: "#7ECFC6", fontFamily: "monospace", wordBreak: "break-all" }}>
               ✓ Released · Tx: {approveTxHash}
             </div>
           ) : (
@@ -932,7 +932,7 @@ export default function PangolinEscrowDetail() {
         html, body, #root { min-height: 100%; }
         body {
           font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-          background: #0D0D0F; color: #F0F0F8;
+          background: #02353C; color: #C1F6ED;
           -webkit-font-smoothing: antialiased;
         }
         @keyframes pulse-dot {
@@ -944,8 +944,8 @@ export default function PangolinEscrowDetail() {
           to   { opacity:1; transform:translateY(0); }
         }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0D0D0F; }
-        ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #02353C; }
+        ::-webkit-scrollbar-thumb { background: #0A5560; border-radius: 3px; }
 
         /* Escrow Detail Responsiveness Media Queries */
         @media (max-width: 850px) {
@@ -961,9 +961,9 @@ export default function PangolinEscrowDetail() {
       <div style={{
         minHeight: "100vh",
         background: `
-          radial-gradient(ellipse 65% 45% at 10% 10%, rgba(255,107,53,.06) 0%, transparent 55%),
-          radial-gradient(ellipse 55% 40% at 85% 80%, rgba(59,130,246,.05) 0%, transparent 55%),
-          #0D0D0F`,
+          radial-gradient(ellipse 65% 45% at 10% 10%, rgba(46,175,125,.06) 0%, transparent 55%),
+          radial-gradient(ellipse 55% 40% at 85% 80%, rgba(63,208,201,.05) 0%, transparent 55%),
+          #02353C`,
         overflowX: "hidden",
       }}>
         {/* Grid texture */}

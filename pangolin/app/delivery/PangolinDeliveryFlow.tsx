@@ -9,26 +9,26 @@ import { submitDelivery } from "@/lib/contract-client";
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Delivery Flow
    Screen A: Submit Delivery · Screen B: Payment Received
-   Dark #0D0D0F · Coral #FF6B35 · Inter · Fully self-contained JSX
+   Dark #02353C · Coral #2EAF7D · Inter · Fully self-contained JSX
 ───────────────────────────────────────────────────────────────────────────── */
 
 const C = {
-  base:      "#0D0D0F",
-  surface:   "#111116",
-  elevated:  "#17171F",
-  card:      "#1D1D28",
-  border:    "#26263A",
-  borderLit: "#363650",
-  coral:     "#FF6B35",
-  coralDk:   "#D9521A",
-  blue:      "#3B82F6",
-  green:     "#10B981",
+  base:      "#02353C",
+  surface:   "#032F36",
+  elevated:  "#054048",
+  card:      "#065060",
+  border:    "#0A5560",
+  borderLit: "#1A7080",
+  coral:     "#2EAF7D",
+  coralDk:   "#228A62",
+  blue:      "#3FD0C9",
+  green:     "#449342",
   amber:     "#F59E0B",
   purple:    "#8B5CF6",
-  teal:      "#14B8A6",
-  text:      "#F0F0F8",
-  textSub:   "#8888A8",
-  textMuted: "#4C4C64",
+  teal:      "#3FD0C9",
+  text:      "#C1F6ED",
+  textSub:   "#7ECFC6",
+  textMuted: "#3A8A82",
   font:      "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
 
@@ -54,11 +54,11 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, full
     xl:  { p: "18px 40px", f: "16.5px", r: "100px" },
   }[size] || { p: "12px 24px", f: "14px", r: "12px" };
   const V = {
-    coral:  { bg: dis ? "#2A1508" : h ? "linear-gradient(135deg,#FF7C48,#D9521A)" : "linear-gradient(135deg,#FF6B35,#D9521A)", col: dis ? "#6B3820" : "#fff", bd: "none", shd: dis ? "none" : h ? "0 12px 40px rgba(255,107,53,.55),0 0 0 1px rgba(255,107,53,.38)" : "0 6px 24px rgba(255,107,53,.35),0 0 0 1px rgba(255,107,53,.25)" },
-    blue:   { bg: h ? "linear-gradient(135deg,#5A9BFF,#2563EB)" : "linear-gradient(135deg,#3B82F6,#2563EB)", col: "#fff", bd: "none", shd: h ? "0 10px 36px rgba(59,130,246,.5)" : "0 5px 18px rgba(59,130,246,.28)" },
-    ghost:  { bg: h ? "rgba(255,107,53,.07)" : "transparent", col: h ? C.coral : C.textSub, bd: `1px solid ${h ? "rgba(255,107,53,.3)" : C.border}`, shd: "none" },
+    coral:  { bg: dis ? "#2A1508" : h ? "linear-gradient(135deg,#3FD0C9,#228A62)" : "linear-gradient(135deg,#2EAF7D,#228A62)", col: dis ? "#6B3820" : "#fff", bd: "none", shd: dis ? "none" : h ? "0 12px 40px rgba(46,175,125,.55),0 0 0 1px rgba(46,175,125,.38)" : "0 6px 24px rgba(46,175,125,.35),0 0 0 1px rgba(46,175,125,.25)" },
+    blue:   { bg: h ? "linear-gradient(135deg,#3FD0C9,#2AADA7)" : "linear-gradient(135deg,#3FD0C9,#2AADA7)", col: "#fff", bd: "none", shd: h ? "0 10px 36px rgba(63,208,201,.5)" : "0 5px 18px rgba(63,208,201,.28)" },
+    ghost:  { bg: h ? "rgba(46,175,125,.07)" : "transparent", col: h ? C.coral : C.textSub, bd: `1px solid ${h ? "rgba(46,175,125,.3)" : C.border}`, shd: "none" },
     subtle: { bg: h ? C.card : C.elevated, col: C.text, bd: `1px solid ${h ? C.borderLit : C.border}`, shd: "none" },
-    green:  { bg: h ? "linear-gradient(135deg,#34D399,#059669)" : "linear-gradient(135deg,#10B981,#059669)", col: "#fff", bd: "none", shd: h ? "0 10px 36px rgba(16,185,129,.5)" : "0 5px 18px rgba(16,185,129,.28)" },
+    green:  { bg: h ? "linear-gradient(135deg,#7ECFC6,#2EAF7D)" : "linear-gradient(135deg,#449342,#2EAF7D)", col: "#fff", bd: "none", shd: h ? "0 10px 36px rgba(68,147,66,.5)" : "0 5px 18px rgba(68,147,66,.28)" },
   }[variant] || {};
   return (
     <button onClick={dis ? undefined : onClick} {...(dis ? {} : hov)} style={{
@@ -245,8 +245,8 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
         {/* Milestone badge */}
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 10,
-          background: "linear-gradient(135deg,rgba(255,107,53,.12),rgba(255,107,53,.04))",
-          border: "1px solid rgba(255,107,53,.28)", borderRadius: 12, padding: "10px 16px",
+          background: "linear-gradient(135deg,rgba(46,175,125,.12),rgba(46,175,125,.04))",
+          border: "1px solid rgba(46,175,125,.28)", borderRadius: 12, padding: "10px 16px",
         }}>
           <div style={{ display: "flex", gap: 5 }}>
             {Array.from({ length: milestoneCount }, (_, idx) => (
@@ -275,10 +275,10 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
           onDrop={handleDrop}
           onClick={() => !submitting && fileRef.current?.click()}
           style={{
-            border: `2px dashed ${dragging ? C.coral : files.length > 0 ? "rgba(255,107,53,.35)" : C.border}`,
+            border: `2px dashed ${dragging ? C.coral : files.length > 0 ? "rgba(46,175,125,.35)" : C.border}`,
             borderRadius: 16, padding: "32px 20px", textAlign: "center",
             cursor: submitting ? "default" : "pointer",
-            background: dragging ? "rgba(255,107,53,.06)" : files.length > 0 ? "rgba(255,107,53,.03)" : "rgba(255,255,255,.01)",
+            background: dragging ? "rgba(46,175,125,.06)" : files.length > 0 ? "rgba(46,175,125,.03)" : "rgba(255,255,255,.01)",
             transition: "all .18s ease",
             position: "relative", overflow: "hidden",
           }}>
@@ -286,7 +286,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
 
           {/* Shimmer on drag */}
           {dragging && (
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(255,107,53,.08),transparent,rgba(255,107,53,.08))", backgroundSize: "200% 200%", animation: "shimmer 1.5s ease infinite" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(46,175,125,.08),transparent,rgba(46,175,125,.08))", backgroundSize: "200% 200%", animation: "shimmer 1.5s ease infinite" }} />
           )}
 
           {files.length === 0 ? (
@@ -299,7 +299,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
                 or <span style={{ color: C.coral, fontWeight: 600 }}>browse files</span>
                 <br />ZIP, PDF, PNG, Figma exports, videos — anything
               </div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, background: "rgba(59,130,246,.08)", border: "1px solid rgba(59,130,246,.2)", borderRadius: "100px", padding: "5px 14px", fontSize: 12, color: "#93C5FD", fontWeight: 600 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, background: "rgba(63,208,201,.08)", border: "1px solid rgba(63,208,201,.2)", borderRadius: "100px", padding: "5px 14px", fontSize: 12, color: "#7ECFC6", fontWeight: 600 }}>
                 ⛓️ SHA-256 hash recorded on Stellar blockchain
               </div>
             </>
@@ -314,7 +314,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
                     <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2, fontFamily: "monospace" }}>
-                      {f.size} · <span style={{ color: "#60A5FA" }}>{f.hash.slice(0, 22)}…</span>
+                      {f.size} · <span style={{ color: "#7ECFC6" }}>{f.hash.slice(0, 22)}…</span>
                     </div>
                   </div>
                   {!submitting && (
@@ -343,9 +343,9 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
         <div style={{
           display: "flex", alignItems: "center",
           background: C.elevated,
-          border: `1.5px solid ${linkFocused ? "rgba(255,107,53,.65)" : C.border}`,
+          border: `1.5px solid ${linkFocused ? "rgba(46,175,125,.65)" : C.border}`,
           borderRadius: 13, overflow: "hidden",
-          boxShadow: linkFocused ? "0 0 0 3px rgba(255,107,53,.12)" : "none",
+          boxShadow: linkFocused ? "0 0 0 3px rgba(46,175,125,.12)" : "none",
           transition: "all .18s ease",
         }}>
           <div style={{ padding: "0 14px", fontSize: 18, borderRight: `1px solid ${C.border}`, paddingTop: 12, paddingBottom: 12 }}>🔗</div>
@@ -370,10 +370,10 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
           placeholder="Summarise what's included, any important notes for the client, how to access the files, revision instructions, etc."
           style={{
             width: "100%", background: C.elevated, outline: "none", resize: "vertical",
-            border: `1.5px solid ${notesFocused ? "rgba(255,107,53,.65)" : C.border}`,
+            border: `1.5px solid ${notesFocused ? "rgba(46,175,125,.65)" : C.border}`,
             borderRadius: 13, padding: "13px 16px", color: C.text, fontSize: 14,
             fontFamily: C.font, lineHeight: 1.65, caretColor: C.coral,
-            boxShadow: notesFocused ? "0 0 0 3px rgba(255,107,53,.12)" : "none",
+            boxShadow: notesFocused ? "0 0 0 3px rgba(46,175,125,.12)" : "none",
             transition: "border-color .18s, box-shadow .18s",
           }}
         />
@@ -382,12 +382,12 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
       {/* On-chain note */}
       <div style={{
         display: "flex", gap: 14, alignItems: "flex-start",
-        background: "rgba(59,130,246,.07)", border: "1px solid rgba(59,130,246,.22)",
+        background: "rgba(63,208,201,.07)", border: "1px solid rgba(63,208,201,.22)",
         borderRadius: 14, padding: "14px 18px", marginBottom: 22,
       }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(59,130,246,.15)", border: "1px solid rgba(59,130,246,.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>⛓️</div>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(63,208,201,.15)", border: "1px solid rgba(63,208,201,.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>⛓️</div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#93C5FD", marginBottom: 4 }}>Tamper-proof delivery proof</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#7ECFC6", marginBottom: 4 }}>Tamper-proof delivery proof</div>
           <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.65 }}>
             Your file's SHA-256 hash will be <strong style={{ color: C.text }}>timestamped on the Stellar blockchain</strong> the moment you submit — creating an immutable, verifiable record of exactly when you delivered. This protects you in any future dispute.
           </div>
@@ -404,9 +404,9 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
           <div style={{ height: 6, background: "rgba(255,255,255,.06)", borderRadius: "100px", overflow: "hidden" }}>
             <div style={{
               height: "100%", borderRadius: "100px",
-              background: phase === "done" ? `linear-gradient(90deg,${C.green},#34D399)` : `linear-gradient(90deg,${C.coral},#FF9A6C)`,
+              background: phase === "done" ? `linear-gradient(90deg,${C.green},#7ECFC6)` : `linear-gradient(90deg,${C.coral},#3FD0C9)`,
               width: `${progress}%`,
-              boxShadow: `0 0 12px ${phase === "done" ? "rgba(16,185,129,.6)" : "rgba(255,107,53,.5)"}`,
+              boxShadow: `0 0 12px ${phase === "done" ? "rgba(68,147,66,.6)" : "rgba(46,175,125,.5)"}`,
               transition: "width .5s cubic-bezier(.4,0,.2,1), background .3s",
             }} />
           </div>
@@ -427,7 +427,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
                 <div key={id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                   <div style={{
                     width: 20, height: 20, borderRadius: "50%",
-                    background: done ? (active && id !== "done" ? `linear-gradient(135deg,${C.coral},${C.coralDk})` : id === "done" && done ? `linear-gradient(135deg,${C.green},#059669)` : C.coral) : C.elevated,
+                    background: done ? (active && id !== "done" ? `linear-gradient(135deg,${C.coral},${C.coralDk})` : id === "done" && done ? `linear-gradient(135deg,${C.green},#2EAF7D)` : C.coral) : C.elevated,
                     border: `2px solid ${done ? (id === "done" ? C.green : C.coral) : C.border}`,
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: done ? "#fff" : C.textMuted,
                     transition: "all .3s",
@@ -449,7 +449,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
           🚀 Submit Delivery
         </Btn>
       ) : (
-        <div style={{ padding: "16px", background: "rgba(255,107,53,.06)", border: `1px solid rgba(255,107,53,.2)`, borderRadius: 14, textAlign: "center" }}>
+        <div style={{ padding: "16px", background: "rgba(46,175,125,.06)", border: `1px solid rgba(46,175,125,.2)`, borderRadius: 14, textAlign: "center" }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: C.textSub }}>
             {phase === "done" ? "✅ Delivery recorded — redirecting…" : "Processing your delivery…"}
           </div>
@@ -480,19 +480,19 @@ function AnimatedCheck() {
       {/* Outer glow rings */}
       <div style={{
         position: "absolute", inset: -16, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(16,185,129,.18) 0%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(68,147,66,.18) 0%, transparent 70%)",
         animation: "pulse-ring 2.5s ease-in-out infinite",
       }} />
       <div style={{
         position: "absolute", inset: -6, borderRadius: "50%",
-        border: "2px solid rgba(16,185,129,.25)",
+        border: "2px solid rgba(68,147,66,.25)",
         animation: "pulse-ring 2.5s ease-in-out infinite .4s",
       }} />
       {/* Main circle */}
       <div style={{
         width: 96, height: 96, borderRadius: "50%",
-        background: `linear-gradient(135deg,${C.green},#059669)`,
-        boxShadow: "0 0 40px rgba(16,185,129,.5), 0 8px 32px rgba(16,185,129,.3)",
+        background: `linear-gradient(135deg,${C.green},#2EAF7D)`,
+        boxShadow: "0 0 40px rgba(68,147,66,.5), 0 8px 32px rgba(68,147,66,.3)",
         display: "flex", alignItems: "center", justifyContent: "center",
         animation: "pop-in .4s cubic-bezier(.34,1.56,.64,1) .1s both",
       }}>
@@ -518,13 +518,13 @@ function TxHash({ hash = "—" }) {
       borderRadius: 12, padding: "12px 16px",
     }}>
       <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.blue, boxShadow: `0 0 6px ${C.blue}`, flexShrink: 0 }} />
-      <code style={{ fontSize: 13.5, color: "#93C5FD", fontFamily: "monospace", flex: 1 }}>{display}</code>
+      <code style={{ fontSize: 13.5, color: "#7ECFC6", fontFamily: "monospace", flex: 1 }}>{display}</code>
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-          style={{ background: copied ? "rgba(16,185,129,.12)" : "rgba(59,130,246,.1)", border: `1px solid ${copied ? "rgba(16,185,129,.3)" : "rgba(59,130,246,.25)"}`, borderRadius: 8, color: copied ? C.green : C.blue, cursor: "pointer", padding: "5px 12px", fontSize: 12, fontFamily: C.font, fontWeight: 600, transition: "all .15s" }}>
+          style={{ background: copied ? "rgba(68,147,66,.12)" : "rgba(63,208,201,.1)", border: `1px solid ${copied ? "rgba(68,147,66,.3)" : "rgba(63,208,201,.25)"}`, borderRadius: 8, color: copied ? C.green : C.blue, cursor: "pointer", padding: "5px 12px", fontSize: 12, fontFamily: C.font, fontWeight: 600, transition: "all .15s" }}>
           {copied ? "✓ Copied" : "Copy"}
         </button>
-        <button style={{ background: "rgba(59,130,246,.1)", border: "1px solid rgba(59,130,246,.25)", borderRadius: 8, color: C.blue, cursor: "pointer", padding: "5px 12px", fontSize: 12, fontFamily: C.font, fontWeight: 600 }}>
+        <button style={{ background: "rgba(63,208,201,.1)", border: "1px solid rgba(63,208,201,.25)", borderRadius: 8, color: C.blue, cursor: "pointer", padding: "5px 12px", fontSize: 12, fontFamily: C.font, fontWeight: 600 }}>
           Stellar ↗
         </button>
       </div>
@@ -638,7 +638,7 @@ function ScreenB({ escrow, milestones, supabase }) {
         <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>Payment Received</div>
         <div style={{
           fontSize: "clamp(48px, 12vw, 72px)", fontWeight: 900, letterSpacing: "-.06em", lineHeight: 1,
-          background: "linear-gradient(135deg,#FF6B35 20%,#FF9A6C 60%,#FFBD99 100%)",
+          background: "linear-gradient(135deg,#2EAF7D 20%,#3FD0C9 60%,#FFBD99 100%)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           marginBottom: 8,
         }}>
@@ -651,7 +651,7 @@ function ScreenB({ escrow, milestones, supabase }) {
       </div>
 
       {/* Settlement time */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 12, marginBottom: 28, background: "rgba(16,185,129,.1)", border: "1px solid rgba(16,185,129,.28)", borderRadius: "100px", padding: "6px 16px", animation: "fade-up .5s ease .45s both" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 12, marginBottom: 28, background: "rgba(68,147,66,.1)", border: "1px solid rgba(68,147,66,.28)", borderRadius: "100px", padding: "6px 16px", animation: "fade-up .5s ease .45s both" }}>
         <div style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: C.green }}>Settled in 3.2 seconds on Stellar</span>
       </div>
@@ -698,7 +698,7 @@ function ScreenB({ escrow, milestones, supabase }) {
       </div>
 
       {/* Remaining escrow note */}
-      <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(255,107,53,.06)", border: "1px solid rgba(255,107,53,.18)", borderRadius: 12 }}>
+      <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(46,175,125,.06)", border: "1px solid rgba(46,175,125,.18)", borderRadius: 12 }}>
         <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.6 }}>
           <strong style={{ color: C.coral }}>${remaining.toFixed(2)} USDC</strong> remaining in escrow · Milestone {milestoneNumber + 1} begins when client confirms.
         </div>
@@ -764,7 +764,7 @@ export default function PangolinDeliveryFlow() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body, #root { min-height: 100%; }
-        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #0D0D0F; color: #F0F0F8; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #02353C; color: #C1F6ED; -webkit-font-smoothing: antialiased; }
 
         @keyframes pulse-dot {
           0%,100% { opacity:1; transform:scale(1); }
@@ -794,17 +794,17 @@ export default function PangolinDeliveryFlow() {
         }
 
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0D0D0F; }
-        ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #02353C; }
+        ::-webkit-scrollbar-thumb { background: #0A5560; border-radius: 3px; }
       `}</style>
 
       {/* Page bg */}
       <div style={{
         minHeight: "100vh", overflowX: "hidden",
         background: `
-          radial-gradient(ellipse 65% 45% at 10% 10%, rgba(255,107,53,.06) 0%, transparent 55%),
-          radial-gradient(ellipse 55% 40% at 85% 80%, rgba(16,185,129,.05) 0%, transparent 55%),
-          #0D0D0F`,
+          radial-gradient(ellipse 65% 45% at 10% 10%, rgba(46,175,125,.06) 0%, transparent 55%),
+          radial-gradient(ellipse 55% 40% at 85% 80%, rgba(68,147,66,.05) 0%, transparent 55%),
+          #02353C`,
         padding: "36px 0 60px",
       }}>
         {/* Grid texture */}
@@ -812,9 +812,9 @@ export default function PangolinDeliveryFlow() {
 
         {/* Logo bar */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#1D1D28,#17171F)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "10px 22px", boxShadow: "0 0 0 1px rgba(255,107,53,.08)" }}>
-            <span style={{ fontSize: 22 }}>🐧</span>
-            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-.03em", background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#054048,#032F36)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "10px 22px", boxShadow: "0 0 0 1px rgba(63,208,201,.1)" }}>
+            <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
+            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-.03em", background: "linear-gradient(135deg,#3FD0C9,#C1F6ED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
           </div>
         </div>
 
@@ -823,8 +823,8 @@ export default function PangolinDeliveryFlow() {
           {[["A", "🚀 Submit"], ["B", "✅ Received"]].map(([id, label]) => (
             <button key={id} onClick={() => setScreen(id)} style={{
               padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: C.font,
-              background: screen === id ? "linear-gradient(135deg,rgba(255,107,53,.2),rgba(255,107,53,.08))" : "transparent",
-              boxShadow: screen === id ? "inset 0 0 0 1px rgba(255,107,53,.28)" : "none",
+              background: screen === id ? "linear-gradient(135deg,rgba(46,175,125,.2),rgba(46,175,125,.08))" : "transparent",
+              boxShadow: screen === id ? "inset 0 0 0 1px rgba(46,175,125,.28)" : "none",
               color: screen === id ? C.coral : C.textMuted,
               fontSize: 12.5, fontWeight: screen === id ? 700 : 500,
               transition: "all .15s",

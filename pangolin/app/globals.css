@@ -128,3 +128,57 @@
     @apply font-sans;
   }
 }
+
+/* Design tokens & utility classes for SaaS-style polish */
+@layer utilities {
+  :root {
+    /* spacing scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
+    /* subtle elevation */
+    --shadow-soft: 0 8px 24px rgba(2,53,60,0.08);
+    --shadow-medium: 0 12px 36px rgba(2,53,60,0.12);
+    --shadow-strong: 0 24px 64px rgba(2,53,60,0.16);
+
+    /* smooth transition */
+    --transition-fast: 180ms;
+    --transition-ease: cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-medium { box-shadow: var(--shadow-medium); }
+  .shadow-strong { box-shadow: var(--shadow-strong); }
+
+  .smooth {
+    transition: transform var(--transition-fast) var(--transition-ease),
+                box-shadow var(--transition-fast) var(--transition-ease),
+                background-color var(--transition-fast) var(--transition-ease),
+                color var(--transition-fast) var(--transition-ease),
+                opacity var(--transition-fast) var(--transition-ease);
+    will-change: transform, box-shadow;
+  }
+
+  .rounded-xl { border-radius: calc(var(--radius-lg) * 1.15); }
+  .rounded-2xl { border-radius: calc(var(--radius-lg) * 1.6); }
+
+  /* Primary gradient background that uses existing color tokens */
+  .bg-gradient-primary {
+    background-image: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  }
+
+  /* subtle translucent card background for soft glass effect */
+  .bg-card-glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    backdrop-filter: blur(6px);
+  }
+
+  /* utility for consistent inner padding */
+  .ui-pad-sm { padding: var(--space-3); }
+  .ui-pad-md { padding: var(--space-4); }
+  .ui-pad-lg { padding: var(--space-5); }
+}

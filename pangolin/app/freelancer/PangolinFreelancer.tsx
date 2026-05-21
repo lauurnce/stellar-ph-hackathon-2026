@@ -8,28 +8,28 @@ import { confirmFreelancer, getEscrow } from "@/lib/contract-client";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Screens (A: Invite Landing · B: Dashboard)
-   Dark #0D0D0F · Coral #FF6B35 · Inter · Fully self-contained JSX
+   Dark #02353C · Coral #2EAF7D · Inter · Fully self-contained JSX
 ───────────────────────────────────────────────────────────────────────────── */
 
 const C = {
-  base:      "#0D0D0F",
-  surface:   "#111116",
-  elevated:  "#17171F",
-  card:      "#1D1D28",
-  border:    "#26263A",
-  borderLit: "#363650",
-  coral:     "#FF6B35",
-  coralDk:   "#D9521A",
-  blue:      "#3B82F6",
-  green:     "#10B981",
+  base:      "#02353C",
+  surface:   "#032F36",
+  elevated:  "#054048",
+  card:      "#065060",
+  border:    "#0A5560",
+  borderLit: "#1A7080",
+  coral:     "#2EAF7D",
+  coralDk:   "#228A62",
+  blue:      "#3FD0C9",
+  green:     "#449342",
   amber:     "#F59E0B",
   purple:    "#8B5CF6",
-  teal:      "#14B8A6",
+  teal:      "#3FD0C9",
   pink:      "#EC4899",
   red:       "#EF4444",
-  text:      "#F0F0F8",
-  textSub:   "#8888A8",
-  textMuted: "#4C4C64",
+  text:      "#C1F6ED",
+  textSub:   "#7ECFC6",
+  textMuted: "#3A8A82",
   font:      "'Inter',-apple-system,BlinkMacSystemFont,sans-serif",
 };
 
@@ -56,11 +56,11 @@ function Btn({ variant = "coral", size = "md", children, onClick, disabled, full
     xl:  { p: "17px 38px", f: "16.5px", r: "100px" },
   }[size];
   const V = {
-    coral: { bg: h ? "linear-gradient(135deg,#FF7C48,#D9521A)" : "linear-gradient(135deg,#FF6B35,#D9521A)", col: "#fff", bd: "none", shd: h ? "0 12px 40px rgba(255,107,53,.55),0 0 0 1px rgba(255,107,53,.38)" : "0 6px 24px rgba(255,107,53,.35),0 0 0 1px rgba(255,107,53,.25)" },
-    ghost: { bg: h ? "rgba(255,107,53,.07)" : "transparent", col: h ? C.coral : C.textSub, bd: `1px solid ${h ? "rgba(255,107,53,.3)" : C.border}`, shd: "none" },
+    coral: { bg: h ? "linear-gradient(135deg,#3FD0C9,#228A62)" : "linear-gradient(135deg,#2EAF7D,#228A62)", col: "#fff", bd: "none", shd: h ? "0 12px 40px rgba(46,175,125,.55),0 0 0 1px rgba(46,175,125,.38)" : "0 6px 24px rgba(46,175,125,.35),0 0 0 1px rgba(46,175,125,.25)" },
+    ghost: { bg: h ? "rgba(46,175,125,.07)" : "transparent", col: h ? C.coral : C.textSub, bd: `1px solid ${h ? "rgba(46,175,125,.3)" : C.border}`, shd: "none" },
     subtle:{ bg: h ? C.card : C.elevated, col: C.text, bd: `1px solid ${h ? C.borderLit : C.border}`, shd: "none" },
-    blue:  { bg: h ? "linear-gradient(135deg,#5A9BFF,#2563EB)" : "linear-gradient(135deg,#3B82F6,#2563EB)", col: "#fff", bd: "none", shd: h ? "0 10px 32px rgba(59,130,246,.5)" : "0 5px 18px rgba(59,130,246,.3)" },
-    green: { bg: h ? "linear-gradient(135deg,#34D399,#059669)" : "linear-gradient(135deg,#10B981,#059669)", col: "#fff", bd: "none", shd: h ? "0 10px 32px rgba(16,185,129,.5)" : "0 5px 18px rgba(16,185,129,.3)" },
+    blue:  { bg: h ? "linear-gradient(135deg,#3FD0C9,#2AADA7)" : "linear-gradient(135deg,#3FD0C9,#2AADA7)", col: "#fff", bd: "none", shd: h ? "0 10px 32px rgba(63,208,201,.5)" : "0 5px 18px rgba(63,208,201,.3)" },
+    green: { bg: h ? "linear-gradient(135deg,#7ECFC6,#2EAF7D)" : "linear-gradient(135deg,#449342,#2EAF7D)", col: "#fff", bd: "none", shd: h ? "0 10px 32px rgba(68,147,66,.5)" : "0 5px 18px rgba(68,147,66,.3)" },
     red:   { bg: h ? "rgba(239,68,68,.14)" : "transparent", col: "#F87171", bd: `1px solid ${h ? "rgba(239,68,68,.4)" : "rgba(239,68,68,.25)"}`, shd: "none" },
   }[variant] || {};
   return (
@@ -99,10 +99,10 @@ function GlassCard({ children, glow, style: sx = {}, nohover }) {
 
 function StatusPill({ status }) {
   const M = {
-    "In Progress":  { bg:"rgba(59,130,246,.14)",  bd:"rgba(59,130,246,.35)",  tx:"#60A5FA", dot:C.blue   },
+    "In Progress":  { bg:"rgba(63,208,201,.14)",  bd:"rgba(63,208,201,.35)",  tx:"#7ECFC6", dot:C.blue   },
     "Under Review": { bg:"rgba(245,158,11,.14)",  bd:"rgba(245,158,11,.35)",  tx:"#FCD34D", dot:C.amber  },
-    "Delivered":    { bg:"rgba(255,107,53,.14)",  bd:"rgba(255,107,53,.35)",  tx:"#FF8C5A", dot:C.coral  },
-    "Completed":    { bg:"rgba(16,185,129,.14)",  bd:"rgba(16,185,129,.35)",  tx:"#34D399", dot:C.green  },
+    "Delivered":    { bg:"rgba(46,175,125,.14)",  bd:"rgba(46,175,125,.35)",  tx:"#FF8C5A", dot:C.coral  },
+    "Completed":    { bg:"rgba(68,147,66,.14)",  bd:"rgba(68,147,66,.35)",  tx:"#7ECFC6", dot:C.green  },
     "Disputed":     { bg:"rgba(239,68,68,.14)",   bd:"rgba(239,68,68,.35)",   tx:"#F87171", dot:C.red    },
     "Pending":      { bg:"rgba(76,76,100,.22)",   bd:"rgba(76,76,100,.4)",    tx:C.textMuted,dot:C.textMuted },
   };
@@ -128,8 +128,8 @@ function Avatar({ initials, size = 44, color = C.coral, emoji }) {
 // ════════════════════════════════════════════════════════════════════════════
 const BADGES = [
   { icon: "⭐", label: "Top Rated",     color: "#F59E0B", desc: "Maintained 4.8+ rating",      earned: true  },
-  { icon: "🚀", label: "Fast Delivery", color: "#3B82F6", desc: "Delivered ahead of deadline",  earned: true  },
-  { icon: "🔒", label: "Trusted",       color: "#10B981", desc: "10+ completed escrows",        earned: false },
+  { icon: "🚀", label: "Fast Delivery", color: "#3FD0C9", desc: "Delivered ahead of deadline",  earned: true  },
+  { icon: "🔒", label: "Trusted",       color: "#449342", desc: "10+ completed escrows",        earned: false },
 ];
 
 const DEFAULT_TOTAL_USDC = 1600;
@@ -203,9 +203,9 @@ function ScreenA({ onAccept, inviteData }) {
 
       {/* Logo */}
       <div style={{ display:"flex",justifyContent:"center",marginBottom:36 }}>
-        <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,#1D1D28,#17171F)",border:`1px solid ${C.border}`,borderRadius:14,padding:"10px 22px",boxShadow:"0 0 0 1px rgba(255,107,53,.08)" }}>
-          <span style={{ fontSize:22 }}>🐧</span>
-          <span style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Pangolin</span>
+        <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,#054048,#032F36)",border:`1px solid ${C.border}`,borderRadius:14,padding:"10px 22px",boxShadow:"0 0 0 1px rgba(63,208,201,.1)" }}>
+          <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
+          <span style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#3FD0C9,#C1F6ED)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Pangolin</span>
         </div>
       </div>
 
@@ -217,7 +217,7 @@ function ScreenA({ onAccept, inviteData }) {
         </div>
         <div style={{ fontSize:13,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:6 }}>Project Invitation</div>
         <h1 style={{ fontSize:"clamp(20px,4vw,30px)",fontWeight:900,letterSpacing:"-.04em",color:C.text,lineHeight:1.2,marginBottom:6 }}>
-          <span style={{ background:"linear-gradient(135deg,#60A5FA,#3B82F6)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{clientName}</span>{" "}wants to work with you
+          <span style={{ background:"linear-gradient(135deg,#7ECFC6,#3FD0C9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{clientName}</span>{" "}wants to work with you
         </h1>
         <div style={{ fontSize:13.5,color:C.textMuted }}>Verified client · {clientCompletedEscrows} completed escrows</div>
       </div>
@@ -230,11 +230,11 @@ function ScreenA({ onAccept, inviteData }) {
             <div>
               <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:4 }}>Project</div>
               <div style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",color:C.text }}>{projectTitle}</div>
-              <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.28)",borderRadius:"100px",padding:"3px 11px",fontSize:12,fontWeight:700,color:C.blue,marginTop:8 }}>{category || "General"}</div>
+              <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"rgba(63,208,201,.12)",border:"1px solid rgba(63,208,201,.28)",borderRadius:"100px",padding:"3px 11px",fontSize:12,fontWeight:700,color:C.blue,marginTop:8 }}>{category || "General"}</div>
             </div>
             <div style={{ textAlign:"right" }}>
               <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:4 }}>Total Escrow</div>
-              <div style={{ fontSize:30,fontWeight:900,letterSpacing:"-.05em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>${formatUsd(totalUsdc)}</div>
+              <div style={{ fontSize:30,fontWeight:900,letterSpacing:"-.05em",background:"linear-gradient(135deg,#2EAF7D,#3FD0C9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>${formatUsd(totalUsdc)}</div>
               <div style={{ fontSize:12.5,color:C.textMuted }}>≈ ₱{phpOf(totalUsdc)}</div>
             </div>
           </div>
@@ -274,14 +274,14 @@ function ScreenA({ onAccept, inviteData }) {
         </div>
 
         {/* Guaranteed minimum — hero feature */}
-        <div style={{ margin:"0",background:"linear-gradient(135deg,rgba(255,107,53,.12),rgba(255,107,53,.04))",borderTop:"none",borderRadius:"0 0 18px 18px",padding:"18px 24px" }}>
+        <div style={{ margin:"0",background:"linear-gradient(135deg,rgba(46,175,125,.12),rgba(46,175,125,.04))",borderTop:"none",borderRadius:"0 0 18px 18px",padding:"18px 24px" }}>
           <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:8 }}>
             <span style={{ fontSize:20 }}>🛡️</span>
             <span style={{ fontSize:13.5,fontWeight:800,color:C.text }}>Your Guaranteed Minimum</span>
-            <div style={{ marginLeft:"auto",padding:"3px 10px",borderRadius:"100px",fontSize:11,fontWeight:700,background:"rgba(255,107,53,.18)",border:"1px solid rgba(255,107,53,.32)",color:C.coral }}>Pangolin Promise</div>
+            <div style={{ marginLeft:"auto",padding:"3px 10px",borderRadius:"100px",fontSize:11,fontWeight:700,background:"rgba(46,175,125,.18)",border:"1px solid rgba(46,175,125,.32)",color:C.coral }}>Pangolin Promise</div>
           </div>
           <div style={{ fontSize:26,fontWeight:900,letterSpacing:"-.04em",color:C.coral,marginBottom:6 }}>
-            ${formatUsd(minUsdc)} USDC <span style={{ fontSize:15,color:"rgba(255,107,53,.7)" }}>({minPct}% of total)</span>
+            ${formatUsd(minUsdc)} USDC <span style={{ fontSize:15,color:"rgba(46,175,125,.7)" }}>({minPct}% of total)</span>
           </div>
           <div style={{ fontSize:13,color:C.textSub,lineHeight:1.65 }}>
             Even if the client disputes or cancels, Pangolin's smart contract <strong style={{ color:C.text }}>guarantees you receive at least ${formatUsd(minUsdc)} USDC</strong> — automatically, no questions asked. ≈ ₱{phpOf(minUsdc)}
@@ -290,10 +290,10 @@ function ScreenA({ onAccept, inviteData }) {
       </GlassCard>
 
       {/* Stellar security note */}
-      <div style={{ background:"rgba(59,130,246,.08)",border:"1px solid rgba(59,130,246,.25)",borderRadius:14,padding:"14px 18px",marginBottom:24,display:"flex",gap:14,alignItems:"center" }}>
-        <div style={{ width:36,height:36,borderRadius:10,background:"rgba(59,130,246,.15)",border:"1px solid rgba(59,130,246,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>⛓️</div>
+      <div style={{ background:"rgba(63,208,201,.08)",border:"1px solid rgba(63,208,201,.25)",borderRadius:14,padding:"14px 18px",marginBottom:24,display:"flex",gap:14,alignItems:"center" }}>
+        <div style={{ width:36,height:36,borderRadius:10,background:"rgba(63,208,201,.15)",border:"1px solid rgba(63,208,201,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>⛓️</div>
         <div>
-          <div style={{ fontSize:13,fontWeight:700,color:"#93C5FD",marginBottom:3 }}>Secured by Stellar blockchain</div>
+          <div style={{ fontSize:13,fontWeight:700,color:"#7ECFC6",marginBottom:3 }}>Secured by Stellar blockchain</div>
           <div style={{ fontSize:12.5,color:C.textSub,lineHeight:1.55 }}>
             Funds are locked in a verifiable smart contract — not held by Pangolin. 3–5 second settlement. Your wallet, your money.
           </div>
@@ -354,14 +354,14 @@ function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
       display:"flex",alignItems:"center",gap:10,
       padding:collapsed?"10px 12px":"10px 13px",
       borderRadius:11,border:"none",cursor:"pointer",
-      background:active?"linear-gradient(135deg,rgba(255,107,53,.16),rgba(255,107,53,.06))":h?"rgba(255,255,255,.04)":"transparent",
-      boxShadow:active?"inset 0 0 0 1px rgba(255,107,53,.25)":"none",
+      background:active?"linear-gradient(135deg,rgba(46,175,125,.16),rgba(46,175,125,.06))":h?"rgba(255,255,255,.04)":"transparent",
+      boxShadow:active?"inset 0 0 0 1px rgba(46,175,125,.25)":"none",
       transition:"all .15s ease",width:"100%",textAlign:"left",
       justifyContent:collapsed?"center":"flex-start",position:"relative",fontFamily:C.font,
     }}>
       <span style={{ fontSize:17,flexShrink:0 }}>{icon}</span>
       {!collapsed && <span style={{ fontSize:13.5,fontWeight:active?700:500,color:active?C.coral:h?C.text:C.textSub,transition:"color .15s",whiteSpace:"nowrap" }}>{label}</span>}
-      {!collapsed && badge && <span style={{ marginLeft:"auto",background:C.coral,color:"#fff",borderRadius:"100px",fontSize:10.5,fontWeight:800,padding:"2px 7px",boxShadow:"0 2px 8px rgba(255,107,53,.4)" }}>{badge}</span>}
+      {!collapsed && badge && <span style={{ marginLeft:"auto",background:C.coral,color:"#fff",borderRadius:"100px",fontSize:10.5,fontWeight:800,padding:"2px 7px",boxShadow:"0 2px 8px rgba(46,175,125,.4)" }}>{badge}</span>}
       {collapsed && badge && <div style={{ position:"absolute",top:6,right:6,width:8,height:8,borderRadius:"50%",background:C.coral,boxShadow:`0 0 6px ${C.coral}` }}/>}
     </button>
   );
@@ -374,8 +374,8 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
     <aside className={isMobile ? "mobile-sidebar-inner" : "desktop-sidebar"} style={{ width:isMobile ? "240px" : W,minWidth:isMobile ? "240px" : W,maxWidth:isMobile ? "240px" : W,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",transition:isMobile ? "none" : "width .22s cubic-bezier(.4,0,.2,1), min-width .22s, max-width .22s",overflow:"hidden",flexShrink:0,zIndex:20,height:"100%" }}>
       {/* Logo */}
       <div style={{ height:62,display:"flex",alignItems:"center",padding:(collapsed && !isMobile)?"0 0 0 16px":"0 16px",borderBottom:`1px solid ${C.border}`,gap:10,flexShrink:0 }}>
-        <span style={{ fontSize:22,flexShrink:0 }}>🐧</span>
-        {(!collapsed || isMobile) && <span style={{ fontSize:17,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#FF6B35,#FF9A6C)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",whiteSpace:"nowrap" }}>Pangolin</span>}
+        <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain",flexShrink:0 }} />
+        {(!collapsed || isMobile) && <span style={{ fontSize:17,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#3FD0C9,#C1F6ED)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",whiteSpace:"nowrap" }}>Pangolin</span>}
         <button onClick={isMobile ? onClose : onToggle} style={{ marginLeft:"auto",background:"transparent",border:"none",color:C.textMuted,cursor:"pointer",fontSize:16,flexShrink:0,padding:"4px 6px",borderRadius:8 }}>
           {isMobile ? "✕" : collapsed ? "›" : "‹"}
         </button>
@@ -383,7 +383,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
 
       {/* Freelancer badge */}
       {(!collapsed || isMobile) && (
-        <div style={{ margin:"12px 8px 4px",background:"rgba(255,107,53,.08)",border:"1px solid rgba(255,107,53,.22)",borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8 }}>
+        <div style={{ margin:"12px 8px 4px",background:"rgba(46,175,125,.08)",border:"1px solid rgba(46,175,125,.22)",borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8 }}>
           <Avatar initials={freelancerName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "FL"} size={30} color={C.coral} />
           <div>
             <div style={{ fontSize:12.5,fontWeight:700,color:C.text }}>{freelancerName}</div>
@@ -401,9 +401,9 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
       {/* Wallet */}
       <div style={{ padding:"12px 8px",borderTop:`1px solid ${C.border}`,flexShrink:0 }}>
         {(collapsed && !isMobile) ? (
-          <div style={{ width:40,height:40,borderRadius:12,margin:"0 auto",background:`rgba(255,107,53,.12)`,border:`1px solid rgba(255,107,53,.28)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer" }}>🔗</div>
+          <div style={{ width:40,height:40,borderRadius:12,margin:"0 auto",background:`rgba(46,175,125,.12)`,border:`1px solid rgba(46,175,125,.28)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer" }}>🔗</div>
         ) : (
-          <div style={{ background:"linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))",border:"1px solid rgba(255,107,53,.28)",borderRadius:13,padding:"11px 14px" }}>
+          <div style={{ background:"linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))",border:"1px solid rgba(46,175,125,.28)",borderRadius:13,padding:"11px 14px" }}>
             <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:5 }}>Connected Wallet</div>
             {wallet?.address ? (
               <div style={{ display:"flex",alignItems:"center",gap:8,marginBottom:10 }}>
@@ -434,7 +434,7 @@ function StatCard({ icon, label, value, sub, color = C.coral, trend }) {
       <div style={{ position:"absolute",top:-20,right:-20,width:90,height:90,background:`radial-gradient(circle,${color}14,transparent 70%)`,opacity:h?1:.5,transition:"opacity .22s" }}/>
       <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12,position:"relative" }}>
         <div style={{ width:40,height:40,borderRadius:12,background:`${color}16`,border:`1px solid ${color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18 }}>{icon}</div>
-        {trend!==undefined && <span style={{ fontSize:11.5,fontWeight:700,color:trend>0?C.green:C.red,background:trend>0?"rgba(16,185,129,.12)":"rgba(239,68,68,.12)",border:`1px solid ${trend>0?"rgba(16,185,129,.3)":"rgba(239,68,68,.3)"}`,padding:"3px 9px",borderRadius:"100px" }}>{trend>0?"↑":"↓"} {Math.abs(trend)}%</span>}
+        {trend!==undefined && <span style={{ fontSize:11.5,fontWeight:700,color:trend>0?C.green:C.red,background:trend>0?"rgba(68,147,66,.12)":"rgba(239,68,68,.12)",border:`1px solid ${trend>0?"rgba(68,147,66,.3)":"rgba(239,68,68,.3)"}`,padding:"3px 9px",borderRadius:"100px" }}>{trend>0?"↑":"↓"} {Math.abs(trend)}%</span>}
       </div>
       <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:5,position:"relative" }}>{label}</div>
       <div style={{ fontSize:26,fontWeight:900,letterSpacing:"-.04em",marginBottom:3,position:"relative",background:`linear-gradient(135deg,${C.text},${color})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{value}</div>
@@ -532,7 +532,7 @@ function EarningsSummary({ totalUsdc = 3150, thisMonth = 1240, pendingRelease = 
             📲 Withdraw ${formatUsd(thisMonth)} to GCash
           </Btn>
         ) : (
-          <div style={{ background:"linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.04))",border:"1px solid rgba(255,107,53,.28)",borderRadius:14,padding:"18px 20px" }}>
+          <div style={{ background:"linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))",border:"1px solid rgba(46,175,125,.28)",borderRadius:14,padding:"18px 20px" }}>
             <div style={{ fontSize:14,fontWeight:800,color:C.text,marginBottom:4 }}>Confirm Withdrawal</div>
             <div style={{ fontSize:13,color:C.textSub,marginBottom:14,lineHeight:1.6 }}>
               Withdraw <strong style={{ color:C.text }}>${formatUsd(thisMonth)} USDC</strong> → <strong style={{ color:C.text }}>₱{phpOf(thisMonth)}</strong> to GCash <code style={{ fontSize:12,color:C.coral,fontFamily:"monospace" }}>+63 917 *** 4821</code>
@@ -768,8 +768,8 @@ function ScreenB() {
           ☰
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 22 }}>🐧</span>
-          <span style={{ fontSize: 16, fontWeight: 800, background: "linear-gradient(135deg,#FF6B35,#FF9A6C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
+          <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
+          <span style={{ fontSize: 16, fontWeight: 800, background: "linear-gradient(135deg,#3FD0C9,#C1F6ED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pangolin</span>
         </div>
         <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${C.coral}22,${C.coral}0A)`, border: `1.5px solid ${C.coral}45`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 750, color: C.coral }}>
           {freelancerName.substring(0, 2).toUpperCase() || "FL"}
@@ -801,7 +801,7 @@ function ScreenB() {
 
         <main style={{
           flex:1,overflowY:"auto",overflowX:"hidden",
-          background:`radial-gradient(ellipse 60% 40% at 70% 10%, rgba(255,107,53,.05) 0%, transparent 60%),radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20,184,166,.04) 0%, transparent 60%),${C.base}`,
+          background:`radial-gradient(ellipse 60% 40% at 70% 10%, rgba(46,175,125,.05) 0%, transparent 60%),radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20,184,166,.04) 0%, transparent 60%),${C.base}`,
         }}>
           <div className="dashboard-inner-wrapper" style={{ maxWidth:1060,margin:"0 auto",padding:"28px 28px 60px" }}>
 
@@ -908,13 +908,13 @@ export default function PangolinFreelancer() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body, #root { min-height: 100%; height: 100%; }
-        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #0D0D0F; color: #F0F0F8; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #02353C; color: #C1F6ED; -webkit-font-smoothing: antialiased; }
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.7)} }
         @keyframes fade-up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        select option { background: #1D1D28; }
+        select option { background: #032F36; }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0D0D0F; }
-        ::-webkit-scrollbar-thumb { background: #26263A; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #02353C; }
+        ::-webkit-scrollbar-thumb { background: #0A5560; border-radius: 3px; }
 
         /* Mobile Responsive Navigation Drawer & Layout CSS */
         @media (max-width: 768px) {
@@ -952,8 +952,8 @@ export default function PangolinFreelancer() {
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
-            background: #111115;
-            border-bottom: 1px solid #242430;
+            background: #032F36;
+            border-bottom: 1px solid #0A5560;
             position: sticky;
             top: 0;
             z-index: 90;
@@ -962,7 +962,7 @@ export default function PangolinFreelancer() {
             display: flex;
             height: 100vh;
             overflow: hidden;
-            background: #0D0D0F;
+            background: #02353C;
             flex-direction: column !important;
           }
           .dashboard-inner-wrapper {
@@ -986,7 +986,7 @@ export default function PangolinFreelancer() {
             display: flex;
             height: 100vh;
             overflow: hidden;
-            background: #0D0D0F;
+            background: #02353C;
           }
           .freelancer-bottom-grid {
             grid-template-columns: 1fr 1fr;
@@ -999,8 +999,8 @@ export default function PangolinFreelancer() {
         {[["A","🔗 Invite"],["B","📊 Dashboard"]].map(([id,label]) => (
           <button key={id} onClick={() => setScreen(id)} style={{
             padding:"7px 14px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:C.font,
-            background:screen===id?"linear-gradient(135deg,rgba(255,107,53,.2),rgba(255,107,53,.08))":"transparent",
-            boxShadow:screen===id?"inset 0 0 0 1px rgba(255,107,53,.28)":"none",
+            background:screen===id?"linear-gradient(135deg,rgba(46,175,125,.2),rgba(46,175,125,.08))":"transparent",
+            boxShadow:screen===id?"inset 0 0 0 1px rgba(46,175,125,.28)":"none",
             color:screen===id?C.coral:C.textMuted,fontSize:12.5,fontWeight:screen===id?700:500,
             transition:"all .15s",
           }}>{label}</button>
@@ -1010,7 +1010,7 @@ export default function PangolinFreelancer() {
       {screen === "A" ? (
         <div key="A" style={{
           minHeight:"100vh",overflowX:"hidden",
-          background:`radial-gradient(ellipse 70% 50% at 15% 15%, rgba(255,107,53,.07) 0%, transparent 55%),radial-gradient(ellipse 60% 45% at 85% 85%, rgba(59,130,246,.05) 0%, transparent 55%),#0D0D0F`,
+          background:`radial-gradient(ellipse 70% 50% at 15% 15%, rgba(46,175,125,.07) 0%, transparent 55%),radial-gradient(ellipse 60% 45% at 85% 85%, rgba(63,208,201,.05) 0%, transparent 55%),#02353C`,
           padding:"40px 16px 60px",animation:"fade-up .35s ease",
         }}>
           <div style={{ position:"fixed",inset:0,opacity:.017,pointerEvents:"none",backgroundImage:"linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",backgroundSize:"44px 44px" }}/>
