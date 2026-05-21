@@ -139,12 +139,12 @@ const DEFAULT_MIN_PCT = 60;
 const DEFAULT_MIN_USDC = DEFAULT_TOTAL_USDC * DEFAULT_MIN_PCT / 100;
 const DEFAULT_MILESTONES_INVITE = [];
 
-function ScreenA({ onAccept, inviteData }) {
+function ScreenA({ onAccept, inviteData, walletAddress }) {
   const [declining, setDeclining] = useState(false);
   const [accepted,  setAccepted]  = useState(false);
   const [accepting,  setAccepting]  = useState(false);
   const [acceptError, setAcceptError] = useState(null);
-  const { wallet, connectWallet } = useFreighterWallet();
+  const { connectWallet } = useFreighterWallet();
   const escrowOnchainId = inviteData?.escrowOnchainId ?? 0;
   const {
     clientName = "Client",
@@ -168,10 +168,14 @@ function ScreenA({ onAccept, inviteData }) {
     setAccepting(true);
     setAcceptError(null);
     try {
-      // Force-refresh Freighter to get the account currently active in the extension
+      // Activate Freighter to sign — verify the address matches the linked wallet
       const fresh = await connectWallet();
       if (!fresh?.address) {
-        setAcceptError("Connect your Freighter wallet first.");
+        setAcceptError("Open Freighter to sign the transaction.");
+        return;
+      }
+      if (walletAddress && fresh.address !== walletAddress) {
+        setAcceptError("Wrong wallet active in Freighter. Switch to your linked wallet and try again.");
         return;
       }
       // Check on-chain status — skip confirm_freelancer if already Active or beyond
@@ -305,7 +309,7 @@ function ScreenA({ onAccept, inviteData }) {
       {/* CTAs */}
       <div style={{ display:"flex",flexDirection:"column",gap:12 }}>
         <Btn variant="coral" size="xl" fullWidth onClick={handleAccept} disabled={accepting}>
-          {accepting ? "⏳ Signing…" : "🔗 Accept & Connect Wallet"}
+          {accepting ? "⏳ Signing…" : "✅ Accept Invitation"}
         </Btn>
         {acceptError && (
           <div style={{ fontSize: 12.5, color: "#F87171", textAlign: "center", marginTop: 4 }}>{acceptError}</div>
@@ -369,7 +373,7 @@ function SidebarItem({ icon, label, badge, active, collapsed, onClick }) {
   );
 }
 
-function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0, wallet = null, onConnect = null, isMobile, onClose }) {
+function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Freelancer", jobCount = 0, messageCount = 0, wallet = null, onConnect = null, isMobile, onClose, onLogout }) {
   const W = collapsed ? 64 : 228;
   const navItems = getNavItems(jobCount, messageCount);
   return (
@@ -399,6 +403,17 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
           <SidebarItem key={id} icon={icon} label={label} badge={badge} active={active===id} collapsed={isMobile ? false : collapsed} onClick={() => { setActive(id); if (isMobile && onClose) onClose(); }} />
         ))}
       </nav>
+
+      {/* Logout */}
+      <div style={{ padding:"0 8px 10px",flexShrink:0 }}>
+        {(collapsed && !isMobile) ? (
+          <button onClick={onLogout} title="Log out" style={{ width:40,height:40,borderRadius:12,margin:"0 auto",background:"transparent",border:`1px solid rgba(239,68,68,.2)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,cursor:"pointer",color:"#EF4444" }}>↩</button>
+        ) : (
+          <button onClick={onLogout} style={{ width:"100%",padding:"9px 14px",borderRadius:11,background:"transparent",border:`1px solid rgba(239,68,68,.2)`,color:"#EF4444",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:C.font,display:"flex",alignItems:"center",gap:8 }}>
+            <span>↩</span> Log Out
+          </button>
+        )}
+      </div>
 
       {/* Wallet */}
       <div style={{ padding:"12px 8px",borderTop:`1px solid ${C.border}`,flexShrink:0 }}>
@@ -594,32 +609,54 @@ function WorkProof({ portfolioLink = "pangolin.gg/verify/freelancer" }) {
   );
 }
 
-function ActiveJobsTable({ jobs, count }) {
+const DONE_STATUSES = ["Completed", "completed", "COMPLETED"];
+
+function JobsTableBody({ rows }) {
+  if (!rows.length) return (
+    <div style={{ padding:"28px 22px",textAlign:"center",color:C.textMuted,fontSize:13 }}>No jobs here yet.</div>
+  );
   return (
-    <GlassCard nohover style={{ padding:0,overflow:"hidden" }}>
-      <div style={{ padding:"18px 22px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-        <div>
-          <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>Active Jobs</div>
-          <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>{count} contracts in progress</div>
-        </div>
-        <Btn variant="ghost" size="sm">View All →</Btn>
-      </div>
-
-      <div style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: 780 }}>
-          {/* Header */}
-          <div style={{ display:"grid",gridTemplateColumns:"2fr 1.4fr 1.5fr 1fr 1.1fr 1.2fr",padding:"11px 22px",borderBottom:`1px solid ${C.border}`,background:"rgba(255,255,255,.02)" }}>
-            {["Project","Client","Status","Amount","Due Date","Action"].map(h => (
-              <div key={h} style={{ fontSize:11,fontWeight:700,color:C.textMuted,letterSpacing:".05em",textTransform:"uppercase" }}>{h}</div>
-            ))}
-          </div>
-
-          {jobs.map((row, i) => (
-            <JobRow key={i} row={row} last={i===jobs.length-1} />
+    <div style={{ overflowX:"auto" }}>
+      <div style={{ minWidth:780 }}>
+        <div style={{ display:"grid",gridTemplateColumns:"2fr 1.4fr 1.5fr 1fr 1.1fr 1.2fr",padding:"11px 22px",borderBottom:`1px solid ${C.border}`,background:"rgba(255,255,255,.02)" }}>
+          {["Project","Client","Status","Amount","Due Date","Action"].map(h => (
+            <div key={h} style={{ fontSize:11,fontWeight:700,color:C.textMuted,letterSpacing:".05em",textTransform:"uppercase" }}>{h}</div>
           ))}
         </div>
+        {rows.map((row, i) => <JobRow key={i} row={row} last={i===rows.length-1} />)}
       </div>
-    </GlassCard>
+    </div>
+  );
+}
+
+function ActiveJobsTable({ jobs, count }) {
+  const active = jobs.filter(j => !DONE_STATUSES.includes(j.status));
+  const done   = jobs.filter(j =>  DONE_STATUSES.includes(j.status));
+  return (
+    <>
+      <GlassCard nohover style={{ padding:0,overflow:"hidden",marginBottom:done.length ? 16 : 0 }}>
+        <div style={{ padding:"18px 22px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+          <div>
+            <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>Active Jobs</div>
+            <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>{active.length} contracts in progress</div>
+          </div>
+          <Btn variant="ghost" size="sm">View All →</Btn>
+        </div>
+        <JobsTableBody rows={active} />
+      </GlassCard>
+
+      {done.length > 0 && (
+        <GlassCard nohover style={{ padding:0,overflow:"hidden" }}>
+          <div style={{ padding:"18px 22px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+            <div>
+              <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>✅ Done</div>
+              <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>{done.length} completed · funds released</div>
+            </div>
+          </div>
+          <JobsTableBody rows={done} />
+        </GlassCard>
+      )}
+    </>
   );
 }
 
@@ -659,10 +696,12 @@ function JobRow({ row, last }) {
   );
 }
 
-function ScreenB() {
+function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
   const { supabase, user } = useAuth();
   const { wallet, connectWallet } = useFreighterWallet();
   const { profile, saveWalletAddress } = useProfile();
+  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = "/login"; };
+  const [deliveries, setDeliveries] = useState([]);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState("dashboard");
@@ -760,6 +799,11 @@ function ScreenB() {
     }
 
     loadJobs();
+    if (user?.id) {
+      supabase.from("deliveries").select("delivery_note,created_at").eq("submitted_by", user.id)
+        .order("created_at", { ascending: false }).limit(5)
+        .then(({ data }) => { if (mounted && data) setDeliveries(data); });
+    }
     return () => { mounted = false; };
   }, [supabase, user?.id]);
 
@@ -801,11 +845,12 @@ function ScreenB() {
           }}
           isMobile={true}
           onClose={() => setMobileMenuOpen(false)}
+          onLogout={handleLogout}
         />
       </div>
 
       <div className="dashboard-main-container">
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={async () => { const snap = await connectWallet(); if (snap.status === "connected" && snap.address) { await saveWalletAddress(snap.address); } }} isMobile={false} />
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={async () => { const snap = await connectWallet(); if (snap.status === "connected" && snap.address) { await saveWalletAddress(snap.address); } }} isMobile={false} onLogout={handleLogout} />
 
         <main style={{
           flex:1,overflowY:"auto",overflowX:"hidden",
@@ -820,12 +865,14 @@ function ScreenB() {
                 <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, {freelancerName.split(" ")[0] || "Freelancer"} 👋</h1>
               </div>
               <div style={{ display:"flex",gap:10,alignItems:"center" }}>
-                {/* Notif bell */}
-                <div style={{ width:40,height:40,borderRadius:12,background:C.elevated,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",position:"relative" }}>
-                  🔔
-                  <div style={{ position:"absolute",top:6,right:6,width:9,height:9,borderRadius:"50%",background:C.coral,border:`2px solid ${C.surface}`,boxShadow:`0 0 8px ${C.coral}` }}/>
-                </div>
-                <Btn variant="coral" size="md">+ Submit New Delivery</Btn>
+                {hasInvite && onSwitchToInvite && (
+                  <div style={{ display:"flex",gap:4,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:4 }}>
+                    <button onClick={onSwitchToInvite} style={{ padding:"6px 12px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:C.font,background:"transparent",color:C.textMuted,fontSize:12,fontWeight:500 }}>🔗 Invite</button>
+                    <button style={{ padding:"6px 12px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:C.font,background:"linear-gradient(135deg,rgba(46,175,125,.2),rgba(46,175,125,.08))",boxShadow:"inset 0 0 0 1px rgba(46,175,125,.28)",color:C.coral,fontSize:12,fontWeight:700 }}>📊 Dashboard</button>
+                  </div>
+                )}
+                <FreelancerNotifBell profile={profile} deliveries={deliveries} />
+                <Btn variant="coral" size="md" onClick={() => window.location.href = "/delivery"}>+ Submit New Delivery</Btn>
               </div>
             </div>
 
@@ -857,60 +904,183 @@ function ScreenB() {
   );
 }
 
+// ── Freelancer Notification Bell ──────────────────────────────────────────────
+function FreelancerNotifBell({ profile, deliveries = [] }) {
+  const [open, setOpen] = useState(false);
+  const [h, hov] = useHover();
+
+  const items = [
+    ...(profile?.wallet_address ? [{
+      icon: "🔒",
+      color: "#2EAF7D",
+      title: "Wallet linked",
+      sub: `${profile.wallet_address.slice(0, 6)}…${profile.wallet_address.slice(-6)}`,
+    }] : [{
+      icon: "⚠️",
+      color: "#F59E0B",
+      title: "No wallet linked",
+      sub: "Connect Freighter to receive payments",
+    }]),
+    ...deliveries.slice(0, 5).map(d => ({
+      icon: "📦",
+      color: "#3FD0C9",
+      title: "Task submitted",
+      sub: d.delivery_note ? d.delivery_note.slice(0, 50) : "Delivery uploaded",
+    })),
+  ];
+
+  const hasUnread = !profile?.wallet_address || deliveries.length > 0;
+
+  return (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <div
+        {...hov}
+        onClick={() => setOpen(o => !o)}
+        style={{
+          cursor: "pointer",
+          width: 36, height: 36, borderRadius: 10,
+          background: h || open ? C.elevated : "rgba(17,17,22,.9)",
+          border: `1px solid ${open ? C.borderLit : C.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all .15s", fontSize: 16, position: "relative",
+        }}
+      >
+        🔔
+        {hasUnread && (
+          <div style={{
+            position: "absolute", top: 5, right: 5,
+            width: 8, height: 8, borderRadius: "50%",
+            background: C.coral, border: `2px solid ${C.surface}`,
+            boxShadow: `0 0 6px ${C.coral}`,
+          }} />
+        )}
+      </div>
+
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 998 }} />
+          <div style={{
+            position: "absolute", top: "calc(100% + 8px)", right: 0,
+            width: 280, zIndex: 999,
+            background: C.surface,
+            border: `1px solid ${C.border}`,
+            borderRadius: 14,
+            boxShadow: "0 16px 48px rgba(0,0,0,.5)",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              padding: "12px 14px 8px",
+              borderBottom: `1px solid ${C.border}`,
+              fontSize: 12, fontWeight: 700, color: C.textSub,
+              letterSpacing: ".04em", textTransform: "uppercase",
+            }}>Notifications</div>
+            {items.length === 0 ? (
+              <div style={{ padding: "18px 14px", fontSize: 13, color: C.textMuted, textAlign: "center" }}>
+                No notifications yet
+              </div>
+            ) : (
+              <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                {items.map((item, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "flex-start", gap: 9,
+                    padding: "10px 14px",
+                    borderBottom: i < items.length - 1 ? `1px solid rgba(10,85,96,.4)` : "none",
+                  }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                      background: `${item.color}18`, border: `1px solid ${item.color}30`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 13,
+                    }}>{item.icon}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.3 }}>{item.title}</div>
+                      {item.sub && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2, lineHeight: 1.4 }}>{item.sub}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // Root — screen switcher
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinFreelancer() {
   const { supabase, user } = useAuth();
-  const { connectWallet: rootConnectWallet } = useFreighterWallet();
-  const { profile, saveWalletAddress } = useProfile();
-  const [screen, setScreen] = useState(() =>
-    typeof window !== "undefined" && window.location.search.includes("view=dashboard") ? "B" : "A"
-  );
+  const { wallet, connectWallet: rootConnectWallet, disconnectWallet: rootDisconnectWallet } = useFreighterWallet();
+  const { profile, loading: profileLoading, saveWalletAddress } = useProfile();
+  const [screen, setScreen] = useState("LOADING");
   const [inviteData, setInviteData] = useState(null);
+  const [walletError, setWalletError] = useState("");
+  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = "/login"; };
 
   useEffect(() => {
+    if (profileLoading) return;
     let mounted = true;
-    async function loadInviteData() {
+
+    if (!profile?.wallet_address) {
+      setScreen("WALLET");
+      return;
+    }
+
+    async function run() {
+      // Find escrow addressed to this wallet that is pending freelancer acceptance
       const { data: escrow } = await supabase
         .from("escrows")
         .select("id,title,category,amount_usdc,min_guarantee_pct,min_guarantee_usdc,deadline,client_id,stellar_contract_id")
+        .eq("freelancer_wallet", profile.wallet_address)
+        .eq("status", "created")
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
-      if (!mounted || !escrow) return;
+        .maybeSingle();
 
-      const { data: client } = escrow.client_id
-        ? await supabase.from("profiles").select("display_name").eq("id", escrow.client_id).single()
-        : { data: null };
-      const { count: clientEscrowCount } = escrow.client_id
-        ? await supabase.from("escrows").select("id", { count: "exact", head: true }).eq("client_id", escrow.client_id)
-        : { count: 0 };
-      const { data: milestoneRows } = await supabase
-        .from("milestones")
-        .select("title,amount_usdc,sort_order")
-        .eq("escrow_id", escrow.id)
-        .order("sort_order", { ascending: true });
+      if (!mounted) return;
 
-      const totalUsdc = Number(escrow.amount_usdc || 0);
-      const minPct = Number(escrow.min_guarantee_pct || 0);
-      const minUsdc = Number(escrow.min_guarantee_usdc ?? ((totalUsdc * minPct) / 100));
-      setInviteData({
-        clientName: client?.display_name || "Client",
-        projectTitle: escrow.title || "Escrow Project",
-        category: escrow.category || "General",
-        totalUsdc,
-        deadline: escrow.deadline ? new Date(escrow.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD",
-        milestones: (milestoneRows || []).map(m => ({ name: m.title, amount: Number(m.amount_usdc || 0) })),
-        minPct,
-        minUsdc,
-        clientCompletedEscrows: clientEscrowCount || 0,
-        escrowOnchainId: parseInt(escrow.stellar_contract_id ?? "0") || 0,
-      });
+      if (escrow) {
+        const { data: client } = escrow.client_id
+          ? await supabase.from("profiles").select("display_name").eq("id", escrow.client_id).single()
+          : { data: null };
+        const { count: clientEscrowCount } = escrow.client_id
+          ? await supabase.from("escrows").select("id", { count: "exact", head: true }).eq("client_id", escrow.client_id)
+          : { count: 0 };
+        const { data: milestoneRows } = await supabase
+          .from("milestones")
+          .select("title,amount_usdc,sort_order")
+          .eq("escrow_id", escrow.id)
+          .order("sort_order", { ascending: true });
+
+        if (!mounted) return;
+
+        const totalUsdc = Number(escrow.amount_usdc || 0);
+        const minPct = Number(escrow.min_guarantee_pct || 0);
+        const minUsdc = Number(escrow.min_guarantee_usdc ?? ((totalUsdc * minPct) / 100));
+        setInviteData({
+          clientName: client?.display_name || "Client",
+          projectTitle: escrow.title || "Escrow Project",
+          category: escrow.category || "General",
+          totalUsdc,
+          deadline: escrow.deadline ? new Date(escrow.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD",
+          milestones: (milestoneRows || []).map(m => ({ name: m.title, amount: Number(m.amount_usdc || 0) })),
+          minPct,
+          minUsdc,
+          clientCompletedEscrows: clientEscrowCount || 0,
+          escrowOnchainId: parseInt(escrow.stellar_contract_id ?? "0") || 0,
+        });
+        setScreen("A");
+      } else {
+        setScreen("B");
+      }
+
     }
-    loadInviteData();
+
+    run();
     return () => { mounted = false; };
-  }, [supabase, user?.id]);
+  }, [supabase, user?.id, profile?.wallet_address, profileLoading]);
 
   return (
     <AuthGuard>
@@ -922,6 +1092,7 @@ export default function PangolinFreelancer() {
         body { font-family: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background: #02353C; color: #C1F6ED; -webkit-font-smoothing: antialiased; }
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.7)} }
         @keyframes fade-up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes spin { to { transform: rotate(360deg); } }
         select option { background: #032F36; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #02353C; }
@@ -1005,73 +1176,75 @@ export default function PangolinFreelancer() {
         }
       `}</style>
 
-      {/* Wallet Connect Banner */}
-      {!profile?.wallet_address && (
-        <div style={{
-          background: "rgba(63,208,201,.1)",
-          border: "1px solid rgba(63,208,201,.3)",
-          borderRadius: "12px",
-          padding: "14px 20px",
-          margin: "16px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}>
-          <div>
-            <span style={{ fontSize: "14px", fontWeight: 700, color: "#3FD0C9" }}>
-              Connect your Freighter wallet
-            </span>
-            <span style={{ fontSize: "13px", color: "#7ECFC6", marginLeft: "8px" }}>
-              Required to create and fund escrows.
-            </span>
-          </div>
-          <button
-            onClick={async () => {
-              const snap = await rootConnectWallet();
-              if (snap.status === "connected" && snap.address) {
-                await saveWalletAddress(snap.address);
-              }
-            }}
-            style={{
-              padding: "8px 18px",
-              background: "linear-gradient(135deg,#2EAF7D,#228A62)",
-              border: "none", borderRadius: "100px",
-              color: "#02353C", fontSize: "13px", fontWeight: 700,
-              cursor: "pointer", whiteSpace: "nowrap",
-            }}
-          >
-            Connect Wallet
-          </button>
+      {screen === "LOADING" && (
+        <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#02353C" }}>
+          <div style={{ width:36,height:36,borderRadius:"50%",border:`3px solid rgba(63,208,201,.2)`,borderTop:`3px solid #3FD0C9`,animation:"spin .7s linear infinite" }} />
         </div>
       )}
 
-      {/* Screen switcher tab */}
-      <div style={{ position:"fixed",top:12,right:16,zIndex:999,display:"flex",gap:4,background:"rgba(17,17,22,.9)",border:`1px solid ${C.border}`,borderRadius:12,padding:5,backdropFilter:"blur(12px)" }}>
-        {[["A","🔗 Invite"],["B","📊 Dashboard"]].map(([id,label]) => (
-          <button key={id} onClick={() => setScreen(id)} style={{
-            padding:"7px 14px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:C.font,
-            background:screen===id?"linear-gradient(135deg,rgba(46,175,125,.2),rgba(46,175,125,.08))":"transparent",
-            boxShadow:screen===id?"inset 0 0 0 1px rgba(46,175,125,.28)":"none",
-            color:screen===id?C.coral:C.textMuted,fontSize:12.5,fontWeight:screen===id?700:500,
-            transition:"all .15s",
-          }}>{label}</button>
-        ))}
-      </div>
+      {screen === "WALLET" && (
+        <div style={{
+          minHeight:"100vh", display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center",
+          background:`radial-gradient(ellipse 70% 50% at 50% 30%, rgba(63,208,201,.06) 0%, transparent 60%), #02353C`,
+          padding:"40px 24px",
+        }}>
+          <div style={{ width:"100%", maxWidth:400, textAlign:"center" }}>
+            <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,#054048,#032F36)",border:`1px solid rgba(10,85,96,.8)`,borderRadius:14,padding:"10px 22px",boxShadow:"0 0 0 1px rgba(63,208,201,.1)",marginBottom:36 }}>
+              <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
+              <span style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#3FD0C9,#C1F6ED)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Pangolin</span>
+            </div>
+            <div style={{ fontSize:52, marginBottom:20 }}>🔗</div>
+            <h1 style={{ fontSize:24,fontWeight:900,letterSpacing:"-.04em",color:"#C1F6ED",marginBottom:10 }}>Connect your wallet first</h1>
+            <p style={{ fontSize:14,color:"#7ECFC6",lineHeight:1.7,marginBottom:32 }}>
+              Link your Freighter wallet to your account. Once linked, we'll check if any client has an escrow waiting for your wallet address.
+            </p>
+            {walletError && (
+              <div style={{ padding:"12px 16px",borderRadius:10,marginBottom:16,background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.3)",fontSize:13,color:"#EF4444" }}>{walletError}</div>
+            )}
+            <button
+              onClick={async () => {
+                setWalletError("");
+                const snap = await rootConnectWallet();
+                if (snap.status === "connected" && snap.address) {
+                  const result = await saveWalletAddress(snap.address);
+                  if (result?.error) { setWalletError(result.error); rootDisconnectWallet(); }
+                }
+              }}
+              style={{
+                width:"100%", padding:"14px", borderRadius:100,
+                background:"linear-gradient(135deg,#2EAF7D,#228A62)",
+                color:"#02353C", fontSize:15, fontWeight:700, border:"none",
+                cursor:"pointer", fontFamily:"'Inter',sans-serif",
+                boxShadow:"0 6px 24px rgba(46,175,125,.35)",
+              }}
+            >
+              🔗 Connect Freighter Wallet
+            </button>
+            <button
+              onClick={handleLogout}
+              style={{ marginTop:20, background:"none", border:"none", color:"#3A8A82", fontSize:13, cursor:"pointer", fontFamily:"'Inter',sans-serif" }}
+            >
+              ← Log out
+            </button>
+          </div>
+        </div>
+      )}
 
-      {screen === "A" ? (
+      {screen === "A" && (
         <div key="A" style={{
           minHeight:"100vh",overflowX:"hidden",
           background:`radial-gradient(ellipse 70% 50% at 15% 15%, rgba(46,175,125,.07) 0%, transparent 55%),radial-gradient(ellipse 60% 45% at 85% 85%, rgba(63,208,201,.05) 0%, transparent 55%),#02353C`,
           padding:"40px 16px 60px",animation:"fade-up .35s ease",
         }}>
           <div style={{ position:"fixed",inset:0,opacity:.017,pointerEvents:"none",backgroundImage:"linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",backgroundSize:"44px 44px" }}/>
-          <ScreenA onAccept={() => setScreen("B")} inviteData={inviteData} />
+          <ScreenA onAccept={() => setScreen("B")} inviteData={inviteData} walletAddress={profile?.wallet_address} />
         </div>
-      ) : (
+      )}
+
+      {screen === "B" && (
         <div key="B" style={{ height:"100vh",animation:"fade-up .3s ease" }}>
-          <ScreenB />
+          <ScreenB onSwitchToInvite={() => setScreen("A")} hasInvite={!!inviteData} />
         </div>
       )}
     </>

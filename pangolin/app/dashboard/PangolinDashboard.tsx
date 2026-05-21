@@ -139,7 +139,7 @@ const getNavItems = (escrowCount = 0, messageCount = 0) => [
   { id: "settings",   icon: "⚙️", label: "Settings" },
 ];
 
-function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect, escrowCount = 0, messageCount = 0, isMobile, onClose }) {
+function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect, escrowCount = 0, messageCount = 0, isMobile, onClose, profile, walletError, onLogout }) {
   const W = collapsed ? 64 : 228;
   const navItems = getNavItems(escrowCount, messageCount);
   return (
@@ -190,30 +190,78 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
         ))}
       </nav>
 
+      {/* Logout */}
+      <div style={{ padding: "0 8px 10px", flexShrink: 0 }}>
+        {(collapsed && !isMobile) ? (
+          <button onClick={onLogout} title="Log out" style={{
+            width: 40, height: 40, borderRadius: 12, margin: "0 auto",
+            background: "transparent", border: `1px solid rgba(239,68,68,.2)`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 16, cursor: "pointer", color: "#EF4444",
+            transition: "all .15s",
+          }}>↩</button>
+        ) : (
+          <button onClick={onLogout} style={{
+            width: "100%", padding: "9px 14px", borderRadius: 11,
+            background: "transparent", border: `1px solid rgba(239,68,68,.2)`,
+            color: "#EF4444", fontSize: 13, fontWeight: 600,
+            cursor: "pointer", fontFamily: C.font,
+            display: "flex", alignItems: "center", gap: 8,
+            transition: "all .15s",
+          }}>
+            <span>↩</span> Log Out
+          </button>
+        )}
+      </div>
+
       {/* Wallet */}
       <div style={{ padding: "12px 8px", borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
         {(collapsed && !isMobile) ? (
           <div style={{
             width: 40, height: 40, borderRadius: 12, margin: "0 auto",
-            background: `linear-gradient(135deg,${C.coral}22,${C.coral}0A)`,
-            border: `1px solid ${C.coral}35`,
+            background: profile?.wallet_address
+              ? `linear-gradient(135deg,rgba(46,175,125,.22),rgba(46,175,125,.08))`
+              : `linear-gradient(135deg,${C.coral}22,${C.coral}0A)`,
+            border: `1px solid ${profile?.wallet_address ? "rgba(46,175,125,.4)" : C.coral + "35"}`,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 18, cursor: "pointer",
-          }}>🔗</div>
-        ) : wallet?.status === "connected" && wallet.address ? (
+            fontSize: 18,
+          }}>{profile?.wallet_address ? "🔒" : "🔗"}</div>
+        ) : profile?.wallet_address ? (
+          // ── Wallet permanently linked — no way to change ──
           <div style={{
             background: `linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))`,
-            border: `1px solid rgba(46,175,125,.28)`,
+            border: `1px solid rgba(46,175,125,.3)`,
             borderRadius: 13, padding: "11px 14px",
           }}>
-            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 5 }}>Connected Wallet</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, fontFamily: "monospace" }}>{shortenAddress(wallet.address)}</span>
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 5 }}>
+              🔒 Linked Wallet
             </div>
-            <Btn variant="coral" size="sm" onClick={() => { onDisconnect(); if (isMobile && onClose) onClose(); }} sx={{ width: "100%", justifyContent: "center" }}>Disconnect</Btn>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.text, fontFamily: "monospace" }}>
+                {profile.wallet_address.slice(0, 6)}…{profile.wallet_address.slice(-4)}
+              </span>
+            </div>
+            <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.5 }}>
+              1 account · 1 wallet. Cannot be changed.
+            </div>
+          </div>
+        ) : walletError ? (
+          // ── Error state ──
+          <div style={{
+            background: `rgba(239,68,68,.08)`,
+            border: `1px solid rgba(239,68,68,.3)`,
+            borderRadius: 13, padding: "11px 14px",
+          }}>
+            <div style={{ fontSize: 11, color: "#EF4444", fontWeight: 600, marginBottom: 8, lineHeight: 1.5 }}>
+              {walletError}
+            </div>
+            <Btn variant="coral" size="sm" onClick={() => { onConnect(); if (isMobile && onClose) onClose(); }} sx={{ width: "100%", justifyContent: "center" }}>
+              Try Again
+            </Btn>
           </div>
         ) : (
+          // ── Not yet linked ──
           <div style={{
             background: `linear-gradient(135deg,rgba(46,175,125,.06),rgba(46,175,125,.02))`,
             border: `1px solid rgba(46,175,125,.18)`,
@@ -362,43 +410,46 @@ function toDisplayEscrow(escrow) {
   };
 }
 
-function EscrowTable({ rows, loading, error }) {
+function EscrowTableBody({ rows, loading, error, emptyMsg = "No escrows yet." }) {
   const cols = ["Project", "Freelancer", "Status", "Amount", "Milestone", "Action"];
   return (
-    <div style={{
-      background: "linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))",
-      border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden",
-    }}>
-      <div style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: 780 }}>
-          {/* Table header */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 1.6fr 1.5fr 1fr 1.2fr 1.3fr",
-            padding: "13px 24px",
-            borderBottom: `1px solid ${C.border}`,
-            background: "rgba(255,255,255,.02)",
-          }}>
-            {cols.map(c => (
-              <div key={c} style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".06em", textTransform: "uppercase" }}>{c}</div>
-            ))}
-          </div>
-
-          {/* Rows */}
-          {loading ? (
-            <TableMessage title="Loading escrows..." message="Reading the latest contracts from Supabase." />
-          ) : error ? (
-            <TableMessage title="Could not load escrows" message={error} tone="error" />
-          ) : rows.length === 0 ? (
-            <TableMessage title="No escrows yet" message="Create your first escrow and it will appear here." actionLabel="Create Escrow" />
-          ) : (
-            rows.map((row, i) => (
-              <EscrowRow key={row.id || i} row={row} last={i === rows.length - 1} />
-            ))
-          )}
+    <div style={{ overflowX: "auto" }}>
+      <div style={{ minWidth: 780 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1.6fr 1.5fr 1fr 1.2fr 1.3fr", padding: "13px 24px", borderBottom: `1px solid ${C.border}`, background: "rgba(255,255,255,.02)" }}>
+          {cols.map(c => <div key={c} style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".06em", textTransform: "uppercase" }}>{c}</div>)}
         </div>
+        {loading ? (
+          <TableMessage title="Loading escrows..." message="Reading the latest contracts from Supabase." />
+        ) : error ? (
+          <TableMessage title="Could not load escrows" message={error} tone="error" />
+        ) : rows.length === 0 ? (
+          <div style={{ padding: "24px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>{emptyMsg}</div>
+        ) : (
+          rows.map((row, i) => <EscrowRow key={row.id || i} row={row} last={i === rows.length - 1} />)
+        )}
       </div>
     </div>
+  );
+}
+
+function EscrowTable({ rows, loading, error }) {
+  const active = rows.filter(r => r.status !== "Completed");
+  const done   = rows.filter(r => r.status === "Completed");
+  return (
+    <>
+      <div style={{ background: "linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))", border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden", marginBottom: done.length ? 16 : 0 }}>
+        <EscrowTableBody rows={active} loading={loading} error={error} emptyMsg="No active escrows. Create one to get started." />
+      </div>
+      {done.length > 0 && (
+        <div style={{ background: "linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))", border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden" }}>
+          <div style={{ padding: "14px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 15, fontWeight: 800, color: C.text }}>✅ Done</span>
+            <span style={{ fontSize: 12.5, color: C.textMuted }}>{done.length} completed · funds released</span>
+          </div>
+          <EscrowTableBody rows={done} loading={false} error={null} emptyMsg="" />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -508,24 +559,113 @@ function ActivityItem({ icon, color, title, desc, time, last }) {
 }
 
 // ── Notification Bell ─────────────────────────────────────────────────────────
-function NotifBell() {
+function NotifBell({ profile, escrows = [], activities = [] }) {
   const [h, hov] = useHover();
+  const [open, setOpen] = useState(false);
+
+  const statusIcon  = s => s?.includes("Complet") ? "✅" : s?.includes("Fund") ? "💰" : s?.includes("Deliver") ? "📦" : s?.includes("Disput") ? "⚖️" : "📋";
+  const statusColor = s => s?.includes("Complet") ? "#2EAF7D" : s?.includes("Fund") ? "#3FD0C9" : s?.includes("Deliver") ? "#8B5CF6" : s?.includes("Disput") ? "#F59E0B" : "#7ECFC6";
+
+  const items = [
+    ...(profile?.wallet_address ? [{
+      icon: "🔒",
+      color: "#2EAF7D",
+      title: "Wallet linked",
+      sub: `${profile.wallet_address.slice(0, 6)}…${profile.wallet_address.slice(-6)}`,
+    }] : [{
+      icon: "⚠️",
+      color: "#F59E0B",
+      title: "No wallet linked",
+      sub: "Connect Freighter to create escrows",
+    }]),
+    ...escrows.slice(0, 8).map(e => ({
+      icon: statusIcon(e.status),
+      color: statusColor(e.status),
+      title: e.project || e.title || "Untitled Escrow",
+      sub: `${e.status}${e.amount ? " · " + e.amount : ""}${e.freelancer?.name ? " · " + e.freelancer.name : ""}`,
+    })),
+  ];
+
+  const hasUnread = !profile?.wallet_address || escrows.length > 0;
+
   return (
-    <div {...hov} style={{
-      position: "relative", cursor: "pointer",
-      width: 40, height: 40, borderRadius: 12,
-      background: h ? C.elevated : "transparent",
-      border: `1px solid ${h ? C.borderLight : C.border}`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      transition: "all .15s", fontSize: 18,
-    }}>
-      🔔
-      <div style={{
-        position: "absolute", top: 6, right: 6,
-        width: 9, height: 9, borderRadius: "50%",
-        background: C.coral, border: `2px solid ${C.surface}`,
-        boxShadow: `0 0 8px ${C.coral}`,
-      }} />
+    <div style={{ position: "relative" }}>
+      <div
+        {...hov}
+        onClick={() => setOpen(o => !o)}
+        style={{
+          cursor: "pointer",
+          width: 40, height: 40, borderRadius: 12,
+          background: h || open ? C.elevated : "transparent",
+          border: `1px solid ${open ? C.borderLight : h ? C.borderLight : C.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all .15s", fontSize: 18, position: "relative",
+        }}
+      >
+        🔔
+        {hasUnread && (
+          <div style={{
+            position: "absolute", top: 6, right: 6,
+            width: 9, height: 9, borderRadius: "50%",
+            background: C.coral, border: `2px solid ${C.surface}`,
+            boxShadow: `0 0 8px ${C.coral}`,
+          }} />
+        )}
+      </div>
+
+      {open && (
+        <>
+          <div
+            onClick={() => setOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 998 }}
+          />
+          <div style={{
+            position: "absolute", top: "calc(100% + 8px)", right: 0,
+            width: 300, zIndex: 999,
+            background: C.surface,
+            border: `1px solid ${C.border}`,
+            borderRadius: 16,
+            boxShadow: "0 16px 48px rgba(0,0,0,.5)",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              padding: "14px 16px 10px",
+              borderBottom: `1px solid ${C.border}`,
+              fontSize: 13, fontWeight: 700, color: C.textSub,
+              letterSpacing: ".04em", textTransform: "uppercase",
+            }}>
+              Notifications
+            </div>
+            {items.length === 0 ? (
+              <div style={{ padding: "20px 16px", fontSize: 13, color: C.textMuted, textAlign: "center" }}>
+                No notifications yet
+              </div>
+            ) : (
+              <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                {items.map((item, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "flex-start", gap: 10,
+                    padding: "11px 16px",
+                    borderBottom: i < items.length - 1 ? `1px solid rgba(10,85,96,.4)` : "none",
+                    background: "transparent",
+                  }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                      background: `${item.color}18`, border: `1px solid ${item.color}30`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 14,
+                    }}>{item.icon}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.3 }}>{item.title}</div>
+                      {item.sub && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2, lineHeight: 1.4 }}>{item.sub}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -535,6 +675,7 @@ export default function PangolinDashboard() {
   const { supabase, user } = useAuth();
   const { wallet, connectWallet, disconnectWallet } = useFreighterWallet();
   const { profile, saveWalletAddress } = useProfile();
+  const handleLogout = async () => { await supabase.auth.signOut(); go("/login"); };
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState("dashboard");
@@ -546,6 +687,7 @@ export default function PangolinDashboard() {
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [completedCount, setCompletedCount] = useState(0);
   const [trustScore, setTrustScore] = useState(0);
+  const [walletError, setWalletError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -726,48 +868,6 @@ export default function PangolinDashboard() {
         }
       `}</style>
 
-      {/* Wallet Connect Banner */}
-      {!profile?.wallet_address && (
-        <div style={{
-          background: "rgba(63,208,201,.1)",
-          border: "1px solid rgba(63,208,201,.3)",
-          borderRadius: "12px",
-          padding: "14px 20px",
-          margin: "16px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}>
-          <div>
-            <span style={{ fontSize: "14px", fontWeight: 700, color: "#3FD0C9" }}>
-              Connect your Freighter wallet
-            </span>
-            <span style={{ fontSize: "13px", color: "#7ECFC6", marginLeft: "8px" }}>
-              Required to create and fund escrows.
-            </span>
-          </div>
-          <button
-            onClick={async () => {
-              const snap = await connectWallet();
-              if (snap.status === "connected" && snap.address) {
-                await saveWalletAddress(snap.address);
-              }
-            }}
-            style={{
-              padding: "8px 18px",
-              background: "linear-gradient(135deg,#2EAF7D,#228A62)",
-              border: "none", borderRadius: "100px",
-              color: "#02353C", fontSize: "13px", fontWeight: 700,
-              cursor: "pointer", whiteSpace: "nowrap",
-            }}
-          >
-            Connect Wallet
-          </button>
-        </div>
-      )}
-
       {/* Mobile Top Header */}
       <header className="mobile-header" style={{ display: "none" }}>
         <button onClick={() => setMobileMenuOpen(true)} style={{ background: "transparent", border: "none", color: C.text, fontSize: 24, cursor: "pointer" }}>
@@ -793,10 +893,14 @@ export default function PangolinDashboard() {
           active={active}
           setActive={setActive}
           wallet={wallet}
+          profile={profile}
+          walletError={walletError}
           onConnect={async () => {
+            setWalletError("");
             const snap = await connectWallet();
             if (snap.status === "connected" && snap.address) {
-              await saveWalletAddress(snap.address);
+              const result = await saveWalletAddress(snap.address);
+              if (result?.error) { setWalletError(result.error); disconnectWallet(); }
             }
           }}
           onDisconnect={disconnectWallet}
@@ -804,6 +908,7 @@ export default function PangolinDashboard() {
           messageCount={0}
           isMobile={true}
           onClose={() => setMobileMenuOpen(false)}
+          onLogout={handleLogout}
         />
       </div>
 
@@ -816,16 +921,21 @@ export default function PangolinDashboard() {
           active={active}
           setActive={setActive}
           wallet={wallet}
+          profile={profile}
+          walletError={walletError}
           onConnect={async () => {
+            setWalletError("");
             const snap = await connectWallet();
             if (snap.status === "connected" && snap.address) {
-              await saveWalletAddress(snap.address);
+              const result = await saveWalletAddress(snap.address);
+              if (result?.error) { setWalletError(result.error); disconnectWallet(); }
             }
           }}
           onDisconnect={disconnectWallet}
           escrowCount={escrows.length}
           messageCount={0}
           isMobile={false}
+          onLogout={handleLogout}
         />
 
         {/* ── Main ── */}
@@ -853,7 +963,7 @@ export default function PangolinDashboard() {
 
               {/* Right actions */}
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <NotifBell />
+                <NotifBell profile={profile} escrows={escrows} activities={activities} />
                 {/* Create Escrow CTA */}
                 <Btn variant="coral" size="lg" onClick={() => go("/create-escrow")}>
                   <span style={{ fontSize: 16 }}>+</span> Create New Escrow
@@ -874,7 +984,7 @@ export default function PangolinDashboard() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div>
                   <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Active Escrows</h2>
-                  <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{loadingEscrows ? "Loading contracts..." : `${escrows.length} contracts currently in Supabase`}</p>
+                  <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{loadingEscrows ? "Loading contracts..." : `${escrows.filter(e => e.status !== "Completed").length} active · ${escrows.filter(e => e.status === "Completed").length} done`}</p>
                 </div>
                 <Btn variant="ghost" size="sm" onClick={() => go("/escrow")}>View All →</Btn>
               </div>

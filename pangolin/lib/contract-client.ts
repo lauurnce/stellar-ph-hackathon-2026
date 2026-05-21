@@ -185,7 +185,20 @@ function normalizeEscrow(raw: unknown, id: number): EscrowData {
 // ─── Error normalization ──────────────────────────────────────────────────────
 
 function normalizeError(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
+  let message: string;
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === "string") {
+    message = error;
+  } else {
+    // Stellar SDK errors are sometimes XDR objects — try to serialize safely
+    try {
+      const s = JSON.stringify(error);
+      message = s && s !== "null" ? s : "Unknown contract error.";
+    } catch {
+      message = "Unknown contract error.";
+    }
+  }
   if (message.includes("#1") || /Unauthorized/i.test(message)) return "Only the authorized wallet can perform this action.";
   if (message.includes("#2") || /InvalidStatus/i.test(message)) return "This action is not allowed in the current escrow state.";
   if (message.includes("#3") || /InvalidInput/i.test(message)) return "Invalid input provided. Check all fields.";

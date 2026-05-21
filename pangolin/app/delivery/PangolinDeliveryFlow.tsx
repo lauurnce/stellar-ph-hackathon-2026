@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
-import { submitDelivery } from "@/lib/contract-client";
+import { submitDelivery, getEscrow, confirmFreelancer } from "@/lib/contract-client";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Delivery Flow
@@ -192,31 +192,84 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
     const hashHex = Array.from(crypto.getRandomValues(new Uint8Array(32)))
       .map(b => b.toString(16).padStart(2, "0")).join("");
 
-    setPhase("recording"); setProgress(90);
+    setPhase("recording"); setProgress(85);
+
+    // Extract a readable string from any error shape (Stellar errors can be XDR objects)
+    const toErrMsg = (err) => {
+      if (!err) return "Contract call failed.";
+      const msg = err instanceof Error ? err.message
+        : typeof err === "string" ? err
+        : typeof err?.message === "string" ? err.message
+        : null;
+      if (msg && msg !== "[object Object]" && !/^\[object/i.test(msg)) return msg;
+      // Try JSON, fallback to generic
+      try { return JSON.stringify(err); } catch { return "Contract call failed. Check Freighter and try again."; }
+    };
+
     let txHash = null;
-    try {
-      const { hash } = await submitDelivery(fresh.address, onchainId, hashHex);
-      txHash = hash;
-    } catch (err) {
-      setSubmitting(false);
-      setSubmitError(err instanceof Error ? err.message : "Contract call failed.");
-      return;
+
+    if (!onchainId) {
+      // No on-chain ID yet — record delivery in DB only, skip contract call
+      setPhase("done"); setProgress(100);
+    } else {
+      // Check on-chain state before calling submit_delivery
+      let onchainStatus = null;
+      try {
+        const onchain = await getEscrow(onchainId);
+        onchainStatus = onchain.status;
+      } catch (err) {
+        // RPC read failed — proceed without state check (best-effort)
+        console.warn("getEscrow failed:", err);
+      }
+
+      if (onchainStatus === "CREATED") {
+        setSubmitting(false);
+        setSubmitError("Client hasn't funded this escrow yet. Ask them to fund it first.");
+        return;
+      }
+      if (onchainStatus === "CANCELLED") {
+        setSubmitting(false);
+        setSubmitError("This escrow was cancelled and cannot accept a delivery.");
+        return;
+      }
+
+      try {
+        // FUNDED = freelancer not yet confirmed → auto-confirm to reach ACTIVE
+        if (onchainStatus === "FUNDED") {
+          await confirmFreelancer(fresh.address, onchainId);
+        }
+
+        // DELIVERED/COMPLETED = already submitted on-chain, skip contract call, record in DB only
+        if (onchainStatus !== "DELIVERED" && onchainStatus !== "COMPLETED") {
+          const { hash } = await submitDelivery(fresh.address, onchainId, hashHex);
+          txHash = hash;
+        }
+      } catch (err) {
+        setSubmitting(false);
+        setSubmitError(toErrMsg(err));
+        return;
+      }
+
+      setPhase("done"); setProgress(100);
     }
 
     setPhase("done"); setProgress(100);
     await new Promise(r => setTimeout(r, 500));
 
     const fileRecord = files[0] || null;
-    await supabase.from("deliveries").insert({
-      escrow_id: escrow.id,
-      milestone_id: currentMilestone?.id || null,
-      submitted_by: user?.id || null,
-      file_name: fileRecord ? fileRecord.name : null,
-      external_url: link || null,
-      file_hash: hashHex,
-      delivery_note: notes || null,
-      stellar_delivery_tx_hash: txHash,
-    });
+    await Promise.all([
+      supabase.from("deliveries").insert({
+        escrow_id: escrow.id,
+        milestone_id: currentMilestone?.id || null,
+        submitted_by: user?.id || null,
+        file_name: fileRecord ? fileRecord.name : null,
+        external_url: link || null,
+        file_hash: hashHex,
+        delivery_note: notes || null,
+        stellar_delivery_tx_hash: txHash,
+      }),
+      supabase.from("escrows").update({ status: "delivered" }).eq("id", escrow.id),
+    ]);
 
     onSubmit();
   };
@@ -233,6 +286,18 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
+        <button
+          onClick={() => window.location.href = "/freelancer"}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "transparent", border: `1px solid rgba(10,85,96,.6)`,
+            borderRadius: 9, padding: "7px 14px", marginBottom: 18,
+            color: C.textSub, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+            fontFamily: "'Inter',sans-serif", transition: "all .15s",
+          }}
+        >
+          ← Back to Dashboard
+        </button>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
           <div style={{ width: 42, height: 42, borderRadius: 13, background: `linear-gradient(135deg,${C.coral}25,${C.coral}0A)`, border: `1px solid ${C.coral}35`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🚀</div>
           <div>

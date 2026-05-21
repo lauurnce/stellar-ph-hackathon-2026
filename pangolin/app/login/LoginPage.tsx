@@ -197,80 +197,21 @@ export default function LoginPage() {
           0%, 100% { opacity: .5; transform: scale(1); }
           50%       { opacity: 1;  transform: scale(1.1); }
         }
-        .login-left { display: flex !important; }
+        .login-right { display: flex !important; }
         @media (max-width: 768px) {
-          .login-left { display: none !important; }
+          .login-right { display: none !important; }
         }
       `}</style>
 
       <div style={{
         minHeight: "100vh", display: "flex",
-        background: `radial-gradient(ellipse 80% 60% at 0% 50%, rgba(46,175,125,.08) 0%, transparent 60%),
-                     radial-gradient(ellipse 60% 50% at 100% 50%, rgba(63,208,201,.06) 0%, transparent 60%),
+        background: `radial-gradient(ellipse 60% 50% at 0% 50%, rgba(63,208,201,.06) 0%, transparent 60%),
+                     radial-gradient(ellipse 80% 60% at 100% 50%, rgba(46,175,125,.08) 0%, transparent 60%),
                      #02353C`,
         fontFamily: C.font,
       }}>
 
-        {/* ── Left: mascot panel (desktop only) ────────────────────── */}
-        <div className="login-left" style={{
-          flex: "0 0 480px", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          padding: "60px 48px", position: "relative", overflow: "hidden",
-          borderRight: `1px solid #0A5560`,
-        }}>
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "radial-gradient(ellipse 70% 50% at 50% 60%, rgba(63,208,201,.07) 0%, transparent 70%)",
-          }} />
-
-          <div style={{ position: "relative", marginBottom: "36px" }}>
-            <div style={{
-              position: "absolute", inset: "10%",
-              background: "radial-gradient(ellipse, rgba(63,208,201,.15) 0%, transparent 70%)",
-              borderRadius: "50%", filter: "blur(16px)",
-              animation: "mascot-glow 6s ease-in-out infinite",
-            }} />
-            <img
-              src="/pangolin-mascot.png"
-              alt="Pangolin mascot"
-              style={{
-                width: "260px", height: "auto",
-                objectFit: "contain", position: "relative", zIndex: 1,
-                filter: "drop-shadow(0 8px 32px rgba(63,208,201,.3))",
-                animation: "mascot-float 6s ease-in-out infinite",
-              }}
-            />
-          </div>
-
-          <div style={{ textAlign: "center", position: "relative" }}>
-            <h2 style={{
-              fontSize: "26px", fontWeight: 900, letterSpacing: "-.04em",
-              color: C.text, marginBottom: "12px", lineHeight: 1.2,
-            }}>
-              Your work is{" "}
-              <span style={{
-                background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>safe with us.</span>
-            </h2>
-            <p style={{ fontSize: "14px", color: C.textSub, lineHeight: 1.7, maxWidth: "280px" }}>
-              Escrow-protected payments on Stellar.
-              Every peso tracked. Every milestone secured.
-            </p>
-          </div>
-
-          <div style={{ display: "flex", gap: "8px", marginTop: "32px", flexWrap: "wrap", justifyContent: "center" }}>
-            {["⛓️ Stellar", "🔒 Escrow", "🇵🇭 PH"].map(t => (
-              <span key={t} style={{
-                fontSize: "11px", color: C.textMuted, fontWeight: 600,
-                background: C.surface, border: `1px solid ${C.border}`,
-                padding: "5px 10px", borderRadius: "8px",
-              }}>{t}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Right: form panel ─────────────────────────────────────── */}
+        {/* ── Left: form panel ─────────────────────────────────────── */}
         <div style={{
           flex: 1, display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
@@ -278,7 +219,7 @@ export default function LoginPage() {
         }}>
           <div style={{ width: "100%", maxWidth: "420px" }}>
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "36px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "36px" }}>
               <img src="/pangolin-logo.png" alt="Pangolin" style={{ width: 36, height: 36, objectFit: "contain" }} />
               <span style={{
                 fontSize: "22px", fontWeight: 800,
@@ -409,6 +350,78 @@ export default function LoginPage() {
 
           </div>
         </div>
+
+        {/* ── Right: mascot panel (desktop only) ───────────────────── */}
+        <div className="login-right" style={{
+          flex: "0 0 480px", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          padding: "60px 48px", position: "relative", overflow: "hidden",
+        }}>
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "radial-gradient(ellipse 70% 50% at 50% 60%, rgba(63,208,201,.07) 0%, transparent 70%)",
+          }} />
+
+          <div style={{ position: "relative", marginBottom: "36px" }}>
+            <div style={{
+              position: "absolute", inset: "10%",
+              background: "radial-gradient(ellipse, rgba(63,208,201,.15) 0%, transparent 70%)",
+              borderRadius: "50%", filter: "blur(16px)",
+              animation: "mascot-glow 6s ease-in-out infinite",
+            }} />
+            <img
+              src="/pangolin-mascot.png"
+              alt="Pangolin mascot"
+              style={{
+                width: "260px", height: "auto",
+                objectFit: "contain", position: "relative", zIndex: 1,
+                filter: "drop-shadow(0 8px 32px rgba(63,208,201,.3))",
+                animation: "mascot-float 6s ease-in-out infinite",
+              }}
+            />
+          </div>
+
+          <div style={{ textAlign: "center", position: "relative" }}>
+            <h2 style={{
+              fontSize: "26px", fontWeight: 900, letterSpacing: "-.04em",
+              color: C.text, marginBottom: "12px", lineHeight: 1.2,
+            }}>
+              Your work is{" "}
+              <span style={{
+                background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>safe with us.</span>
+            </h2>
+          </div>
+
+          <div style={{ display: "flex", gap: "0", marginTop: "36px", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+            <p style={{ fontSize: "10px", fontWeight: 600, color: C.textMuted, letterSpacing: ".1em", textTransform: "uppercase", marginBottom: "14px" }}>
+              Built on
+            </p>
+            <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+              <img
+                src="/stellar-logo.png"
+                alt="Stellar"
+                style={{
+                  height: "40px", objectFit: "contain",
+                  filter: "brightness(0) invert(1) drop-shadow(0 0 10px rgba(63,208,201,.35))",
+                  opacity: 1,
+                }}
+              />
+              <div style={{ width: 1, height: 32, background: "rgba(63,208,201,.25)" }} />
+              <img
+                src="/risein-logo.png"
+                alt="Rise In"
+                style={{
+                  height: "34px", objectFit: "contain",
+                  filter: "brightness(0) invert(1)",
+                  opacity: 1,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
       </div>
     </>
   );
