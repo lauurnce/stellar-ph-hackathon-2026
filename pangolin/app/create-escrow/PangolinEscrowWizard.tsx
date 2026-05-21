@@ -1469,7 +1469,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
             width: 420,
           }}
         >
-          {txError}
+          Something went wrong
         </div>
       )}
     </div>
