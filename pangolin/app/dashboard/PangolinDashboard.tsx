@@ -670,6 +670,21 @@ function NotifBell({ profile, escrows = [], activities = [] }) {
   );
 }
 
+function eventLabel(eventType) {
+  const map = {
+    escrow_created:   "Escrow Created",
+    funded:           "Escrow Funded",
+    delivered:        "Delivery Submitted",
+    approved:         "Delivery Approved",
+    completed:        "Escrow Completed",
+    disputed:         "Dispute Raised",
+    resolved:         "Dispute Resolved",
+    cancelled:        "Escrow Cancelled",
+    milestone_added:  "Milestone Added",
+    message_sent:     "Message Sent",
+  };
+  return map[eventType] || eventType;
+}
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function PangolinDashboard() {
   const { supabase, user } = useAuth();
@@ -682,12 +697,15 @@ export default function PangolinDashboard() {
   const [escrows, setEscrows] = useState([]);
   const [loadingEscrows, setLoadingEscrows] = useState(true);
   const [escrowError, setEscrowError] = useState("");
+  const [showAllEscrows, setShowAllEscrows] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [completedCount, setCompletedCount] = useState(0);
   const [trustScore, setTrustScore] = useState(0);
   const [walletError, setWalletError] = useState("");
+  const [disputes, setDisputes] = useState([]);
+  const [loadingDisputes, setLoadingDisputes] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -697,12 +715,13 @@ export default function PangolinDashboard() {
 
       const { data } = await supabase
         .from("profiles")
-        .select("display_name,wallet_address")
+        .select("display_name,wallet_address,role,trust_score")
         .eq("id", user.id)
         .single();
 
       if (mounted && data) {
         setUserProfile(data);
+        setTrustScore(data.trust_score || 0);
       }
     }
 
@@ -718,10 +737,18 @@ export default function PangolinDashboard() {
       setLoadingEscrows(true);
       setEscrowError("");
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("escrows")
         .select("id,title,status,amount_usdc,freelancer_wallet,deadline,created_at")
+        .eq("client_wallet", profile?.wallet_address)
         .order("created_at", { ascending: false });
+
+      // Apply limit only when not viewing all
+      if (!showAllEscrows) {
+        query = query.limit(6);
+      }
+
+      const { data, error } = await query;
 
       if (!mounted) return;
 
@@ -741,38 +768,194 @@ export default function PangolinDashboard() {
     loadEscrows();
 
     return () => { mounted = false; };
-  }, [supabase]);
+  }, [supabase, profile?.wallet_address, showAllEscrows]);
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadActivities() {
-      setLoadingActivities(true);
+    async function calculateTrustScore() {
+      if (!user?.id || !userProfile?.role) return;
 
-      const { data } = await supabase
-        .from("escrow_events")
-        .select("id,event_type,message,created_at")
-        .order("created_at", { ascending: false })
-        .limit(3);
+      let score = 0;
 
-      if (mounted && data) {
-        const formattedActivities = data.map(e => ({
-          icon: e.event_type === "funded" ? "🔒" : e.event_type === "delivered" ? "📦" : "💬",
-          color: e.event_type === "funded" ? C.blue : e.event_type === "delivered" ? C.coral : C.green,
-          title: e.event_type === "funded" ? "Escrow Funded" : e.event_type === "delivered" ? "Delivery Submitted" : e.event_type,
-          desc: e.message || "Activity recorded",
-          time: new Date(e.created_at).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }),
-        }));
-        setActivities(formattedActivities);
+      if (userProfile.role === "client") {
+        // Client trust score: based on escrows created, completion rate, dispute rate
+        const { data: clientEscrows } = await supabase
+          .from("escrows")
+          .select("id,status")
+          .eq("client_wallet", profile?.wallet_address);
+
+        if (clientEscrows && clientEscrows.length > 0) {
+          const total = clientEscrows.length;
+          const completed = clientEscrows.filter(e => e.status === "completed").length;
+          const disputed = clientEscrows.filter(e => e.status === "disputed").length;
+
+          // Base score: 50
+          // +10 per completed escrow (max +30)
+          // -20 per dispute (max -40)
+          // +5 bonus if completion rate > 80%
+          score = 50;
+          score += Math.min(completed * 10, 30);
+          score -= Math.min(disputed * 20, 40);
+          if (total > 0 && (completed / total) > 0.8) score += 5;
+          score = Math.max(0, Math.min(100, score));
+        }
+      } else if (userProfile.role === "freelancer") {
+        // Freelancer trust score: based on escrows completed, completion rate, dispute rate
+        const { data: freelancerEscrows } = await supabase
+          .from("escrows")
+          .select("id,status")
+          .eq("freelancer_wallet", profile?.wallet_address);
+
+        if (freelancerEscrows && freelancerEscrows.length > 0) {
+          const total = freelancerEscrows.length;
+          const completed = freelancerEscrows.filter(e => e.status === "completed").length;
+          const disputed = freelancerEscrows.filter(e => e.status === "disputed").length;
+
+          // Base score: 50
+          // +15 per completed escrow (max +45)
+          // -25 per dispute (max -50)
+          // +10 bonus if completion rate > 90%
+          score = 50;
+          score += Math.min(completed * 15, 45);
+          score -= Math.min(disputed * 25, 50);
+          if (total > 0 && (completed / total) > 0.9) score += 10;
+          score = Math.max(0, Math.min(100, score));
+        }
       }
 
-      setLoadingActivities(false);
+      if (mounted) {
+        setTrustScore(score);
+        // Update the trust score in the database
+        await supabase
+          .from("profiles")
+          .update({ trust_score: score })
+          .eq("id", user.id);
+      }
     }
 
-    loadActivities();
+    calculateTrustScore();
 
     return () => { mounted = false; };
-  }, [supabase]);
+  }, [user?.id, userProfile?.role, profile?.wallet_address, supabase]);
+
+  // Load disputes for client
+  const loadDisputes = async () => {
+    if (!user?.id) return;
+    setLoadingDisputes(true);
+
+    // Get escrows created by this client
+    const { data: clientEscrows } = await supabase
+      .from("escrows")
+      .select("id")
+      .eq("client_id", user.id);
+
+    if (!clientEscrows?.length) {
+      setDisputes([]);
+      setLoadingDisputes(false);
+      return;
+    }
+
+    const escrowIds = clientEscrows.map(e => e.id);
+
+    // Get disputes for those escrows
+    const { data: disputesData } = await supabase
+      .from("disputes")
+      .select("id,escrow_id,reason,status,opened_at,resolved_at,freelancer_award_usdc,client_refund_usdc")
+      .in("escrow_id", escrowIds)
+      .order("opened_at", { ascending: false });
+
+    // Get escrow details for each dispute
+    if (disputesData?.length) {
+      const { data: escrowDetails } = await supabase
+        .from("escrows")
+        .select("id,title,amount_usdc,status")
+        .in("id", disputesData.map(d => d.escrow_id));
+
+      const escrowMap = {};
+      (escrowDetails || []).forEach(e => { escrowMap[e.id] = e; });
+
+      const allDisputesWithEscrow = disputesData.map(d => ({
+        ...d,
+        escrow: escrowMap[d.escrow_id] || null
+      }));
+
+      // Deduplicate: keep only the most recent dispute per escrow
+      const seenEscrows = new Set();
+      const disputesWithEscrow = allDisputesWithEscrow.filter(d => {
+        if (seenEscrows.has(d.escrow_id)) return false;
+        seenEscrows.add(d.escrow_id);
+        return true;
+      });
+
+      setDisputes(disputesWithEscrow);
+    } else {
+      setDisputes([]);
+    }
+    setLoadingDisputes(false);
+  };
+
+  // Load disputes when tab is selected
+  useEffect(() => {
+    if (active === "disputes") {
+      loadDisputes();
+    }
+  }, [active, user?.id]);
+
+useEffect(() => {
+  let mounted = true;
+
+  async function loadActivities() {
+    setLoadingActivities(true);
+
+    const { data } = await supabase
+      .from("escrow_events")
+      .select("id,event_type,message,created_at,escrow_id,escrows(title)")
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    if (mounted && data) {
+      const formattedActivities = data.map(e => {
+        const escrowTitle = e.escrows?.title || null;
+        const label = eventLabel(e.event_type);
+
+        return {
+          icon:  e.event_type === "funded"        ? "🔒"
+               : e.event_type === "delivered"      ? "📦"
+               : e.event_type === "escrow_created" ? "📋"
+               : e.event_type === "completed"      ? "✅"
+               : e.event_type === "disputed"       ? "⚖️"
+               : "💬",
+          color: e.event_type === "funded"    ? C.blue
+               : e.event_type === "delivered" ? C.coral
+               : e.event_type === "completed" ? C.green
+               : e.event_type === "disputed"  ? C.amber
+               : C.green,
+          title: escrowTitle || label,
+          desc:  escrowTitle ? label : (e.message || "Activity recorded"),
+          time:  new Date(e.created_at).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }),
+        };
+      });
+      setActivities(formattedActivities);
+    }
+
+    setLoadingActivities(false);
+  }
+
+  loadActivities();
+    const channel = supabase
+    .channel(`escrow_events_feed_${Date.now()}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "escrow_events" },
+      (payload) => {console.log("New event received:", payload); loadActivities(); }
+    )
+    .subscribe();
+
+ return () => {
+  mounted = false;
+  supabase.removeChannel(channel);
+};}, [supabase]);
 
   return (
     <AuthGuard>
@@ -979,29 +1162,119 @@ export default function PangolinDashboard() {
               <StatCard icon="⭐" label="Trust Score"     value={trustScore || "—"}  sub="Based on transactions"  color={C.amber}             />
             </div>
 
-            {/* ── Active Escrows ── */}
-            <div style={{ marginBottom: 28 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div>
-                  <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Active Escrows</h2>
-                  <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{loadingEscrows ? "Loading contracts..." : `${escrows.filter(e => e.status !== "Completed").length} active · ${escrows.filter(e => e.status === "Completed").length} done`}</p>
+            {/* ── Tab Content ── */}
+            {active === "disputes" ? (
+              <DisputesView disputes={disputes} loading={loadingDisputes} onRefresh={loadDisputes} />
+            ) : (
+              <>
+                {/* ── Active Escrows ── */}
+                <div style={{ marginBottom: 28 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                    <div>
+                      <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Active Escrows</h2>
+                      <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{loadingEscrows ? "Loading contracts..." : `${escrows.filter(e => e.status !== "Completed").length} active · ${escrows.filter(e => e.status === "Completed").length} done`}</p>
+                    </div>
+                    {!showAllEscrows && (
+                      <Btn variant="ghost" size="sm" onClick={() => setShowAllEscrows(true)}>View All →</Btn>
+                    )}
+                  </div>
+                  <EscrowTable rows={escrows} loading={loadingEscrows} error={escrowError} />
                 </div>
-                <Btn variant="ghost" size="sm" onClick={() => go("/escrow")}>View All →</Btn>
-              </div>
-              <EscrowTable rows={escrows} loading={loadingEscrows} error={escrowError} />
-            </div>
 
-            {/* ── Bottom row: Activity + Quick Tips ── */}
-            <div className="dashboard-bottom-grid" style={{ display: "grid", gap: 20 }}>
-              <ActivityFeed activities={activities} loading={loadingActivities} />
-              <QuickTips />
-            </div>
+                {/* ── Bottom row: Activity + Quick Tips ── */}
+                <div className="dashboard-bottom-grid" style={{ display: "grid", gap: 20 }}>
+                  <ActivityFeed activities={activities} loading={loadingActivities} />
+                  <QuickTips />
+                </div>
+              </>
+            )}
 
           </div>
         </main>
       </div>
     </>
     </AuthGuard>
+  );
+}
+
+// ── Disputes View ───────────────────────────────────────────────────────────
+function DisputesView({ disputes, loading, onRefresh }) {
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: 60, color: C.textMuted }}>
+        <div style={{ fontSize: 24, marginBottom: 16 }}>⚖️</div>
+        <div style={{ fontSize: 14 }}>Loading disputes…</div>
+      </div>
+    );
+  }
+
+  if (!disputes?.length) {
+    return (
+      <div style={{ textAlign: "center", padding: 60 }}>
+        <div style={{ fontSize: 32, marginBottom: 16 }}>⚖️</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 8 }}>No Disputes</div>
+        <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 20 }}>You haven&apos;t raised any disputes yet.</div>
+        <Btn variant="ghost" size="sm" onClick={onRefresh}>Refresh</Btn>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div>
+          <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Your Disputes</h2>
+          <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{disputes.length} dispute{disputes.length > 1 ? 's' : ''} raised</p>
+        </div>
+        <Btn variant="ghost" size="sm" onClick={onRefresh}>Refresh</Btn>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {disputes.map((dispute) => (
+          <div
+            key={dispute.id}
+            onClick={() => go(`/dispute?escrow_id=${dispute.escrow_id}`)}
+            style={{
+              background: `linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))`,
+              border: `1px solid ${C.border}`,
+              borderRadius: 14,
+              padding: "18px 22px",
+              cursor: "pointer",
+              transition: "all .15s",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>
+                  {dispute.escrow?.title || "Escrow Project"}
+                </div>
+                <div style={{ fontSize: 12, color: C.textMuted }}>
+                  {dispute.escrow?.amount_usdc ? `$${dispute.escrow.amount_usdc} USDC` : ""}
+                </div>
+              </div>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 100,
+                background: dispute.resolved_at ? "rgba(68,147,66,.14)" : "rgba(239,68,68,.14)",
+                border: dispute.resolved_at ? "1px solid rgba(68,147,66,.35)" : "1px solid rgba(239,68,68,.35)",
+                color: dispute.resolved_at ? "#7ECFC6" : "#F87171",
+              }}>
+                {dispute.resolved_at ? "Resolved" : "Active"}
+              </span>
+            </div>
+            <div style={{ fontSize: 12.5, color: C.textSub, marginBottom: 8 }}>
+              <strong>Reason:</strong> {dispute.reason || "Not specified"}
+            </div>
+            <div style={{ fontSize: 11, color: C.textMuted }}>
+              Opened {new Date(dispute.opened_at).toLocaleDateString()}
+              {dispute.resolved_at && ` · Resolved ${new Date(dispute.resolved_at).toLocaleDateString()}`}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

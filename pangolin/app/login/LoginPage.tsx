@@ -219,6 +219,29 @@ export default function LoginPage() {
         }}>
           <div style={{ width: "100%", maxWidth: "420px" }}>
 
+            {/* Back arrow button */}
+            <button
+              onClick={() => router.push("/")}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: "44px", height: "44px",
+                background: C.surface, border: `1px solid ${C.border}`,
+                borderRadius: "10px", cursor: "pointer",
+                fontSize: "20px", color: C.teal,
+                marginBottom: "24px", transition: "all .18s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = C.elevated;
+                e.currentTarget.style.borderColor = C.borderHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = C.surface;
+                e.currentTarget.style.borderColor = C.border;
+              }}
+            >
+              ←
+            </button>
+
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "36px" }}>
               <img src="/pangolin-logo.png" alt="Pangolin" style={{ width: 36, height: 36, objectFit: "contain" }} />
               <span style={{

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 
@@ -181,24 +182,28 @@ function Input({ value, onChange, placeholder, type = "text" }) {
 }
 
 function Select({ value, onChange, options, placeholder }) {
-  const [focused, setFocused] = useState(false);
   return (
-    <div style={{ position: "relative" }}>
-      <select value={value} onChange={onChange} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        style={{
-          width: "100%", background: C.elevated, appearance: "none",
-          border: `1.5px solid ${focused ? "rgba(239,68,68,.6)" : C.border}`,
-          borderRadius: 12, padding: "12px 40px 12px 16px",
-          color: value ? C.text : C.textMuted, fontSize: 14, fontFamily: C.font,
-          cursor: "pointer", outline: "none",
-          boxShadow: focused ? "0 0 0 3px rgba(239,68,68,.1)" : "none",
-          transition: "all .18s ease",
-        }}>
-        <option value="" disabled style={{ background: C.card }}>{placeholder}</option>
-        {options.map(o => <option key={o} value={o} style={{ background: C.card }}>{o}</option>)}
-      </select>
-      <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: C.textMuted, pointerEvents: "none", fontSize: 13 }}>▾</div>
-    </div>
+    <select
+      value={value}
+      onChange={onChange}
+      style={{
+        width: "100%",
+        background: C.elevated,
+        border: `1.5px solid ${value ? C.border : "rgba(239,68,68,.4)"}`,
+        borderRadius: 12,
+        padding: "12px 16px",
+        color: value ? C.text : C.textMuted,
+        fontSize: 14,
+        fontFamily: C.font,
+        cursor: "pointer",
+        outline: "none",
+      }}
+    >
+      <option value="" disabled>{placeholder}</option>
+      {options.map(o => (
+        <option key={o} value={o}>{o}</option>
+      ))}
+    </select>
   );
 }
 
@@ -291,7 +296,16 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
   const fileRef = useRef();
 
   const reasons = ["Non-delivery of work", "Quality issues", "Missed deadline", "Communication breakdown", "Scope creep", "Other"];
-  const valid = reason && desc.trim().length > 20 && confirm;
+  const valid = reason && reason.trim() !== "" && desc.trim().length > 20 && confirm;
+
+  const handleReasonChange = (e) => {
+    const selectedValue = e.target.value;
+    console.log("Selected reason:", selectedValue);
+    setReason(selectedValue);
+  };
+
+  // Log state for debugging
+  console.log("Current reason state:", reason, "Valid:", valid);
   const minPct = Number(latestEscrow?.min_guarantee_pct ?? 0);
   const minUsdc = Number(
     latestEscrow?.min_guarantee_usdc ??
@@ -356,7 +370,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
           {/* Reason */}
           <div>
             <Label>Dispute Reason</Label>
-            <Select value={reason} onChange={e => setReason(e.target.value)}
+            <Select value={reason} onChange={handleReasonChange}
               options={reasons} placeholder="Select the primary reason..." />
           </div>
 
@@ -426,7 +440,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
           {/* CTAs */}
           <div style={{ display: "flex", gap: 12 }}>
             <Btn variant="ghost" size="lg" onClick={() => go("/dashboard")}>Cancel</Btn>
-            <Btn variant="red" size="xl" fullWidth disabled={!valid} onClick={onSubmit}>
+            <Btn variant="red" size="xl" fullWidth disabled={!valid} onClick={handleSubmit}>
               ⚖️ Submit Dispute
             </Btn>
             {submitError && <div style={{ fontSize: 12, color: "#F87171", textAlign: "center" }}>{submitError}</div>}
@@ -802,6 +816,8 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
 // ── Root ─────────────────────────────────────────────────────────────────────
 export default function PangolinDisputeCenter() {
   const { supabase, user } = useAuth();
+  const searchParams = useSearchParams();
+  const escrowId = searchParams.get("escrow_id");
   const [screen, setScreen] = useState("A");
   const [activeDisputeCount, setActiveDisputeCount] = useState(0);
   const [disputes, setDisputes] = useState([]);
@@ -817,12 +833,19 @@ export default function PangolinDisputeCenter() {
   const [escrowById, setEscrowById] = useState({});
 
   const refreshLatestEscrow = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from("escrows")
-      .select("id,title,amount_usdc,status,created_at,min_guarantee_pct,min_guarantee_usdc,client_id,freelancer_id")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+      .select("id,title,amount_usdc,status,created_at,min_guarantee_pct,min_guarantee_usdc,client_id,freelancer_id");
+
+    // If escrow_id is provided in URL, fetch that specific escrow
+    if (escrowId) {
+      query = query.eq("id", escrowId);
+    } else {
+      // Otherwise fetch the most recent one
+      query = query.order("created_at", { ascending: false }).limit(1);
+    }
+
+    const { data, error } = await query.single();
 
     if (!error && data) {
       setLatestEscrow(data);
@@ -918,10 +941,16 @@ export default function PangolinDisputeCenter() {
       return false;
     }
 
+    // Validate reason is provided
+    if (!reason || reason.trim() === "") {
+      setSubmitError("Please select a dispute reason from the dropdown.");
+      return false;
+    }
+
     const { error } = await supabase.from("disputes").insert({
       escrow_id: latestEscrow.id,
       opened_by: user?.id || null,
-      reason,
+      reason: reason.trim(),
       description: description || "",
       status: "opened",
       resolution_note: null,
@@ -934,13 +963,19 @@ export default function PangolinDisputeCenter() {
       return false;
     }
 
+    // Update escrow status to "disputed"
+    await supabase
+      .from("escrows")
+      .update({ status: "disputed" })
+      .eq("id", latestEscrow.id);
+
     await refreshDisputes();
     return true;
   };
 
   useEffect(() => {
     refreshLatestEscrow();
-  }, [supabase]);
+  }, [supabase, escrowId]);
 
   useEffect(() => {
     refreshDisputes();

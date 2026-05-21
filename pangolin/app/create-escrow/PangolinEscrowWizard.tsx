@@ -8,6 +8,8 @@ import { parseAmountToInt } from "@/lib/format";
 import { appConfig } from "@/lib/config";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
+import { AlertTriangle, CalendarX,CheckCircle, ExternalLink, LayoutDashboard, PlusCircle, Copy, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Creation Wizard  (3-step)
@@ -61,7 +63,7 @@ function Label({ children, hint }) {
   );
 }
 
-function Input({ value, onChange, placeholder, type = "text", prefix, style: sx = {} }) {
+function Input({ value, onChange, placeholder, type = "text", prefix, min, style: sx = {} }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{
@@ -81,6 +83,7 @@ function Input({ value, onChange, placeholder, type = "text", prefix, style: sx 
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        min={min}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
@@ -362,7 +365,23 @@ function Step2({ data, setData, onNext, onBack }) {
   const removeMilestone = i => setMilestones(milestones.filter((_, idx) => idx !== i));
   const updateMilestone = (i, field, val) => setMilestones(milestones.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
 
-  const valid = total > 0 && data.deadline;
+// Milestone sum validation
+const milestoneSum = milestones.reduce((acc, m) => acc + (parseFloat(m.amount) || 0), 0);
+const milestoneSumRounded = Math.round(milestoneSum * 100) / 100;
+const totalRounded = Math.round(total * 100) / 100;
+const milestoneMismatch =
+  data.milestonesEnabled &&
+  total > 0 &&
+  milestones.some(m => m.amount !== "") &&
+  milestoneSumRounded !== totalRounded;
+const diff = Math.abs(totalRounded - milestoneSumRounded);
+const milestonesUnder = milestoneSumRounded < totalRounded;
+
+const valid =
+  total > 0 &&
+  data.deadline &&
+  new Date(data.deadline) > new Date() &&   // ← add this line
+  (!data.milestonesEnabled || !milestoneMismatch);
 
   const handleNext = () => {
     setData({ ...data, milestones, minGuarantee: minPct });
@@ -445,7 +464,8 @@ function Step2({ data, setData, onNext, onBack }) {
 
       {/* Milestone toggle */}
       <div style={{
-        background: C.elevated, border: `1.5px solid ${C.border}`,
+        background: C.elevated, border: `1.5px solid ${milestoneMismatch ? "rgba(239,68,68,.5)" : C.border}`,
+        transition: "border-color .2s ease",
         borderRadius: 14, padding: "18px 20px",
       }}>
         <Toggle
@@ -485,18 +505,77 @@ function Step2({ data, setData, onNext, onBack }) {
               <button onClick={addMilestone} style={{ background: "transparent", border: `1.5px dashed ${C.border}`, borderRadius: 10, color: C.textMuted, cursor: "pointer", padding: "10px", fontSize: 13, fontFamily: C.font, marginTop: 2, transition: "border-color .15s, color .15s" }}
                 onMouseEnter={e => { e.target.style.borderColor = C.coral; e.target.style.color = C.coral; }}
                 onMouseLeave={e => { e.target.style.borderColor = C.border; e.target.style.color = C.textMuted; }}>
-                + Add Milestone {milestones.length + 1} of 5
+                + Add Milestone {milestones.length + 1} of 5 
               </button>
+              
             )}
+
+            {/* Milestone sum tracker */}
+<div style={{
+  marginTop: 6,
+  background: milestoneMismatch ? "rgba(239,68,68,.08)" : "rgba(46,175,125,.07)",
+  border: `1px solid ${milestoneMismatch ? "rgba(239,68,68,.35)" : "rgba(46,175,125,.25)"}`,
+  borderRadius: 10, padding: "11px 16px",
+  display: "flex", justifyContent: "space-between", alignItems: "center",
+  transition: "all .2s ease",
+}}>
+  <div style={{ fontSize: 12.5, color: milestoneMismatch ? "#F87171" : C.textSub, fontWeight: 600 }}>
+    Milestone Total
+  </div>
+  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <span style={{ fontSize: 14, fontWeight: 800, color: milestoneMismatch ? "#F87171" : C.coral }}>
+      ${milestoneSumRounded.toFixed(2)} USDC
+    </span>
+    <span style={{ fontSize: 12, color: milestoneMismatch ? "rgba(248,113,113,.6)" : C.textMuted }}>
+      / ${totalRounded.toFixed(2)} USDC
+    </span>
+  </div>
+</div>
+
+{/* Error banner */}
+{milestoneMismatch && (
+  <div style={{
+    background: "rgba(239,68,68,.1)",
+    border: "1px solid rgba(239,68,68,.4)",
+    borderRadius: 10, padding: "13px 16px",
+    display: "flex", gap: 10, alignItems: "flex-start",
+    animation: "fade-up .2s ease",
+  }}>
+    <AlertTriangle size={16} color="#F87171" style={{ flexShrink: 0, marginTop: 1 }} />
+    <div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#F87171", marginBottom: 3 }}>
+        Milestone amounts don't match the escrow total
+      </div>
+      <div style={{ fontSize: 12.5, color: "rgba(248,113,113,.8)", lineHeight: 1.55 }}>
+        {milestonesUnder
+          ? `You're $${diff.toFixed(2)} USDC short. Add more milestones or increase existing amounts to reach $${totalRounded.toFixed(2)} USDC.`
+          : `You've exceeded the escrow by $${diff.toFixed(2)} USDC. Reduce milestone amounts to match $${totalRounded.toFixed(2)} USDC.`}
+      </div>
+    </div>
+  </div>
+)}
           </div>
         )}
       </div>
+      
 
       {/* Deadline */}
       <div>
         <Label>Project Deadline</Label>
-        <Input value={data.deadline} onChange={e => setData({ ...data, deadline: e.target.value })} type="date" />
+              <Input
+        value={data.deadline}
+        onChange={e => setData({ ...data, deadline: e.target.value })}
+        type="datetime-local"
+        min={new Date().toISOString().slice(0, 16)}
+      />
+      {data.deadline && new Date(data.deadline) <= new Date() && (
+          <div style={{ fontSize: 12, color: "#F87171", marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
+  <CalendarX size={13} color="#F87171" />
+  Deadline must be a future date and time.
+</div>
+      )}
       </div>
+      
 
       <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
         <Btn variant="ghost" size="lg" onClick={onBack}>← Back</Btn>
@@ -630,10 +709,33 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
       <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
         <Btn variant="ghost" size="lg" onClick={onBack}>← Back</Btn>
         {txError && (
-          <div style={{ background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#F87171", lineHeight: 1.55 }}>
-            {txError}
-          </div>
-        )}
+            <div style={{
+              background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.3)",
+              borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#F87171", lineHeight: 1.55,
+              width: "100%",
+            }}>
+              {txError === "INSUFFICIENT_TRUSTLINE" ? (
+                <>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>⚠️ USDC Trustline Missing</div>
+                  <div>Your wallet hasn't enabled USDC yet. You need to add a USDC trustline before funding this escrow.</div>
+                </>
+              ) : txError.startsWith("INSUFFICIENT_BALANCE:") ? (
+                <>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>⚠️ Insufficient USDC Balance</div>
+                  <div>
+                    You have <strong>${txError.split(":")[1]} USDC</strong> but need{" "}
+                    <strong>${(parseFloat(data.totalAmount) * 1.025).toFixed(2)} USDC</strong> (includes 2.5% fee).{" "}
+                    <a href="https://stellarterm.com" target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#3FD0C9", textDecoration: "underline" }}>
+                      Add balance →
+                    </a>
+                  </div>
+                </>
+              ) : (
+                txError
+              )}
+            </div>
+          )}
         <Btn variant="coral" size="xl" fullWidth disabled={!confirmed || txLoading} onClick={onSubmit}>
           {txLoading ? "⏳ Signing & Submitting…" : "🔒 Fund Escrow Now"}
         </Btn>
@@ -646,28 +748,130 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
   );
 }
 
-// ── Success Screen ────────────────────────────────────────────────────────────
-function SuccessScreen({ data, onReset, txHash }) {
+function SuccessScreen({ data, txHash, onReset, C, copied, handleCopyTx, appConfig, router }) {
   return (
-    <div style={{ textAlign: "center", padding: "40px 20px" }}>
-      <div style={{ fontSize: 64, marginBottom: 20, animation: "bounce-in .5s cubic-bezier(.4,0,.2,1)" }}>🎉</div>
-      <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-.04em", color: C.text, marginBottom: 10 }}>Escrow Created!</div>
-      <div style={{ fontSize: 15, color: C.textSub, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 28px" }}>
-        <strong style={{ color: C.text }}>{data.title}</strong> is now live.<br />
-        Your freelancer has been notified and ${(parseFloat(data.totalAmount) * 1.025).toFixed(2)} USDC is locked securely on Stellar.
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      textAlign: "center", padding: "var(--space-8, 2rem) var(--space-4, 1rem)",
+      gap: 0,
+    }}>                           
+
+      {/* Icon */}
+      <div style={{
+        width: 72, height: 72, borderRadius: "50%",
+        background: "rgba(1,105,111,.15)",
+        border: "1.5px solid rgba(1,105,111,.3)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        marginBottom: 20,
+      }}>
+        <CheckCircle size={36} color="#01696f" strokeWidth={1.75} />
       </div>
+
+      {/* Title */}
+      <div style={{ fontSize: 26, fontWeight: 800, color: C.text, marginBottom: 8 }}>
+        Escrow Created!
+      </div>
+
+      {/* Subtitle */}
+      <div style={{ fontSize: 14, color: C.textSub, lineHeight: 1.6, maxWidth: 340, marginBottom: 28 }}>
+        <span style={{ color: C.text, fontWeight: 600 }}>{data.title}</span> is now live.
+        Your freelancer has been notified and{" "}
+        <span style={{ color: C.coral, fontWeight: 700 }}>
+          ${parseFloat(data.totalAmount || "0").toFixed(2)} USDC
+        </span>{" "}
+        is locked securely on Stellar.
+      </div>
+
+      {/* TX Hash */}
       {txHash && (
-        <div style={{ background: "rgba(68,147,66,.08)", border: "1px solid rgba(68,147,66,.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 20, fontSize: 12.5, color: "#7ECFC6", fontFamily: "monospace", wordBreak: "break-all" }}>
-          ⛓️ Tx: {txHash}
+        <div style={{
+          width: "100%", background: C.elevated,
+          border: `1px solid ${C.border}`,
+          borderRadius: 12, padding: "12px 16px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 12, marginBottom: 12,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: "rgba(1,105,111,.12)",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <ExternalLink size={13} color={C.coral} />
+            </div>
+            <span style={{
+              fontSize: 12, color: C.textMuted, fontFamily: "monospace",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>
+              {txHash}
+            </span>
+          </div>
+          <button
+            onClick={handleCopyTx}
+            title="Copy transaction hash"
+            style={{
+              flexShrink: 0, background: "none", border: "none",
+              cursor: "pointer", color: copied ? C.coral : C.textMuted,
+              display: "flex", alignItems: "center", gap: 4,
+              fontSize: 12, transition: "color .2s",
+            }}>
+            {copied
+              ? <><Check size={13} /> Copied</>
+              : <><Copy size={13} /> Copy</>
+            }
+          </button>
         </div>
       )}
-      <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-        <Btn variant="coral" size="lg" onClick={onReset}>Create Another Escrow</Btn>
-        <Btn variant="ghost" size="lg" onClick={() => go("/dashboard")}>View Dashboard</Btn>
+
+      {/* View on explorer */}
+      {txHash && (
+        <a
+          href={`${appConfig.explorerUrl}/tx/${txHash}`}
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            fontSize: 12, color: C.coral, textDecoration: "none",
+            display: "flex", alignItems: "center", gap: 4, marginBottom: 28,
+          }}>
+          View on Stellar Explorer <ExternalLink size={11} />
+        </a>
+      )}
+
+      {/* Action Buttons */}
+      <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 400 }}>
+        <button
+          onClick={() => router.push("/dashboard")}
+          style={{
+            flex: 1, padding: "12px 16px", borderRadius: 12,
+            background: C.elevated, border: `1px solid ${C.border}`,
+            color: C.text, fontWeight: 600, fontSize: 14,
+            cursor: "pointer", display: "flex", alignItems: "center",
+            justifyContent: "center", gap: 8, transition: "background .2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = C.surfaceHover}
+          onMouseLeave={e => e.currentTarget.style.background = C.elevated}
+        >
+          <LayoutDashboard size={15} /> View Dashboard
+        </button>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            flex: 1, padding: "12px 16px", borderRadius: 12,
+            background: C.coral, border: "none",
+            color: "#fff", fontWeight: 700, fontSize: 14,
+            cursor: "pointer", display: "flex", alignItems: "center",
+            justifyContent: "center", gap: 8, transition: "opacity .2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+        >
+          <PlusCircle size={15} /> Create Another
+        </button>
       </div>
-    </div>
-  );
-}
+
+    </div>        
+  );              
+}                 
+
 
 // ── Root Wizard ───────────────────────────────────────────────────────────────
 const INIT = {
@@ -678,6 +882,7 @@ const INIT = {
 
 export default function PangolinEscrowWizard() {
   const { supabase, user } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [done, setDone] = useState(false);
   const [data, setData] = useState(INIT);
@@ -686,6 +891,12 @@ export default function PangolinEscrowWizard() {
   const [txError, setTxError] = useState(null);
   const scrollRef = useRef(null);
   const { wallet, connectWallet } = useFreighterWallet();
+  const [copied, setCopied] = useState(false);
+  const handleCopyTx = () => {
+    navigator.clipboard.writeText(txHash);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
@@ -706,6 +917,35 @@ export default function PangolinEscrowWizard() {
       setTxError("Connect your Freighter wallet first.");
       return;
     }
+
+      // ── Pre-flight: check USDC trustline + balance ──────────────────
+  try {
+    const horizonUrl = `https://horizon.testnet.stellar.org/accounts/${wallet.address}`;
+    const res = await fetch(horizonUrl);
+    const account = await res.json();
+    
+
+    const usdcBalance = account.balances?.find(
+      b => b.asset_code === "USDC" && b.asset_issuer === appConfig.assetAddress
+    );
+
+    if (!usdcBalance) {
+      setTxError("INSUFFICIENT_TRUSTLINE");
+      return;
+    }
+
+    const available = parseFloat(usdcBalance.balance);
+    const required = parseFloat(data.totalAmount) * 1.025; // include 2.5% fee
+
+    if (available < required) {
+      setTxError("INSUFFICIENT_BALANCE:" + available.toFixed(2));
+      return;
+    }
+  } catch {
+    // If Horizon is unreachable, let the tx attempt proceed
+  }
+  // ────────────────────────────────────────────────────────────────
+
     setTxLoading(true);
     setTxError(null);
     try {
@@ -725,9 +965,9 @@ export default function PangolinEscrowWizard() {
       if (escrowId == null) throw new Error("Contract did not return an escrow ID. Check explorer and try again.");
       const { hash: fundHash } = await fundEscrow(wallet.address, escrowId);
 
-      // Persist to Supabase — best-effort (on-chain tx already confirmed)
+    // Persist to Supabase — best-effort (on-chain tx already confirmed)
       const freelancerUserId = await lookupFreelancerByWallet(data.freelancerWallet);
-      await supabase.from("escrows").insert({
+      const { data: newEscrow } = await supabase.from("escrows").insert({
         client_id: user?.id ?? null,
         client_wallet: wallet.address,
         freelancer_wallet: data.freelancerWallet || null,
@@ -741,7 +981,15 @@ export default function PangolinEscrowWizard() {
         deadline: data.deadline || null,
         stellar_contract_id: String(escrowId),
         stellar_funding_tx_hash: fundHash,
-      });
+      }).select("id").single();
+
+      if (newEscrow?.id) {
+        await supabase.from("escrow_events").insert({
+          escrow_id: newEscrow.id,
+          event_type: "escrow_created",
+          message: `Escrow "${data.title || "Untitled Escrow"}" was created`,
+        });
+      }
 
       setTxHash(fundHash);
       setDone(true);
@@ -838,7 +1086,16 @@ export default function PangolinEscrowWizard() {
             {!done && <StepBar step={step} />}
 
             {done ? (
-              <SuccessScreen data={data} onReset={reset} txHash={txHash} />
+                                <SuccessScreen
+                    data={data}
+                    onReset={reset}
+                    txHash={txHash}
+                    C={C}
+                    copied={copied}
+                    handleCopyTx={handleCopyTx}
+                    appConfig={appConfig}
+                    router={router}
+                  />
             ) : step === 1 ? (
               <Step1 data={data} setData={setData} onNext={() => setStep(2)} />
             ) : step === 2 ? (

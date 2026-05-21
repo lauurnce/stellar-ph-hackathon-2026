@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
@@ -341,6 +342,75 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN B — Freelancer Dashboard
 // ════════════════════════════════════════════════════════════════════════════
+function UsdcTrustlineBanner({ walletAddress }) {
+  const [show, setShow] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const CONTRACT = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";
+
+  useEffect(() => {
+    if (!walletAddress) return;
+    fetch(`https://horizon-testnet.stellar.org/accounts/${walletAddress}`)
+      .then(r => r.json())
+      .then(data => {
+        const hasUsdc = data.balances?.some((b: any) => b.asset_code === "USDC");
+        if (!hasUsdc) setShow(true);
+      })
+      .catch(() => {});
+  }, [walletAddress]);
+
+  if (!show) return null;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(CONTRACT);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{
+      background: "linear-gradient(135deg,rgba(245,158,11,.10),rgba(245,158,11,.04))",
+      border: "1px solid rgba(245,158,11,.35)",
+      borderRadius: 16, padding: "16px 20px",
+      marginBottom: 20, display: "flex", gap: 14,
+      alignItems: "flex-start",
+    }}>
+      <div style={{ fontSize: 22, marginTop: 2 }}>⚠️</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.text, marginBottom: 4 }}>
+          USDC Trustline Required
+        </div>
+        <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.6, marginBottom: 12 }}>
+          Your wallet can't receive USDC payments yet. Add the USDC token in Freighter under{" "}
+          <strong style={{ color: C.text }}>Manage Assets → Add by Contract ID</strong>.
+        </div>
+        <div style={{
+          background: C.elevated, border: `1px solid ${C.border}`,
+          borderRadius: 10, padding: "10px 14px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+          marginBottom: 12,
+        }}>
+          <code style={{ fontSize: 11.5, color: C.coral, fontFamily: "monospace", wordBreak: "break-all" }}>
+            {CONTRACT}
+          </code>
+          <button onClick={handleCopy} style={{
+            background: copied ? "rgba(46,175,125,.15)" : C.card,
+            border: `1px solid ${copied ? "rgba(46,175,125,.4)" : C.border}`,
+            borderRadius: 8, padding: "5px 12px", cursor: "pointer",
+            fontSize: 12, fontWeight: 700, color: copied ? C.coral : C.textSub,
+            fontFamily: C.font, whiteSpace: "nowrap", flexShrink: 0,
+            transition: "all .17s ease",
+          }}>
+            {copied ? "✓ Copied!" : "Copy"}
+          </button>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <Btn variant="subtle" size="sm" onClick={() => setShow(false)}>Dismiss</Btn>
+          <span style={{ fontSize: 12, color: C.textMuted }}>After adding, refresh the page to dismiss automatically.</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 const getNavItems = (jobCount = 0, messageCount = 0) => [
   { id:"dashboard",  icon:"⊞",  label:"Dashboard" },
   { id:"jobs",       icon:"💼", label:"Active Jobs",    badge: jobCount > 0 ? jobCount : undefined },
@@ -629,7 +699,7 @@ function JobsTableBody({ rows }) {
   );
 }
 
-function ActiveJobsTable({ jobs, count }) {
+function ActiveJobsTable({ jobs, count, onViewAll, showAll }) {
   const active = jobs.filter(j => !DONE_STATUSES.includes(j.status));
   const done   = jobs.filter(j =>  DONE_STATUSES.includes(j.status));
   return (
@@ -640,7 +710,9 @@ function ActiveJobsTable({ jobs, count }) {
             <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>Active Jobs</div>
             <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>{active.length} contracts in progress</div>
           </div>
-          <Btn variant="ghost" size="sm">View All →</Btn>
+          {!showAll && (
+            <Btn variant="ghost" size="sm" onClick={onViewAll}>View All →</Btn>
+          )}
         </div>
         <JobsTableBody rows={active} />
       </GlassCard>
@@ -661,8 +733,15 @@ function ActiveJobsTable({ jobs, count }) {
 }
 
 function JobRow({ row, last }) {
+  const router = useRouter();
   const [h, hov] = useHover();
   const isActionable = row.action === "Submit Delivery";
+  const handleNavigate = () => {
+    const id = row.escrowId || row.id;
+    if (id) {
+      router.push(`/delivery?escrow_id=${id}`);
+    }
+  };
   return (
     <div {...hov} style={{
       display:"grid",gridTemplateColumns:"2fr 1.4fr 1.5fr 1fr 1.1fr 1.2fr",
@@ -672,7 +751,10 @@ function JobRow({ row, last }) {
       transition:"background .15s",
     }}>
       <div>
-        <div style={{ fontSize:14,fontWeight:700,color:C.text,marginBottom:2 }}>{row.project}</div>
+        <div
+          style={{ fontSize:14,fontWeight:700,color:C.text,marginBottom:2,cursor:"pointer" }}
+          onClick={handleNavigate}
+        >{row.project}</div>
         <div style={{ fontSize:11.5,color:C.textMuted }}>#{row.contractRef || "PGL-" + String(row.project || "").length}</div>
       </div>
       <div style={{ display:"flex",alignItems:"center",gap:8 }}>
@@ -687,9 +769,11 @@ function JobRow({ row, last }) {
       <div style={{ fontSize:13,color:C.textSub }}>{row.due}</div>
       <div>
         {isActionable ? (
-          <Btn variant="coral" size="sm" onClick={() => go("/delivery")}>{row.action}</Btn>
+          <Btn variant="coral" size="sm" onClick={handleNavigate}>
+  {row.action}
+</Btn>
         ) : (
-          <Btn variant="subtle" size="sm" onClick={() => go("/delivery")}>{row.action}</Btn>
+          <Btn variant="subtle" size="sm" onClick={handleNavigate}>{row.action}</Btn>
         )}
       </div>
     </div>
@@ -708,23 +792,38 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
   const [jobs, setJobs] = useState(ACTIVE_JOBS);
   const [jobCount, setJobCount] = useState(ACTIVE_JOBS.length);
   const [freelancerName, setFreelancerName] = useState("Freelancer");
-  const [earningsThisMonth, setEarningsThisMonth] = useState(1240);
-  const [earningsTotal, setEarningsTotal] = useState(3150);
+  const [earningsThisMonth, setEarningsThisMonth] = useState(0);
+  const [earningsTotal, setEarningsTotal] = useState(0);
   const [pendingRelease, setPendingRelease] = useState(0);
   const [statsCompleted, setStatsCompleted] = useState("0");
-  const [statsRating] = useState("4.9");
+  const [statsRating] = useState(0);
   const [portfolioLink, setPortfolioLink] = useState("pangolin.gg/verify/freelancer");
   const [responseRate, setResponseRate] = useState("N/A");
+  const [showAllJobs, setShowAllJobs] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     async function loadJobs() {
-      const { data, error } = await supabase
+      // Only fetch jobs assigned to this freelancer's wallet if wallet is connected
+      if (wallet?.status !== "connected" || !wallet?.address) {
+        setJobs([]);
+        setJobCount(0);
+        return;
+      }
+
+      let query = supabase
         .from("escrows")
         .select("id,title,status,amount_usdc,deadline,freelancer_wallet,client_id,created_at,completed_at")
-        .order("created_at", { ascending: false })
-        .limit(6);
+        .eq("freelancer_wallet", wallet.address)
+        .order("created_at", { ascending: false });
+
+      // Apply limit only when not viewing all
+      if (!showAllJobs) {
+        query = query.limit(6);
+      }
+
+      const { data, error } = await query;
 
       if (!mounted) return;
       if (!error && data?.length) {
@@ -741,6 +840,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
             : "CL";
           const status = row.status || "In Progress";
           return {
+            escrowId: row.id,
             project: row.title || "Escrow Project",
             client: {
               initials,
@@ -762,7 +862,34 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
             .filter(job => job.status === "Delivered" || job.status === "Under Review")
             .reduce((sum, job) => sum + Number(job.amount || 0), 0)
         );
-        setStatsCompleted(String((data || []).filter(row => row.completed_at).length));
+        setStatsCompleted(String((data || []).filter(row => row.status === "completed").length));
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const allEscrows = data;
+
+        const monthTotal = allEscrows
+          .filter(e =>
+            e.status === "completed" &&
+            e.completed_at &&
+            new Date(e.completed_at).getMonth() === currentMonth &&
+            new Date(e.completed_at).getFullYear() === currentYear
+          )
+          .reduce((sum, e) => sum + Number(e.amount_usdc || 0), 0);
+
+        const allTimeTotal = allEscrows
+          .filter(e => e.status === "completed")
+          .reduce((sum, e) => sum + Number(e.amount_usdc || 0), 0);
+
+        const pendingTotal = allEscrows
+          .filter(e => e.status === "delivered")
+          .reduce((sum, e) => sum + Number(e.amount_usdc || 0), 0);
+
+        setEarningsThisMonth(monthTotal);
+        setEarningsTotal(allTimeTotal);
+        setPendingRelease(pendingTotal);
       }
 
       if (user?.id) {
@@ -775,26 +902,6 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
           setFreelancerName(me.display_name);
           setPortfolioLink(`pangolin.gg/verify/${me.display_name.toLowerCase().replace(/\s+/g, "-")}-${user.id.slice(0, 6)}`);
         }
-
-        const { data: payments } = await supabase
-          .from("payments")
-          .select("amount_usdc,status,created_at")
-          .eq("user_id", user.id);
-        if (payments?.length) {
-          const now = new Date();
-          const monthTotal = payments
-            .filter(p => {
-              const d = new Date(p.created_at);
-              return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            })
-            .reduce((sum, p) => sum + Number(p.amount_usdc || 0), 0);
-          const allTime = payments.reduce((sum, p) => sum + Number(p.amount_usdc || 0), 0);
-          setEarningsThisMonth(monthTotal);
-          setEarningsTotal(allTime);
-          const completedPayments = payments.filter(p => String(p.status || "").toLowerCase().includes("complete")).length;
-          const rate = payments.length ? Math.round((completedPayments / payments.length) * 100) : 0;
-          setResponseRate(`${rate}%`);
-        }
       }
     }
 
@@ -805,7 +912,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
         .then(({ data }) => { if (mounted && data) setDeliveries(data); });
     }
     return () => { mounted = false; };
-  }, [supabase, user?.id]);
+  }, [supabase, user?.id, wallet, showAllJobs]);
 
   return (
     <>
@@ -878,6 +985,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
 
             {/* Stats */}
             <div style={{ display:"flex",gap:14,marginBottom:24,flexWrap:"wrap" }}>
+              <UsdcTrustlineBanner walletAddress={wallet?.address} />
               <StatCard icon="💰" label="Earnings This Month" value={`$${formatUsd(earningsThisMonth)}`} sub={`≈ ₱${phpOf(earningsThisMonth)}`} color={C.coral} trend={18} />
               <StatCard icon="💼" label="Active Jobs"         value={String(jobCount)} sub="From your latest escrows" color={C.blue} />
               <StatCard icon="✅" label="Completed"           value={statsCompleted} sub="All time" color={C.green} trend={5} />
@@ -886,7 +994,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
 
             {/* Active jobs table */}
             <div style={{ marginBottom:22 }}>
-              <ActiveJobsTable jobs={jobs} count={jobCount} />
+              <ActiveJobsTable jobs={jobs} count={jobCount} onViewAll={() => setShowAllJobs(true)} showAll={showAllJobs} />
             </div>
 
             {/* Bottom row */}

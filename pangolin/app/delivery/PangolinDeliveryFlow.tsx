@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
@@ -301,7 +302,9 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
           <div style={{ width: 42, height: 42, borderRadius: 13, background: `linear-gradient(135deg,${C.coral}25,${C.coral}0A)`, border: `1px solid ${C.coral}35`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🚀</div>
           <div>
-            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 3 }}>Freelancer · Delivery</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".08em", textTransform: "uppercase" }}>
+  FREELANCER · DELIVERY{escrow?.title ? ` · ${escrow.title}` : ""}
+</div>
             <h1 style={{ fontSize: "clamp(18px,3.5vw,24px)", fontWeight: 900, letterSpacing: "-.04em", color: C.text, lineHeight: 1.2 }}>
               Submit Your Work
             </h1>
@@ -719,7 +722,7 @@ function ScreenB({ escrow, milestones, supabase }) {
       {/* Settlement time */}
       <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 12, marginBottom: 28, background: "rgba(68,147,66,.1)", border: "1px solid rgba(68,147,66,.28)", borderRadius: "100px", padding: "6px 16px", animation: "fade-up .5s ease .45s both" }}>
         <div style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
-        <span style={{ fontSize: 13, fontWeight: 700, color: C.green }}>Settled in 3.2 seconds on Stellar</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: C.green }}>Settled on Stellar</span>
       </div>
 
       {/* Transaction details card */}
@@ -777,52 +780,61 @@ function ScreenB({ escrow, milestones, supabase }) {
 // Root
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinDeliveryFlow() {
-  const { supabase } = useAuth();
+  const { supabase, user } = useAuth();
+  const searchParams = useSearchParams();
+  const escrowId = searchParams.get("escrow_id");
   const [screen, setScreen] = useState("A");
   const [escrow, setEscrow] = useState(null);
   const [milestones, setMilestones] = useState([]);
   const [loadingEscrow, setLoadingEscrow] = useState(true);
   const [loadingMilestones, setLoadingMilestones] = useState(true);
 
+
+
   useEffect(() => {
-    let mounted = true;
+  if (!user?.id) return;  // ← guard: if no user yet, do nothing
 
-    async function loadEscrow() {
-      const { data, error } = await supabase
-        .from("escrows")
-        .select("id,title,status,amount_usdc,deadline,client_id,freelancer_id,stellar_contract_id")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+  let mounted = true;
 
-      if (!mounted) return;
-      if (!error && data) {
-        setEscrow(data);
+  async function loadEscrow() {
+    let query = supabase
+      .from("escrows")
+      .select("id,title,status,amount_usdc,deadline,client_id,freelancer_id,stellar_contract_id")
+      .eq("freelancer_id", user.id);
 
-        const { data: milestoneData, error: milestoneError } = await supabase
-          .from("milestones")
-          .select("id,title,amount_usdc,status,sort_order")
-          .eq("escrow_id", data.id)
-          .order("sort_order", { ascending: true });
-
-        if (!mounted) return;
-        if (!milestoneError && Array.isArray(milestoneData)) {
-          setMilestones(
-            milestoneData.map(m => ({
-              ...m,
-              name: m.title,
-            }))
-          );
-        }
-      }
-
-      setLoadingEscrow(false);
-      setLoadingMilestones(false);
+    // If escrow_id is provided in URL, fetch that specific one
+    if (escrowId) {
+      query = query.eq("id", escrowId);
+    } else {
+      // Otherwise fetch the most recent one
+      query = query.order("created_at", { ascending: false }).limit(1);
     }
 
-    loadEscrow();
-    return () => { mounted = false; };
-  }, [supabase]);
+    const { data, error } = await query.single();
+
+    if (!mounted) return;
+    if (!error && data) {
+      setEscrow(data);
+
+      const { data: milestoneData, error: milestoneError } = await supabase
+        .from("milestones")
+        .select("id,title,amount_usdc,status,sort_order")
+        .eq("escrow_id", data.id)
+        .order("sort_order", { ascending: true });
+
+      if (!mounted) return;
+      if (!milestoneError && Array.isArray(milestoneData)) {
+        setMilestones(milestoneData.map(m => ({ ...m, name: m.title })));
+      }
+    }
+
+    setLoadingEscrow(false);
+    setLoadingMilestones(false);
+  }
+
+  loadEscrow();
+  return () => { mounted = false; };
+}, [supabase, user?.id, escrowId]);
 
   return (
     <AuthGuard>
