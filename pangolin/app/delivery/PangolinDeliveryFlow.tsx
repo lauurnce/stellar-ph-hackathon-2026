@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { submitDelivery } from "@/lib/contract-client";
 
@@ -759,7 +760,8 @@ export default function PangolinDeliveryFlow() {
   }, [supabase]);
 
   return (
-    <>
+    <AuthGuard>
+      <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -841,5 +843,6 @@ export default function PangolinDeliveryFlow() {
         </div>
       </div>
     </>
+    </AuthGuard>
   );
 }

@@ -3,8 +3,10 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { confirmFreelancer, getEscrow } from "@/lib/contract-client";
+import { useProfile } from "@/hooks/useProfile";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Screens (A: Invite Landing · B: Dashboard)
@@ -660,6 +662,7 @@ function JobRow({ row, last }) {
 function ScreenB() {
   const { supabase, user } = useAuth();
   const { wallet, connectWallet } = useFreighterWallet();
+  const { profile, saveWalletAddress } = useProfile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState("dashboard");
@@ -790,14 +793,19 @@ function ScreenB() {
           jobCount={jobCount}
           messageCount={0}
           wallet={wallet}
-          onConnect={connectWallet}
+          onConnect={async () => {
+            const snap = await connectWallet();
+            if (snap.status === "connected" && snap.address) {
+              await saveWalletAddress(snap.address);
+            }
+          }}
           isMobile={true}
           onClose={() => setMobileMenuOpen(false)}
         />
       </div>
 
       <div className="dashboard-main-container">
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={connectWallet} isMobile={false} />
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} active={active} setActive={setActive} freelancerName={freelancerName} jobCount={jobCount} messageCount={0} wallet={wallet} onConnect={async () => { const snap = await connectWallet(); if (snap.status === "connected" && snap.address) { await saveWalletAddress(snap.address); } }} isMobile={false} />
 
         <main style={{
           flex:1,overflowY:"auto",overflowX:"hidden",
@@ -854,6 +862,8 @@ function ScreenB() {
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinFreelancer() {
   const { supabase, user } = useAuth();
+  const { connectWallet: rootConnectWallet } = useFreighterWallet();
+  const { profile, saveWalletAddress } = useProfile();
   const [screen, setScreen] = useState(() =>
     typeof window !== "undefined" && window.location.search.includes("view=dashboard") ? "B" : "A"
   );
@@ -903,7 +913,8 @@ export default function PangolinFreelancer() {
   }, [supabase, user?.id]);
 
   return (
-    <>
+    <AuthGuard>
+      <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -994,6 +1005,48 @@ export default function PangolinFreelancer() {
         }
       `}</style>
 
+      {/* Wallet Connect Banner */}
+      {!profile?.wallet_address && (
+        <div style={{
+          background: "rgba(63,208,201,.1)",
+          border: "1px solid rgba(63,208,201,.3)",
+          borderRadius: "12px",
+          padding: "14px 20px",
+          margin: "16px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          flexWrap: "wrap",
+        }}>
+          <div>
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "#3FD0C9" }}>
+              Connect your Freighter wallet
+            </span>
+            <span style={{ fontSize: "13px", color: "#7ECFC6", marginLeft: "8px" }}>
+              Required to create and fund escrows.
+            </span>
+          </div>
+          <button
+            onClick={async () => {
+              const snap = await rootConnectWallet();
+              if (snap.status === "connected" && snap.address) {
+                await saveWalletAddress(snap.address);
+              }
+            }}
+            style={{
+              padding: "8px 18px",
+              background: "linear-gradient(135deg,#2EAF7D,#228A62)",
+              border: "none", borderRadius: "100px",
+              color: "#02353C", fontSize: "13px", fontWeight: 700,
+              cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            Connect Wallet
+          </button>
+        </div>
+      )}
+
       {/* Screen switcher tab */}
       <div style={{ position:"fixed",top:12,right:16,zIndex:999,display:"flex",gap:4,background:"rgba(17,17,22,.9)",border:`1px solid ${C.border}`,borderRadius:12,padding:5,backdropFilter:"blur(12px)" }}>
         {[["A","🔗 Invite"],["B","📊 Dashboard"]].map(([id,label]) => (
@@ -1022,5 +1075,6 @@ export default function PangolinFreelancer() {
         </div>
       )}
     </>
+    </AuthGuard>
   );
 }

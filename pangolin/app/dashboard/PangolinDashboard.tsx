@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { shortenAddress } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/AuthGuard";
+import { useProfile } from "@/hooks/useProfile";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Client Dashboard
@@ -532,6 +534,7 @@ function NotifBell() {
 export default function PangolinDashboard() {
   const { supabase, user } = useAuth();
   const { wallet, connectWallet, disconnectWallet } = useFreighterWallet();
+  const { profile, saveWalletAddress } = useProfile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState("dashboard");
@@ -630,7 +633,8 @@ export default function PangolinDashboard() {
   }, [supabase]);
 
   return (
-    <>
+    <AuthGuard>
+      <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -722,6 +726,48 @@ export default function PangolinDashboard() {
         }
       `}</style>
 
+      {/* Wallet Connect Banner */}
+      {!profile?.wallet_address && (
+        <div style={{
+          background: "rgba(63,208,201,.1)",
+          border: "1px solid rgba(63,208,201,.3)",
+          borderRadius: "12px",
+          padding: "14px 20px",
+          margin: "16px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          flexWrap: "wrap",
+        }}>
+          <div>
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "#3FD0C9" }}>
+              Connect your Freighter wallet
+            </span>
+            <span style={{ fontSize: "13px", color: "#7ECFC6", marginLeft: "8px" }}>
+              Required to create and fund escrows.
+            </span>
+          </div>
+          <button
+            onClick={async () => {
+              const snap = await connectWallet();
+              if (snap.status === "connected" && snap.address) {
+                await saveWalletAddress(snap.address);
+              }
+            }}
+            style={{
+              padding: "8px 18px",
+              background: "linear-gradient(135deg,#2EAF7D,#228A62)",
+              border: "none", borderRadius: "100px",
+              color: "#02353C", fontSize: "13px", fontWeight: 700,
+              cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            Connect Wallet
+          </button>
+        </div>
+      )}
+
       {/* Mobile Top Header */}
       <header className="mobile-header" style={{ display: "none" }}>
         <button onClick={() => setMobileMenuOpen(true)} style={{ background: "transparent", border: "none", color: C.text, fontSize: 24, cursor: "pointer" }}>
@@ -747,7 +793,12 @@ export default function PangolinDashboard() {
           active={active}
           setActive={setActive}
           wallet={wallet}
-          onConnect={connectWallet}
+          onConnect={async () => {
+            const snap = await connectWallet();
+            if (snap.status === "connected" && snap.address) {
+              await saveWalletAddress(snap.address);
+            }
+          }}
           onDisconnect={disconnectWallet}
           escrowCount={escrows.length}
           messageCount={0}
@@ -765,7 +816,12 @@ export default function PangolinDashboard() {
           active={active}
           setActive={setActive}
           wallet={wallet}
-          onConnect={connectWallet}
+          onConnect={async () => {
+            const snap = await connectWallet();
+            if (snap.status === "connected" && snap.address) {
+              await saveWalletAddress(snap.address);
+            }
+          }}
           onDisconnect={disconnectWallet}
           escrowCount={escrows.length}
           messageCount={0}
@@ -835,6 +891,7 @@ export default function PangolinDashboard() {
         </main>
       </div>
     </>
+    </AuthGuard>
   );
 }
 

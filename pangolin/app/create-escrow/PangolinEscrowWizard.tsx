@@ -7,6 +7,7 @@ import { createEscrow, fundEscrow } from "@/lib/contract-client";
 import { parseAmountToInt } from "@/lib/format";
 import { appConfig } from "@/lib/config";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/AuthGuard";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Creation Wizard  (3-step)
@@ -690,6 +691,16 @@ export default function PangolinEscrowWizard() {
 
   const reset = () => { setStep(1); setDone(false); setData(INIT); setTxHash(null); setTxError(null); };
 
+  async function lookupFreelancerByWallet(walletAddress: string): Promise<string | null> {
+    if (!walletAddress) return null;
+    const { data } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("wallet_address", walletAddress)
+      .single();
+    return data?.id ?? null;
+  }
+
   const handleSubmit = async () => {
     if (!wallet.address) {
       setTxError("Connect your Freighter wallet first.");
@@ -715,10 +726,12 @@ export default function PangolinEscrowWizard() {
       const { hash: fundHash } = await fundEscrow(wallet.address, escrowId);
 
       // Persist to Supabase — best-effort (on-chain tx already confirmed)
+      const freelancerUserId = await lookupFreelancerByWallet(data.freelancerWallet);
       await supabase.from("escrows").insert({
         client_id: user?.id ?? null,
         client_wallet: wallet.address,
         freelancer_wallet: data.freelancerWallet || null,
+        freelancer_id: freelancerUserId,
         title: data.title || "Untitled Escrow",
         description: data.description || null,
         amount_usdc: parseFloat(data.totalAmount || "0"),
@@ -740,7 +753,8 @@ export default function PangolinEscrowWizard() {
   };
 
   return (
-    <>
+    <AuthGuard>
+      <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -844,5 +858,6 @@ export default function PangolinEscrowWizard() {
         </div>
       </div>
     </>
+    </AuthGuard>
   );
 }
