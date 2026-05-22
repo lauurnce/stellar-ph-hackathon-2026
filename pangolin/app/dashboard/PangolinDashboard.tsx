@@ -7,6 +7,7 @@ import { shortenAddress } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useProfile } from "@/hooks/useProfile";
+import { LayoutGrid, FolderOpen, MessageSquare, Star, Scale, Settings, Lock, Link2, Coins, CheckCircle, Bell, AlertTriangle, Package, ClipboardList, Zap, Gem, ShieldCheck } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Client Dashboard
@@ -131,12 +132,12 @@ function Btn({ variant = "coral", size = "md", children, onClick, style: sx = {}
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const getNavItems = (escrowCount = 0, messageCount = 0) => [
-  { id: "dashboard",  icon: "⊞",  label: "Dashboard" },
-  { id: "projects",   icon: "📁", label: "Projects / Escrows", badge: escrowCount > 0 ? escrowCount : undefined },
-  { id: "messages",   icon: "💬", label: "Messages",           badge: messageCount > 0 ? messageCount : undefined },
-  { id: "reputation", icon: "⭐", label: "Reputation" },
-  { id: "disputes",   icon: "⚖️", label: "Disputes" },
-  { id: "settings",   icon: "⚙️", label: "Settings" },
+  { id: "dashboard",  icon: <LayoutGrid size={17} />,  label: "Dashboard" },
+  { id: "projects",   icon: <FolderOpen size={17} />, label: "Projects / Escrows", badge: escrowCount > 0 ? escrowCount : undefined },
+  { id: "messages",   icon: <MessageSquare size={17} />, label: "Messages",           badge: messageCount > 0 ? messageCount : undefined },
+  { id: "reputation", icon: <Star size={17} />, label: "Reputation" },
+  { id: "disputes",   icon: <Scale size={17} />, label: "Disputes" },
+  { id: "settings",   icon: <Settings size={17} />, label: "Settings" },
 ];
 
 function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, onDisconnect, escrowCount = 0, messageCount = 0, isMobile, onClose, profile, walletError, onLogout }) {
@@ -225,7 +226,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
             border: `1px solid ${profile?.wallet_address ? "rgba(46,175,125,.4)" : C.coral + "35"}`,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 18,
-          }}>{profile?.wallet_address ? "🔒" : "🔗"}</div>
+          }}>{profile?.wallet_address ? <Lock size={18} /> : <Link2 size={18} />}</div>
         ) : profile?.wallet_address ? (
           // ── Wallet permanently linked — no way to change ──
           <div style={{
@@ -234,7 +235,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
             borderRadius: 13, padding: "11px 14px",
           }}>
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 5 }}>
-              🔒 Linked Wallet
+              Linked Wallet
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
@@ -268,7 +269,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, wallet, onConnect, on
             borderRadius: 13, padding: "11px 14px",
           }}>
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 8 }}>Wallet</div>
-            <Btn variant="coral" size="sm" onClick={() => { onConnect(); if (isMobile && onClose) onClose(); }} sx={{ width: "100%", justifyContent: "center" }}>🔗 Connect Freighter</Btn>
+            <Btn variant="coral" size="sm" onClick={() => { onConnect(); if (isMobile && onClose) onClose(); }} sx={{ width: "100%", justifyContent: "center" }}>Connect Freighter</Btn>
           </div>
         )}
       </div>
@@ -443,7 +444,7 @@ function EscrowTable({ rows, loading, error }) {
       {done.length > 0 && (
         <div style={{ background: "linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))", border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden" }}>
           <div style={{ padding: "14px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 800, color: C.text }}>✅ Done</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 15, fontWeight: 800, color: C.text }}><CheckCircle size={15} /> Done</span>
             <span style={{ fontSize: 12.5, color: C.textMuted }}>{done.length} completed · funds released</span>
           </div>
           <EscrowTableBody rows={done} loading={false} error={null} emptyMsg="" />
@@ -563,17 +564,17 @@ function NotifBell({ profile, escrows = [], activities = [] }) {
   const [h, hov] = useHover();
   const [open, setOpen] = useState(false);
 
-  const statusIcon  = s => s?.includes("Complet") ? "✅" : s?.includes("Fund") ? "💰" : s?.includes("Deliver") ? "📦" : s?.includes("Disput") ? "⚖️" : "📋";
+  const statusIcon  = s => s?.includes("Complet") ? <CheckCircle size={16} /> : s?.includes("Fund") ? <Coins size={16} /> : s?.includes("Deliver") ? <Package size={16} /> : s?.includes("Disput") ? <Scale size={16} /> : <ClipboardList size={16} />;
   const statusColor = s => s?.includes("Complet") ? "#2EAF7D" : s?.includes("Fund") ? "#3FD0C9" : s?.includes("Deliver") ? "#8B5CF6" : s?.includes("Disput") ? "#F59E0B" : "#7ECFC6";
 
   const items = [
     ...(profile?.wallet_address ? [{
-      icon: "🔒",
+      icon: <Lock size={16} />,
       color: "#2EAF7D",
       title: "Wallet linked",
       sub: `${profile.wallet_address.slice(0, 6)}…${profile.wallet_address.slice(-6)}`,
     }] : [{
-      icon: "⚠️",
+      icon: <AlertTriangle size={16} />,
       color: "#F59E0B",
       title: "No wallet linked",
       sub: "Connect Freighter to create escrows",
@@ -602,7 +603,7 @@ function NotifBell({ profile, escrows = [], activities = [] }) {
           transition: "all .15s", fontSize: 18, position: "relative",
         }}
       >
-        🔔
+        <Bell size={18} />
         {hasUnread && (
           <div style={{
             position: "absolute", top: 6, right: 6,
@@ -920,12 +921,12 @@ useEffect(() => {
         const label = eventLabel(e.event_type);
 
         return {
-          icon:  e.event_type === "funded"        ? "🔒"
-               : e.event_type === "delivered"      ? "📦"
-               : e.event_type === "escrow_created" ? "📋"
-               : e.event_type === "completed"      ? "✅"
-               : e.event_type === "disputed"       ? "⚖️"
-               : "💬",
+          icon:  e.event_type === "funded"        ? <Lock size={16} />
+               : e.event_type === "delivered"      ? <Package size={16} />
+               : e.event_type === "escrow_created" ? <ClipboardList size={16} />
+               : e.event_type === "completed"      ? <CheckCircle size={16} />
+               : e.event_type === "disputed"       ? <Scale size={16} />
+               : <MessageSquare size={16} />,
           color: e.event_type === "funded"    ? C.blue
                : e.event_type === "delivered" ? C.coral
                : e.event_type === "completed" ? C.green
@@ -1140,7 +1141,7 @@ useEffect(() => {
                   Client Dashboard
                 </div>
                 <h1 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: "-.04em", color: C.text }}>
-                  Welcome back, {userProfile?.display_name || "User"} 👋
+                  Welcome back, {userProfile?.display_name || "User"}
                 </h1>
               </div>
 
@@ -1156,10 +1157,10 @@ useEffect(() => {
 
             {/* ── Stats Row ── */}
             <div style={{ display: "flex", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-              <StatCard icon="💰" label="Total Escrowed" value={loadingEscrows ? "..." : `$${escrows.reduce((sum, e) => sum + parseFloat(e.amount.replace(/[$,]/g, "")), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}  sub="Synced from Supabase"   color={C.coral}  trend={12} />
-              <StatCard icon="📁" label="Active Projects" value={loadingEscrows ? "..." : escrows.length}        sub="Contracts in database"     color={C.blue}              />
-              <StatCard icon="✅" label="Completed"       value={completedCount}       sub="Since Jan 2025"             color={C.green}  trend={8}  />
-              <StatCard icon="⭐" label="Trust Score"     value={trustScore || "—"}  sub="Based on transactions"  color={C.amber}             />
+              <StatCard icon={<Coins size={18} />} label="Total Escrowed" value={loadingEscrows ? "..." : `$${escrows.reduce((sum, e) => sum + parseFloat(e.amount.replace(/[$,]/g, "")), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}  sub="Synced from Supabase"   color={C.coral}  trend={12} />
+              <StatCard icon={<FolderOpen size={18} />} label="Active Projects" value={loadingEscrows ? "..." : escrows.length}        sub="Contracts in database"     color={C.blue}              />
+              <StatCard icon={<CheckCircle size={18} />} label="Completed"       value={completedCount}       sub="Since Jan 2025"             color={C.green}  trend={8}  />
+              <StatCard icon={<Star size={18} />} label="Trust Score"     value={trustScore || "—"}  sub="Based on transactions"  color={C.amber}             />
             </div>
 
             {/* ── Tab Content ── */}
@@ -1202,7 +1203,7 @@ function DisputesView({ disputes, loading, onRefresh }) {
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 60, color: C.textMuted }}>
-        <div style={{ fontSize: 24, marginBottom: 16 }}>⚖️</div>
+        <div style={{ marginBottom: 16 }}><Scale size={24} /></div>
         <div style={{ fontSize: 14 }}>Loading disputes…</div>
       </div>
     );
@@ -1211,7 +1212,7 @@ function DisputesView({ disputes, loading, onRefresh }) {
   if (!disputes?.length) {
     return (
       <div style={{ textAlign: "center", padding: 60 }}>
-        <div style={{ fontSize: 32, marginBottom: 16 }}>⚖️</div>
+        <div style={{ marginBottom: 16 }}><Scale size={32} /></div>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 8 }}>No Disputes</div>
         <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 20 }}>You haven&apos;t raised any disputes yet.</div>
         <Btn variant="ghost" size="sm" onClick={onRefresh}>Refresh</Btn>
@@ -1288,7 +1289,7 @@ function QuickTips() {
       display: "flex", flexDirection: "column", gap: 16,
     }}>
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-        <span style={{ fontSize: 24 }}>🐧</span>
+        <ShieldCheck size={24} />
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, color: C.text, marginBottom: 5, letterSpacing: "-.02em" }}>Ready for your next project?</div>
           <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.6 }}>Set milestones, lock funds, and get blockchain receipts — in under 2 minutes.</div>
@@ -1296,14 +1297,14 @@ function QuickTips() {
       </div>
 
       <Btn variant="coral" size="md" onClick={() => go("/create-escrow")} sx={{ width: "100%", justifyContent: "center" }}>
-        🔒 Start a New Escrow
+        Start a New Escrow
       </Btn>
 
       <div style={{ borderTop: `1px solid rgba(46,175,125,.18)`, paddingTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
         {[
-          { icon: "⚡", text: "3–5 second Stellar settlements" },
-          { icon: "💎", text: "2.5% flat — no hidden fees" },
-          { icon: "⛓️", text: "Immutable on-chain receipts" },
+          { icon: <Zap size={15} />, text: "3–5 second Stellar settlements" },
+          { icon: <Gem size={15} />, text: "2.5% flat — no hidden fees" },
+          { icon: <Link2 size={15} />, text: "Immutable on-chain receipts" },
         ].map(({ icon, text }) => (
           <div key={text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 15 }}>{icon}</span>

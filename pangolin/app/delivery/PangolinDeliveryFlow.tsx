@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { submitDelivery, submitMilestoneDelivery, getEscrow, confirmFreelancer, getMilestones } from "@/lib/contract-client";
+import { Rocket, Package, Link2, Image, FileText, Archive, Palette, File, Timer, CheckCircle, Star, Smartphone, Award, Gem } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Delivery Flow
@@ -161,11 +162,11 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
   };
 
   const fileIcon = (type) => {
-    if (type.includes("image")) return "🖼️";
-    if (type.includes("pdf"))   return "📑";
-    if (type.includes("zip") || type.includes("archive")) return "🗜️";
-    if (type.includes("figma") || type.includes("design")) return "🎨";
-    return "📄";
+    if (type.includes("image")) return <Image size={18} />;
+    if (type.includes("pdf"))   return <FileText size={18} />;
+    if (type.includes("zip") || type.includes("archive")) return <Archive size={18} />;
+    if (type.includes("figma") || type.includes("design")) return <Palette size={18} />;
+    return <File size={18} />;
   };
 
   const handleSubmit = async () => {
@@ -305,7 +306,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
     hashing:   "Computing SHA-256 file hash…",
     uploading: "Uploading to IPFS…",
     recording: "Timestamping on Stellar blockchain…",
-    done:      "Delivery recorded on-chain ✓",
+    done:      "Delivery recorded on-chain",
   };
 
   return (
@@ -326,7 +327,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
           ← Back to Dashboard
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 13, background: `linear-gradient(135deg,${C.coral}25,${C.coral}0A)`, border: `1px solid ${C.coral}35`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🚀</div>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: `linear-gradient(135deg,${C.coral}25,${C.coral}0A)`, border: `1px solid ${C.coral}35`, display: "flex", alignItems: "center", justifyContent: "center" }}><Rocket size={20} /></div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".08em", textTransform: "uppercase" }}>
   FREELANCER · DELIVERY{escrow?.title ? ` · ${escrow.title}` : ""}
@@ -386,7 +387,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
 
           {files.length === 0 ? (
             <>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>📦</div>
+              <div style={{ marginBottom: 12 }}><Package size={36} /></div>
               <div style={{ fontSize: 15, fontWeight: 700, color: dragging ? C.coral : C.text, marginBottom: 6 }}>
                 {dragging ? "Drop to upload" : "Drag & drop your deliverables"}
               </div>
@@ -395,7 +396,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
                 <br />ZIP, PDF, PNG, Figma exports, videos — anything
               </div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, background: "rgba(63,208,201,.08)", border: "1px solid rgba(63,208,201,.2)", borderRadius: "100px", padding: "5px 14px", fontSize: 12, color: "#7ECFC6", fontWeight: 600 }}>
-                ⛓️ SHA-256 hash recorded on Stellar blockchain
+                SHA-256 hash recorded on Stellar blockchain
               </div>
             </>
           ) : (
@@ -443,7 +444,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
           boxShadow: linkFocused ? "0 0 0 3px rgba(46,175,125,.12)" : "none",
           transition: "all .18s ease",
         }}>
-          <div style={{ padding: "0 14px", fontSize: 18, borderRight: `1px solid ${C.border}`, paddingTop: 12, paddingBottom: 12 }}>🔗</div>
+          <div style={{ padding: "0 14px", borderRight: `1px solid ${C.border}`, paddingTop: 12, paddingBottom: 12, display: "flex", alignItems: "center" }}><Link2 size={18} /></div>
           <input
             value={link} onChange={e => setLink(e.target.value)}
             onFocus={() => setLinkFocused(true)} onBlur={() => setLinkFocused(false)}
@@ -480,7 +481,7 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
         background: "rgba(63,208,201,.07)", border: "1px solid rgba(63,208,201,.22)",
         borderRadius: 14, padding: "14px 18px", marginBottom: 22,
       }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(63,208,201,.15)", border: "1px solid rgba(63,208,201,.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>⛓️</div>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(63,208,201,.15)", border: "1px solid rgba(63,208,201,.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Link2 size={17} /></div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#7ECFC6", marginBottom: 4 }}>Tamper-proof delivery proof</div>
           <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.65 }}>
@@ -541,19 +542,19 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
       )}
       {!submitting ? (
         <Btn variant="coral" size="xl" fullWidth disabled={!valid} onClick={handleSubmit}>
-          🚀 Submit Delivery
+          Submit Delivery
         </Btn>
       ) : (
         <div style={{ padding: "16px", background: "rgba(46,175,125,.06)", border: `1px solid rgba(46,175,125,.2)`, borderRadius: 14, textAlign: "center" }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: C.textSub }}>
-            {phase === "done" ? "✅ Delivery recorded — redirecting…" : "Processing your delivery…"}
+            {phase === "done" ? "Delivery recorded — redirecting…" : "Processing your delivery…"}
           </div>
         </div>
       )}
 
       {/* 48hr reminder */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16, padding: "12px 16px", background: "rgba(245,158,11,.07)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 12 }}>
-        <span style={{ fontSize: 16 }}>⏱️</span>
+        <Timer size={16} />
         <span style={{ fontSize: 12.5, color: "rgba(252,211,77,.8)", lineHeight: 1.5 }}>
           Client has <strong style={{ color: "#FCD34D" }}>48 hours</strong> to review and respond. If no action is taken, payment is auto-released to your wallet.
         </span>
@@ -655,7 +656,7 @@ function BadgeCard() {
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26,
           boxShadow: "0 0 20px rgba(139,92,246,.3)",
           animation: popping ? "wiggle .6s ease 1.2s" : "none",
-        }}>⭐</div>
+        }}><Star size={26} /></div>
 
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -663,7 +664,7 @@ function BadgeCard() {
               New Badge Earned
             </div>
           </div>
-          <div style={{ fontSize: 16, fontWeight: 900, color: C.text, letterSpacing: "-.02em", marginBottom: 3 }}>Milestone Complete ⭐</div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: C.text, letterSpacing: "-.02em", marginBottom: 3 }}>Milestone Complete</div>
           <div style={{ fontSize: 12.5, color: C.textSub }}>Delivered on time · Verified on Stellar</div>
         </div>
 
@@ -683,7 +684,7 @@ function BadgeCard() {
         <div style={{ height: 5, background: "rgba(255,255,255,.06)", borderRadius: "100px", overflow: "hidden" }}>
           <div style={{ height: "100%", width: "39%", background: "linear-gradient(90deg,#8B5CF6,#A78BFA)", borderRadius: "100px", boxShadow: "0 0 8px rgba(139,92,246,.5)" }} />
         </div>
-        <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>61 more to unlock "Elite Freelancer 💎"</div>
+        <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>61 more to unlock "Elite Freelancer"</div>
       </div>
     </div>
   );
@@ -782,10 +783,10 @@ function ScreenB({ escrow, milestones, supabase }) {
       {/* CTAs */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12, animation: "fade-up .5s ease .75s both" }}>
         <Btn variant="coral" size="xl" fullWidth>
-          📲 Withdraw ${received.toFixed(2)} to GCash
+          Withdraw ${received.toFixed(2)} to Wallet
         </Btn>
         <Btn variant="blue" size="lg" fullWidth>
-          🏅 Add to Portfolio Badge
+          Add to Portfolio Badge
         </Btn>
         <Btn variant="ghost" size="md" fullWidth onClick={() => go("/freelancer?view=dashboard")}>
           Back to Dashboard

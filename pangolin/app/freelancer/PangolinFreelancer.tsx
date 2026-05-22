@@ -8,6 +8,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { confirmFreelancer, getEscrow } from "@/lib/contract-client";
 import { useProfile } from "@/hooks/useProfile";
+import { Star, Rocket, Lock, PartyPopper, ShieldCheck, Link2, LayoutGrid, Briefcase, Coins, MessageSquare, Palette, Settings, AlertTriangle, CheckCircle, Smartphone, Bell, BarChart3, Share2, CircleCheck } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Freelancer Screens (A: Invite Landing · B: Dashboard)
@@ -130,9 +131,9 @@ function Avatar({ initials, size = 44, color = C.coral, emoji }) {
 // SCREEN A — Invite Landing Page
 // ════════════════════════════════════════════════════════════════════════════
 const BADGES = [
-  { icon: "⭐", label: "Top Rated",     color: "#F59E0B", desc: "Maintained 4.8+ rating",      earned: true  },
-  { icon: "🚀", label: "Fast Delivery", color: "#3FD0C9", desc: "Delivered ahead of deadline",  earned: true  },
-  { icon: "🔒", label: "Trusted",       color: "#449342", desc: "10+ completed escrows",        earned: false },
+  { icon: <Star size={16} />, label: "Top Rated",     color: "#F59E0B", desc: "Maintained 4.8+ rating",      earned: true  },
+  { icon: <Rocket size={16} />, label: "Fast Delivery", color: "#3FD0C9", desc: "Delivered ahead of deadline",  earned: true  },
+  { icon: <Lock size={16} />, label: "Trusted",       color: "#449342", desc: "10+ completed escrows",        earned: false },
 ];
 
 const DEFAULT_TOTAL_USDC = 1600;
@@ -195,7 +196,7 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
   if (accepted) {
     return (
       <div style={{ textAlign:"center", padding:"60px 20px" }}>
-        <div style={{ fontSize:60, marginBottom:20 }}>🎉</div>
+        <div style={{ fontSize:60, marginBottom:20 }}><PartyPopper size={60} /></div>
         <div style={{ fontSize:26,fontWeight:900,letterSpacing:"-.04em",color:C.text,marginBottom:10 }}>You're in!</div>
         <div style={{ fontSize:15,color:C.textSub,lineHeight:1.7,maxWidth:400,margin:"0 auto 28px" }}>
           Your wallet is connected. <strong style={{color:C.text}}>{clientName}</strong> has been notified and the escrow will be funded shortly.
@@ -283,7 +284,7 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
         {/* Guaranteed minimum — hero feature */}
         <div style={{ margin:"0",background:"linear-gradient(135deg,rgba(46,175,125,.12),rgba(46,175,125,.04))",borderTop:"none",borderRadius:"0 0 18px 18px",padding:"18px 24px" }}>
           <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:8 }}>
-            <span style={{ fontSize:20 }}>🛡️</span>
+            <ShieldCheck size={20} />
             <span style={{ fontSize:13.5,fontWeight:800,color:C.text }}>Your Guaranteed Minimum</span>
             <div style={{ marginLeft:"auto",padding:"3px 10px",borderRadius:"100px",fontSize:11,fontWeight:700,background:"rgba(46,175,125,.18)",border:"1px solid rgba(46,175,125,.32)",color:C.coral }}>Pangolin Promise</div>
           </div>
@@ -298,7 +299,7 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
 
       {/* Stellar security note */}
       <div style={{ background:"rgba(63,208,201,.08)",border:"1px solid rgba(63,208,201,.25)",borderRadius:14,padding:"14px 18px",marginBottom:24,display:"flex",gap:14,alignItems:"center" }}>
-        <div style={{ width:36,height:36,borderRadius:10,background:"rgba(63,208,201,.15)",border:"1px solid rgba(63,208,201,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>⛓️</div>
+        <div style={{ width:36,height:36,borderRadius:10,background:"rgba(63,208,201,.15)",border:"1px solid rgba(63,208,201,.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Link2 size={18} /></div>
         <div>
           <div style={{ fontSize:13,fontWeight:700,color:"#7ECFC6",marginBottom:3 }}>Secured by Stellar blockchain</div>
           <div style={{ fontSize:12.5,color:C.textSub,lineHeight:1.55 }}>
@@ -310,7 +311,7 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
       {/* CTAs */}
       <div style={{ display:"flex",flexDirection:"column",gap:12 }}>
         <Btn variant="coral" size="xl" fullWidth onClick={handleAccept} disabled={accepting}>
-          {accepting ? "⏳ Signing…" : "✅ Accept Invitation"}
+          {accepting ? "Signing…" : "Accept Invitation"}
         </Btn>
         {acceptError && (
           <div style={{ fontSize: 12.5, color: "#F87171", textAlign: "center", marginTop: 4 }}>{acceptError}</div>
@@ -333,7 +334,7 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
       </div>
 
       <div style={{ textAlign:"center",marginTop:16,fontSize:12,color:C.textMuted }}>
-        🐧 Pangolin · Zero trust needed — just blockchain · 2.5% flat fee charged to client
+        Pangolin · Zero trust needed — just blockchain · 2.5% flat fee charged to client
       </div>
     </div>
   );
@@ -374,7 +375,7 @@ function UsdcTrustlineBanner({ walletAddress }) {
       marginBottom: 20, display: "flex", gap: 14,
       alignItems: "flex-start",
     }}>
-      <div style={{ fontSize: 22, marginTop: 2 }}>⚠️</div>
+      <div style={{ marginTop: 2 }}><AlertTriangle size={22} /></div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: C.text, marginBottom: 4 }}>
           USDC Trustline Required
@@ -412,13 +413,13 @@ function UsdcTrustlineBanner({ walletAddress }) {
   );
 }
 const getNavItems = (jobCount = 0, messageCount = 0) => [
-  { id:"dashboard",  icon:"⊞",  label:"Dashboard" },
-  { id:"jobs",       icon:"💼", label:"Active Jobs",    badge: jobCount > 0 ? jobCount : undefined },
-  { id:"earnings",   icon:"💰", label:"Earnings" },
-  { id:"messages",   icon:"💬", label:"Messages",       badge: messageCount > 0 ? messageCount : undefined },
-  { id:"reputation", icon:"⭐", label:"Reputation" },
-  { id:"portfolio",  icon:"🎨", label:"Portfolio" },
-  { id:"settings",   icon:"⚙️", label:"Settings" },
+  { id:"dashboard",  icon:<LayoutGrid size={17} />,  label:"Dashboard" },
+  { id:"jobs",       icon:<Briefcase size={17} />, label:"Active Jobs",    badge: jobCount > 0 ? jobCount : undefined },
+  { id:"earnings",   icon:<Coins size={17} />, label:"Earnings" },
+  { id:"messages",   icon:<MessageSquare size={17} />, label:"Messages",       badge: messageCount > 0 ? messageCount : undefined },
+  { id:"reputation", icon:<Star size={17} />, label:"Reputation" },
+  { id:"portfolio",  icon:<Palette size={17} />, label:"Portfolio" },
+  { id:"settings",   icon:<Settings size={17} />, label:"Settings" },
 ];
 
 const ACTIVE_JOBS = [];
@@ -488,7 +489,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
       {/* Wallet */}
       <div style={{ padding:"12px 8px",borderTop:`1px solid ${C.border}`,flexShrink:0 }}>
         {(collapsed && !isMobile) ? (
-          <div style={{ width:40,height:40,borderRadius:12,margin:"0 auto",background:`rgba(46,175,125,.12)`,border:`1px solid rgba(46,175,125,.28)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer" }}>🔗</div>
+          <div style={{ width:40,height:40,borderRadius:12,margin:"0 auto",background:`rgba(46,175,125,.12)`,border:`1px solid rgba(46,175,125,.28)`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer" }}><Link2 size={18} /></div>
         ) : (
           <div style={{ background:"linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))",border:"1px solid rgba(46,175,125,.28)",borderRadius:13,padding:"11px 14px" }}>
             <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase",marginBottom:5 }}>Connected Wallet</div>
@@ -500,7 +501,7 @@ function Sidebar({ collapsed, onToggle, active, setActive, freelancerName = "Fre
             ) : (
               <button onClick={() => { if (onConnect) onConnect(); if (isMobile && onClose) onClose(); }} style={{ fontSize:12,color:C.coral,fontWeight:600,background:"none",border:"none",cursor:"pointer",padding:"0 0 10px",fontFamily:C.font }}>Connect Wallet →</button>
             )}
-            <Btn variant="coral" size="sm" sx={{ width:"100%",justifyContent:"center" }}>GCash Withdraw</Btn>
+            <Btn variant="coral" size="sm" sx={{ width:"100%",justifyContent:"center" }}>Withdraw Funds</Btn>
           </div>
         )}
       </div>
@@ -542,7 +543,7 @@ function BadgeShowcase() {
           <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>Earned through verified work · shareable on any platform</div>
         </div>
         <Btn variant="subtle" size="sm" onClick={handleCopy}>
-          {copied ? "✓ Copied!" : "🔗 Share All"}
+          {copied ? "Copied!" : "Share All"}
         </Btn>
       </div>
 
@@ -553,7 +554,7 @@ function BadgeShowcase() {
       </div>
 
       <div style={{ marginTop:16,paddingTop:14,borderTop:`1px solid ${C.border}`,fontSize:12,color:C.textMuted,textAlign:"center" }}>
-        6 earned · 2 locked · Badges are verifiable on Stellar ⛓️
+        6 earned · 2 locked · Badges are verifiable on Stellar
       </div>
     </GlassCard>
   );
@@ -612,17 +613,17 @@ function EarningsSummary({ totalUsdc = 3150, thisMonth = 1240, pendingRelease = 
         ))}
       </div>
 
-      {/* GCash withdrawal */}
+      {/* Wallet withdrawal */}
       {!done ? (
         !withdrawing ? (
           <Btn variant="coral" size="lg" fullWidth onClick={() => setWithdrawing(true)}>
-            📲 Withdraw ${formatUsd(thisMonth)} to GCash
+            Withdraw ${formatUsd(thisMonth)} to Wallet
           </Btn>
         ) : (
           <div style={{ background:"linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))",border:"1px solid rgba(46,175,125,.28)",borderRadius:14,padding:"18px 20px" }}>
             <div style={{ fontSize:14,fontWeight:800,color:C.text,marginBottom:4 }}>Confirm Withdrawal</div>
             <div style={{ fontSize:13,color:C.textSub,marginBottom:14,lineHeight:1.6 }}>
-              Withdraw <strong style={{ color:C.text }}>${formatUsd(thisMonth)} USDC</strong> → <strong style={{ color:C.text }}>₱{phpOf(thisMonth)}</strong> to GCash <code style={{ fontSize:12,color:C.coral,fontFamily:"monospace" }}>+63 917 *** 4821</code>
+              Withdraw <strong style={{ color:C.text }}>${formatUsd(thisMonth)} USDC</strong> to your connected wallet
             </div>
             <div style={{ display:"flex",gap:10 }}>
               <Btn variant="coral" size="md" fullWidth onClick={() => setDone(true)}>Confirm</Btn>
@@ -632,7 +633,7 @@ function EarningsSummary({ totalUsdc = 3150, thisMonth = 1240, pendingRelease = 
         )
       ) : (
         <div style={{ textAlign:"center",padding:"16px 0" }}>
-          <div style={{ fontSize:28,marginBottom:8 }}>✅</div>
+          <div style={{ marginBottom:8 }}><CheckCircle size={28} color={C.green} /></div>
           <div style={{ fontSize:14,fontWeight:700,color:C.green }}>Withdrawal initiated — arrives in ~3 seconds</div>
         </div>
       )}
@@ -655,7 +656,7 @@ function WorkProof({ portfolioLink = "pangolin.gg/verify/freelancer" }) {
   return (
     <GlassCard nohover glow={C.teal} style={{ padding:"22px 24px" }}>
       <div style={{ display:"flex",alignItems:"flex-start",gap:14,marginBottom:16 }}>
-        <div style={{ width:44,height:44,borderRadius:13,background:`rgba(20,184,166,.14)`,border:`1px solid rgba(20,184,166,.3)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0 }}>🔏</div>
+        <div style={{ width:44,height:44,borderRadius:13,background:`rgba(20,184,166,.14)`,border:`1px solid rgba(20,184,166,.3)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Lock size={20} /></div>
         <div>
           <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>Verified Portfolio Link</div>
           <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2,lineHeight:1.55 }}>Share this link with potential clients — it proves your completed escrows, ratings, and badges are real and on-chain.</div>
@@ -666,7 +667,7 @@ function WorkProof({ portfolioLink = "pangolin.gg/verify/freelancer" }) {
         <div style={{ width:8,height:8,borderRadius:"50%",background:C.teal,boxShadow:`0 0 6px ${C.teal}`,flexShrink:0 }}/>
         <code style={{ fontSize:13,color:C.teal,fontFamily:"monospace",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{link}</code>
         <button onClick={() => { setCopied(true); setTimeout(()=>setCopied(false),2000); }} style={{ background:"none",border:"none",cursor:"pointer",color:copied?C.green:C.textMuted,fontSize:13,fontFamily:C.font,fontWeight:600,flexShrink:0,transition:"color .15s" }}>
-          {copied?"✓ Copied!":"Copy"}
+          {copied?"Copied!":"Copy"}
         </button>
       </div>
 
@@ -721,7 +722,7 @@ function ActiveJobsTable({ jobs, count, onViewAll, showAll }) {
         <GlassCard nohover style={{ padding:0,overflow:"hidden" }}>
           <div style={{ padding:"18px 22px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
             <div>
-              <div style={{ fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}>✅ Done</div>
+              <div style={{ display:"flex",alignItems:"center",gap:6,fontSize:15,fontWeight:800,color:C.text,letterSpacing:"-.02em" }}><CircleCheck size={16} /> Done</div>
               <div style={{ fontSize:12.5,color:C.textMuted,marginTop:2 }}>{done.length} completed · funds released</div>
             </div>
           </div>
@@ -969,13 +970,13 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28,flexWrap:"wrap",gap:16 }}>
               <div>
                 <div style={{ fontSize:11,color:C.textMuted,fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",marginBottom:5 }}>Freelancer Dashboard</div>
-                <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, {freelancerName.split(" ")[0] || "Freelancer"} 👋</h1>
+                <h1 style={{ fontSize:"clamp(20px,3vw,28px)",fontWeight:900,letterSpacing:"-.04em",color:C.text }}>Welcome back, {freelancerName.split(" ")[0] || "Freelancer"}</h1>
               </div>
               <div style={{ display:"flex",gap:10,alignItems:"center" }}>
                 {hasInvite && onSwitchToInvite && (
                   <div style={{ display:"flex",gap:4,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:4 }}>
-                    <button onClick={onSwitchToInvite} style={{ padding:"6px 12px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:C.font,background:"transparent",color:C.textMuted,fontSize:12,fontWeight:500 }}>🔗 Invite</button>
-                    <button style={{ padding:"6px 12px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:C.font,background:"linear-gradient(135deg,rgba(46,175,125,.2),rgba(46,175,125,.08))",boxShadow:"inset 0 0 0 1px rgba(46,175,125,.28)",color:C.coral,fontSize:12,fontWeight:700 }}>📊 Dashboard</button>
+                    <button onClick={onSwitchToInvite} style={{ padding:"6px 12px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:C.font,background:"transparent",color:C.textMuted,fontSize:12,fontWeight:500,display:"inline-flex",alignItems:"center",gap:4 }}><Link2 size={12} /> Invite</button>
+                    <button style={{ padding:"6px 12px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:C.font,background:"linear-gradient(135deg,rgba(46,175,125,.2),rgba(46,175,125,.08))",boxShadow:"inset 0 0 0 1px rgba(46,175,125,.28)",color:C.coral,fontSize:12,fontWeight:700,display:"inline-flex",alignItems:"center",gap:4 }}><BarChart3 size={12} /> Dashboard</button>
                   </div>
                 )}
                 <FreelancerNotifBell profile={profile} deliveries={deliveries} />
@@ -986,10 +987,10 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
             {/* Stats */}
             <div style={{ display:"flex",gap:14,marginBottom:24,flexWrap:"wrap" }}>
               <UsdcTrustlineBanner walletAddress={wallet?.address} />
-              <StatCard icon="💰" label="Earnings This Month" value={`$${formatUsd(earningsThisMonth)}`} sub={`≈ ₱${phpOf(earningsThisMonth)}`} color={C.coral} trend={18} />
-              <StatCard icon="💼" label="Active Jobs"         value={String(jobCount)} sub="From your latest escrows" color={C.blue} />
-              <StatCard icon="✅" label="Completed"           value={statsCompleted} sub="All time" color={C.green} trend={5} />
-              <StatCard icon="⭐" label="Reputation Score"    value={statsRating} sub="Based on finished jobs" color={C.amber} />
+              <StatCard icon={<Coins size={18} />} label="Earnings This Month" value={`$${formatUsd(earningsThisMonth)}`} sub={`≈ ₱${phpOf(earningsThisMonth)}`} color={C.coral} trend={18} />
+              <StatCard icon={<Briefcase size={18} />} label="Active Jobs"         value={String(jobCount)} sub="From your latest escrows" color={C.blue} />
+              <StatCard icon={<CheckCircle size={18} />} label="Completed"           value={statsCompleted} sub="All time" color={C.green} trend={5} />
+              <StatCard icon={<Star size={18} />} label="Reputation Score"    value={statsRating} sub="Based on finished jobs" color={C.amber} />
             </div>
 
             {/* Active jobs table */}
@@ -1019,18 +1020,18 @@ function FreelancerNotifBell({ profile, deliveries = [] }) {
 
   const items = [
     ...(profile?.wallet_address ? [{
-      icon: "🔒",
+      icon: <Lock size={16} />,
       color: "#2EAF7D",
       title: "Wallet linked",
       sub: `${profile.wallet_address.slice(0, 6)}…${profile.wallet_address.slice(-6)}`,
     }] : [{
-      icon: "⚠️",
+      icon: <AlertTriangle size={16} />,
       color: "#F59E0B",
       title: "No wallet linked",
       sub: "Connect Freighter to receive payments",
     }]),
     ...deliveries.slice(0, 5).map(d => ({
-      icon: "📦",
+      icon: <Share2 size={16} />,
       color: "#3FD0C9",
       title: "Task submitted",
       sub: d.delivery_note ? d.delivery_note.slice(0, 50) : "Delivery uploaded",
@@ -1053,7 +1054,7 @@ function FreelancerNotifBell({ profile, deliveries = [] }) {
           transition: "all .15s", fontSize: 16, position: "relative",
         }}
       >
-        🔔
+        <Bell size={16} />
         {hasUnread && (
           <div style={{
             position: "absolute", top: 5, right: 5,
@@ -1302,7 +1303,7 @@ export default function PangolinFreelancer() {
               <img src="/pangolin-logo.png" alt="Pangolin" style={{ width:22,height:22,borderRadius:5,objectFit:"contain" }} />
               <span style={{ fontSize:18,fontWeight:800,letterSpacing:"-.03em",background:"linear-gradient(135deg,#3FD0C9,#C1F6ED)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Pangolin</span>
             </div>
-            <div style={{ fontSize:52, marginBottom:20 }}>🔗</div>
+            <div style={{ marginBottom:20 }}><Link2 size={52} /></div>
             <h1 style={{ fontSize:24,fontWeight:900,letterSpacing:"-.04em",color:"#C1F6ED",marginBottom:10 }}>Connect your wallet first</h1>
             <p style={{ fontSize:14,color:"#7ECFC6",lineHeight:1.7,marginBottom:32 }}>
               Link your Freighter wallet to your account. Once linked, we'll check if any client has an escrow waiting for your wallet address.
@@ -1327,7 +1328,7 @@ export default function PangolinFreelancer() {
                 boxShadow:"0 6px 24px rgba(46,175,125,.35)",
               }}
             >
-              🔗 Connect Freighter Wallet
+              Connect Freighter Wallet
             </button>
             <button
               onClick={handleLogout}
