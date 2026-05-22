@@ -210,11 +210,11 @@ function ScreenA({ onSubmit, escrow, milestones, loadingEscrow, loadingMilestone
 
     let txHash = null;
 
-    if (!onchainId || !isLastMilestone) {
-      // No on-chain ID, or intermediate milestone — record in DB only, skip contract call
+    if (!onchainId) {
+      // No on-chain ID — record in DB only, skip contract call
       setPhase("done"); setProgress(100);
     } else {
-      // Final milestone — check on-chain state before calling submit_delivery
+      // Check on-chain state before calling submit_delivery / submit_milestone_delivery
       let onchainStatus = null;
       try {
         const onchain = await getEscrow(onchainId);
