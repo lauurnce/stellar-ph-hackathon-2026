@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
+import { FileText, AlertTriangle, Lock, CheckCircle, Paperclip, Link2, ShieldCheck, Scale, Heart } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Dispute Center (Screens A · B · C)
@@ -72,7 +73,7 @@ function EvidencePane({ side, name, color, items }) {
 
       {items.files.map((f, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: C.card, border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", marginBottom: 6 }}>
-          <span style={{ fontSize: 14 }}>📄</span>
+          <FileText size={14} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
             <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace" }}>{f.hash}</div>
@@ -259,9 +260,9 @@ function StatusPill({ status, color = C.red }) {
 // ── Nav tabs ────────────────────────────────────────────────────────────────
 function NavTabs({ active, setActive, activeDisputeCount = 0 }) {
   const tabs = [
-    { id: "A", label: "Raise Dispute",    icon: "⚠️" },
-    { id: "B", label: `Active Dispute${activeDisputeCount ? ` (${activeDisputeCount})` : ""}`,   icon: "🔒" },
-    { id: "C", label: "Resolved",         icon: "✅" },
+    { id: "A", label: "Raise Dispute",    icon: <AlertTriangle size={15} /> },
+    { id: "B", label: `Active Dispute${activeDisputeCount ? ` (${activeDisputeCount})` : ""}`,   icon: <Lock size={15} /> },
+    { id: "C", label: "Resolved",         icon: <CheckCircle size={15} /> },
   ];
   return (
     <div style={{ display: "flex", gap: 4, padding: "6px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 32 }}>
@@ -342,7 +343,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
         padding: "18px 24px", display: "flex", gap: 14, alignItems: "flex-start",
         borderBottom: "none",
       }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(245,158,11,.2)", border: "1px solid rgba(245,158,11,.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>⚠️</div>
+        <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(245,158,11,.2)", border: "1px solid rgba(245,158,11,.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><AlertTriangle size={20} /></div>
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 800, color: "#FCD34D", marginBottom: 4 }}>Raising a dispute will freeze the escrow</div>
           <div style={{ fontSize: 13, color: "rgba(252,211,77,.7)", lineHeight: 1.6 }}>
@@ -356,7 +357,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
 
         {/* Escrow ref */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 26, padding: "12px 16px", background: C.elevated, border: `1px solid ${C.border}`, borderRadius: 12 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🔒</div>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.25)", display: "flex", alignItems: "center", justifyContent: "center" }}><Lock size={16} /></div>
           <div>
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase" }}>Escrow Contract</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
@@ -389,7 +390,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
                 transition: "all .18s ease",
               }}>
               <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.zip" onChange={handleFileInput} style={{ display: "none" }} />
-              <div style={{ fontSize: 28, marginBottom: 10 }}>📎</div>
+              <div style={{ marginBottom: 10 }}><Paperclip size={28} /></div>
               <div style={{ fontSize: 14, fontWeight: 600, color: dragging ? "#F87171" : C.textSub, marginBottom: 4 }}>
                 {dragging ? "Drop files here" : "Drag & drop or click to upload"}
               </div>
@@ -401,7 +402,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
               <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                 {files.map(f => (
                   <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 10, background: C.elevated, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px" }}>
-                    <span style={{ fontSize: 16 }}>📄</span>
+                    <FileText size={16} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
                       <div style={{ fontSize: 11, color: C.textMuted }}>{f.size} · hash: <code style={{ fontSize: 11, color: C.blue, fontFamily: "monospace" }}>{f.hash}</code></div>
@@ -441,7 +442,7 @@ function ScreenA({ onSubmit, submitError, latestEscrow, loadingEscrow }) {
           <div style={{ display: "flex", gap: 12 }}>
             <Btn variant="ghost" size="lg" onClick={() => go("/dashboard")}>Cancel</Btn>
             <Btn variant="red" size="xl" fullWidth disabled={!valid} onClick={handleSubmit}>
-              ⚖️ Submit Dispute
+              Submit Dispute
             </Btn>
             {submitError && <div style={{ fontSize: 12, color: "#F87171", textAlign: "center" }}>{submitError}</div>}
           </div>
@@ -476,7 +477,7 @@ function AnonAvatar({ color, label }) {
         width: 44, height: 44, borderRadius: "50%",
         background: `${color}18`, border: `2px solid ${color}40`,
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
-      }}>🎭</div>
+      }}><Scale size={18} /></div>
       <div style={{ fontSize: 11, color: C.textMuted }}>{label}</div>
     </div>
   );
@@ -551,7 +552,7 @@ function ScreenB({ activeDisputes = [], loadingDisputes, eventsByEscrow = {}, pa
         border: `1px solid rgba(239,68,68,.4)`, borderRadius: 16, padding: "16px 22px",
         display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
       }}>
-        <span style={{ fontSize: 22 }}>🔒</span>
+        <Lock size={22} />
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: "#F87171" }}>Escrow Frozen — Dispute Under Review</div>
           <div style={{ fontSize: 12.5, color: "rgba(248,113,113,.7)", marginTop: 2 }}>
@@ -567,7 +568,7 @@ function ScreenB({ activeDisputes = [], loadingDisputes, eventsByEscrow = {}, pa
         border: `1px solid rgba(46,175,125,.28)`, borderRadius: 14, padding: "14px 18px",
         display: "flex", gap: 12, alignItems: "center",
       }}>
-        <span style={{ fontSize: 18 }}>🛡️</span>
+        <ShieldCheck size={18} />
         <div>
           <span style={{ fontSize: 13, fontWeight: 700, color: C.coral }}>Guaranteed minimum protected: </span>
           <span style={{ fontSize: 13, color: C.textSub }}>Regardless of outcome, freelancer receives at least </span>
@@ -580,7 +581,7 @@ function ScreenB({ activeDisputes = [], loadingDisputes, eventsByEscrow = {}, pa
       <GlassCard nohover glow={C.red} style={{ padding: "22px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Evidence Submissions</div>
-          <div style={{ fontSize: 12, color: C.textMuted }}>All files hashed on-chain ⛓️</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.textMuted }}>All files hashed on-chain <Link2 size={12} /></div>
         </div>
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
           <EvidencePane side="client" name={clientName} color={C.red}
@@ -725,7 +726,7 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
         border: `1px solid rgba(68,147,66,.35)`, borderRadius: 18, padding: "24px 28px",
         textAlign: "center",
       }}>
-        <div style={{ fontSize: 44, marginBottom: 12 }}>⚖️</div>
+        <div style={{ marginBottom: 12 }}><Scale size={44} /></div>
         <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-.04em", color: C.text, marginBottom: 6 }}>Dispute Resolved</div>
         <div style={{ fontSize: 13.5, color: C.textSub, lineHeight: 1.7, maxWidth: 460, margin: "0 auto", marginBottom: 14 }}>
           The arbitration panel reached a <strong style={{ color: C.green }}>majority decision</strong>. Partial payment was awarded based on work completed. Both parties have been notified.
@@ -798,7 +799,7 @@ function ScreenC({ resolvedDisputes = [], escrowById = {}, partyProfiles = {}, a
           border: "1px solid rgba(68,147,66,.25)", borderRadius: 16, padding: "24px",
           textAlign: "center",
         }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🙏</div>
+          <div style={{ marginBottom: 8 }}><Heart size={28} /></div>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.green, marginBottom: 4 }}>Feedback submitted</div>
           <div style={{ fontSize: 13, color: C.textMuted }}>Thank you for helping improve Pangolin arbitration.</div>
         </div>

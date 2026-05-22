@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { Coins } from "lucide-react";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const tokens = {
@@ -598,7 +599,7 @@ export default function PangolinDesignSystem() {
                 }}
               >
                 <PangolinButton variant="primary" size="lg">
-                  💰 Fund Escrow
+                  Fund Escrow
                 </PangolinButton>
                 <PangolinButton variant="primary" size="md">
                   Fund Escrow

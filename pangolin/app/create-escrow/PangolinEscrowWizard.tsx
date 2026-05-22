@@ -8,7 +8,7 @@ import { parseAmountToInt } from "@/lib/format";
 import { appConfig } from "@/lib/config";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
-import { AlertTriangle, CalendarX,CheckCircle, ExternalLink, LayoutDashboard, PlusCircle, Copy, Check } from "lucide-react";
+import { AlertTriangle, CalendarX, CheckCircle, ExternalLink, LayoutDashboard, PlusCircle, Copy, Check, Link2, ShieldCheck, Zap, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -328,7 +328,7 @@ function Step1({ data, setData, onNext }) {
             background: C.elevated, border: `1.5px dashed ${C.border}`,
             borderRadius: 12, padding: "18px 20px", textAlign: "center",
           }}>
-            <div style={{ fontSize: 22, marginBottom: 8 }}>🔗</div>
+            <div style={{ marginBottom: 8 }}><Link2 size={22} /></div>
             <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 }}>Generate Invite Link</div>
             <div style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 14 }}>Share a unique link with your freelancer — they'll connect their wallet to join this contract.</div>
             <Btn variant="subtle" size="sm" onClick={() => {}}>Copy Invite Link</Btn>
@@ -415,7 +415,7 @@ const valid =
         borderRadius: 16, padding: "20px 22px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: 16 }}>🛡️</span>
+          <ShieldCheck size={16} />
           <span style={{ fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Minimum Guaranteed Payment</span>
           <Tooltip tip="Even if a dispute occurs or the client cancels, the freelancer is guaranteed to receive at least this percentage of the total escrow. Pangolin's smart contract enforces this automatically — no exceptions.">
             <div style={{
@@ -461,7 +461,7 @@ const valid =
         </div>
 
         <div style={{ fontSize: 12, color: C.textMuted, marginTop: 12, lineHeight: 1.6 }}>
-          ⚡ Smart contract enforced — freelancer receives at least <strong style={{ color: C.coral }}>${minUSDC} USDC</strong> even if a dispute is raised or the project is cancelled.
+          Smart contract enforced — freelancer receives at least <strong style={{ color: C.coral }}>${minUSDC} USDC</strong> even if a dispute is raised or the project is cancelled.
         </div>
       </div>
 
@@ -631,7 +631,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
           <Row label="Freelancer Wallet"  value={data.freelancerWallet || "Invite Link"} mono                  />
           <Row label="Payment Structure"  value={data.milestonesEnabled ? "Milestone-based" : "Single Payment"}/>
           <Row label="Deadline"           value={data.deadline || "—"}                                         />
-          <Row label="Auto-Release"       value="✅ 48 hrs after delivery" />
+          <Row label="Auto-Release"       value="48 hrs after delivery" />
         </div>
 
         {/* Financial breakdown */}
@@ -649,7 +649,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
         {/* Minimum guarantee highlight */}
         <div style={{ margin: "0 22px 20px", background: `linear-gradient(135deg,rgba(46,175,125,.1),rgba(46,175,125,.04))`, border: `1px solid rgba(46,175,125,.28)`, borderRadius: 13, padding: "14px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span>🛡️</span>
+            <ShieldCheck size={16} />
             <span style={{ fontSize: 13, fontWeight: 800, color: C.text }}>Guaranteed Minimum</span>
           </div>
           <div style={{ fontSize: 13.5, color: C.coral, fontWeight: 700, marginBottom: 4 }}>
@@ -682,7 +682,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
         display: "flex", gap: 14, background: "rgba(63,208,201,.08)",
         border: `1px solid rgba(63,208,201,.25)`, borderRadius: 13, padding: "15px 18px",
       }}>
-        <span style={{ fontSize: 20, flexShrink: 0 }}>⛓️</span>
+        <Link2 size={20} style={{ flexShrink: 0 }} />
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#7ECFC6", marginBottom: 4 }}>Blockchain Transparency</div>
           <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.6 }}>
@@ -719,12 +719,12 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
             }}>
               {txError === "INSUFFICIENT_TRUSTLINE" ? (
                 <>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>⚠️ USDC Trustline Missing</div>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>USDC Trustline Missing</div>
                   <div>Your wallet hasn't enabled USDC yet. You need to add a USDC trustline before funding this escrow.</div>
                 </>
               ) : txError.startsWith("INSUFFICIENT_BALANCE:") ? (
                 <>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>⚠️ Insufficient USDC Balance</div>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>Insufficient USDC Balance</div>
                   <div>
                     You have <strong>${txError.split(":")[1]} USDC</strong> but need{" "}
                     <strong>${(parseFloat(data.totalAmount) * 1.025).toFixed(2)} USDC</strong> (includes 2.5% fee).{" "}
@@ -740,7 +740,7 @@ function Step3({ data, onBack, onSubmit, txLoading = false, txError = null }) {
             </div>
           )}
         <Btn variant="coral" size="xl" fullWidth disabled={!confirmed || txLoading} onClick={onSubmit}>
-          {txLoading ? "⏳ Signing & Submitting…" : "🔒 Fund Escrow Now"}
+          {txLoading ? "Signing & Submitting…" : "Fund Escrow Now"}
         </Btn>
       </div>
 
@@ -1152,7 +1152,7 @@ export default function PangolinEscrowWizard() {
           {/* Footer note */}
           {!done && (
             <div style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: C.textMuted }}>
-              🔒 Secured by Stellar · End-to-end escrow protection · 2.5% platform fee
+              Secured by Stellar · End-to-end escrow protection · 2.5% platform fee
             </div>
           )}
 

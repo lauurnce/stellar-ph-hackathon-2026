@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { ShieldCheck, Zap, BadgeDollarSign, Link2, FileText, Coins, Rocket, CheckCircle, Lock, Target, Gem, Smartphone, Scale, CircleCheck, CircleX } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Landing / Homepage
@@ -436,10 +437,10 @@ function Hero() {
 
 function FeatureStrip() {
   const items = [
-    { icon: "🛡️", title: "₱0", label: "Lost to Scams" },
-    { icon: "⚡", title: "3-5s", label: "Settlement Speed" },
-    { icon: "💸", title: "2.5%", label: "Flat Fee Only" },
-    { icon: "⛓️", title: "Stellar", label: "Blockchain-Powered" },
+    { icon: <ShieldCheck size={26} />, title: "₱0", label: "Lost to Scams" },
+    { icon: <Zap size={26} />, title: "3-5s", label: "Settlement Speed" },
+    { icon: <BadgeDollarSign size={26} />, title: "2.5%", label: "Flat Fee Only" },
+    { icon: <Link2 size={26} />, title: "Stellar", label: "Blockchain-Powered" },
   ];
   return (
     <div style={{ background: "#F0FDFB", padding: "0 24px 0" }}>
@@ -478,10 +479,10 @@ function FeatureStrip() {
 
 function HowItWorks() {
   const steps = [
-    { icon: "📝", num: "01", title: "Create a Job", desc: "Describe your project, set milestones, invite your counterpart. Smart contract is generated automatically." },
-    { icon: "💰", num: "02", title: "Fund Escrow", desc: "Client deposits payment in XLM or USDC. Funds are locked on Stellar — visible to both parties, touchable by neither." },
-    { icon: "🚀", num: "03", title: "Deliver Work", desc: "Freelancer completes milestones. Files, proofs, and deliverables uploaded directly to the contract thread." },
-    { icon: "✅", num: "04", title: "Release & Repeat", desc: "Client approves and releases payment instantly. Funds hit the freelancer's GCash or wallet in seconds — not days." },
+    { icon: <FileText size={22} />, num: "01", title: "Create a Job", desc: "Describe your project, set milestones, invite your counterpart. Smart contract is generated automatically." },
+    { icon: <Coins size={22} />, num: "02", title: "Fund Escrow", desc: "Client deposits payment in XLM or USDC. Funds are locked on Stellar — visible to both parties, touchable by neither." },
+    { icon: <Rocket size={22} />, num: "03", title: "Deliver Work", desc: "Freelancer completes milestones. Files, proofs, and deliverables uploaded directly to the contract thread." },
+    { icon: <CheckCircle size={22} />, num: "04", title: "Release & Repeat", desc: "Client approves and releases payment instantly. Funds hit the freelancer's wallet in seconds — not days." },
   ];
 
   return (
@@ -535,12 +536,12 @@ function HowItWorks() {
 
 function Features() {
   const features = [
-    { icon: "🔒", title: "Minimum Guaranteed Payment", desc: "Set a non-negotiable floor. Clients can't walk away with your work without paying at least the agreed minimum.", color: C.primary },
-    { icon: "🎯", title: "Milestone Escrow", desc: "Break projects into phases. Funds release per milestone — so freelancers get paid as they go, not when clients feel like it.", color: C.teal },
-    { icon: "💎", title: "Ultra-Low Fees", desc: "Flat 2.5% per transaction. No monthly subscription, no hidden charges, no percentage creep. Ever.", color: C.green },
-    { icon: "📲", title: "GCash Release", desc: "Receive payments straight to your GCash wallet — no crypto knowledge required. Web3 power, Web2 simplicity.", color: C.mint },
-    { icon: "⛓️", title: "Blockchain Proof", desc: "Every transaction, milestone, and release is recorded immutably on Stellar. Your receipt is the blockchain.", color: C.teal },
-    { icon: "⚖️", title: "Dispute Protection", desc: "Neutral arbitration baked in. If things go sideways, our system — not vibes — decides who's right.", color: "#3FD0C9" },
+    { icon: <Lock size={22} />, title: "Minimum Guaranteed Payment", desc: "Set a non-negotiable floor. Clients can't walk away with your work without paying at least the agreed minimum.", color: C.primary },
+    { icon: <Target size={22} />, title: "Milestone Escrow", desc: "Break projects into phases. Funds release per milestone — so freelancers get paid as they go, not when clients feel like it.", color: C.teal },
+    { icon: <Gem size={22} />, title: "Ultra-Low Fees", desc: "Flat 2.5% per transaction. No monthly subscription, no hidden charges, no percentage creep. Ever.", color: C.green },
+    { icon: <Smartphone size={22} />, title: "Instant Payout", desc: "Receive payments straight to your wallet — no crypto knowledge required. Web3 power, Web2 simplicity.", color: C.mint },
+    { icon: <Link2 size={22} />, title: "Blockchain Proof", desc: "Every transaction, milestone, and release is recorded immutably on Stellar. Your receipt is the blockchain.", color: C.teal },
+    { icon: <Scale size={22} />, title: "Dispute Protection", desc: "Neutral arbitration baked in. If things go sideways, our system — not vibes — decides who's right.", color: "#3FD0C9" },
   ];
 
   return (
@@ -602,14 +603,14 @@ function ComparisonTable() {
   const rows = [
     { feature: "Transaction Fee", pangolin: "2.5% flat", vgen: "8–20%", paypal: "3.49% + ₱15" },
     { feature: "Settlement Speed", pangolin: "3–5 seconds", vgen: "7–14 days", paypal: "1–5 business days" },
-    { feature: "Escrow Protection", pangolin: "✅ Native, on-chain", vgen: "Partial", paypal: "❌ None" },
-    { feature: "Non-Marketplace Use", pangolin: "✅ Any freelancer", vgen: "❌ Platform only", paypal: "✅ Yes" },
-    { feature: "Dispute Resolution", pangolin: "✅ Smart contract + Arbitration", vgen: "Limited", paypal: "Limited" },
-    { feature: "GCash Payout", pangolin: "✅ Yes", vgen: "❌ No", paypal: "❌ No" },
-    { feature: "Blockchain Receipts", pangolin: "✅ Stellar network", vgen: "❌ No", paypal: "❌ No" },
+    { feature: "Escrow Protection", pangolin: "Native, on-chain", pYes: true, vgen: "Partial", paypal: "None", payNo: true },
+    { feature: "Non-Marketplace Use", pangolin: "Any freelancer", pYes: true, vgen: "Platform only", vNo: true, paypal: "Yes", payYes: true },
+    { feature: "Dispute Resolution", pangolin: "Smart contract + Arbitration", pYes: true, vgen: "Limited", paypal: "Limited" },
+    { feature: "Instant Wallet Payout", pangolin: "Yes", pYes: true, vgen: "No", vNo: true, paypal: "No", payNo: true },
+    { feature: "Blockchain Receipts", pangolin: "Stellar network", pYes: true, vgen: "No", vNo: true, paypal: "No", payNo: true },
   ];
 
-  const cols = ["Feature", "🐧 Pangolin", "Vgen", "PayPal"];
+  const cols = ["Feature", "Pangolin", "Vgen", "PayPal"];
 
   return (
     <section style={{ padding: "100px 24px", background: C.base }}>
@@ -641,18 +642,24 @@ function ComparisonTable() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map(({ feature, pangolin, vgen, paypal }, ri) => (
-                  <tr key={feature} style={{
+                {rows.map((row, ri) => (
+                  <tr key={row.feature} style={{
                     borderBottom: ri < rows.length - 1 ? `1px solid rgba(10,85,96,.5)` : "none",
                     transition: "background .15s",
                   }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(63,208,201,.03)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
-                    <td style={{ padding: "16px 24px", fontSize: "14px", fontWeight: 600, color: C.textSub, borderRight: `1px solid ${C.border}` }}>{feature}</td>
-                    <td style={{ padding: "16px 24px", fontSize: "14px", fontWeight: 700, color: C.teal, textAlign: "center", background: "rgba(63,208,201,.04)", borderRight: `1px solid ${C.border}` }}>{pangolin}</td>
-                    <td style={{ padding: "16px 24px", fontSize: "14px", color: C.textMuted, textAlign: "center", borderRight: `1px solid ${C.border}` }}>{vgen}</td>
-                    <td style={{ padding: "16px 24px", fontSize: "14px", color: C.textMuted, textAlign: "center" }}>{paypal}</td>
+                    <td style={{ padding: "16px 24px", fontSize: "14px", fontWeight: 600, color: C.textSub, borderRight: `1px solid ${C.border}` }}>{row.feature}</td>
+                    <td style={{ padding: "16px 24px", fontSize: "14px", fontWeight: 700, color: C.teal, textAlign: "center", background: "rgba(63,208,201,.04)", borderRight: `1px solid ${C.border}` }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{row.pYes && <CircleCheck size={14} />} {row.pangolin}</span>
+                    </td>
+                    <td style={{ padding: "16px 24px", fontSize: "14px", color: C.textMuted, textAlign: "center", borderRight: `1px solid ${C.border}` }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{row.vNo && <CircleX size={14} />} {row.vgen}</span>
+                    </td>
+                    <td style={{ padding: "16px 24px", fontSize: "14px", color: C.textMuted, textAlign: "center" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{row.payYes && <CircleCheck size={14} />}{row.payNo && <CircleX size={14} />} {row.paypal}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -739,9 +746,12 @@ function Footer() {
         }}>
           <span style={{ fontSize: "13px", color: C.textMuted }}>© 2025 Pangolin Protocol. All rights reserved.</span>
           <div style={{ display: "flex", gap: "8px" }}>
-            {["🐧 PH", "⛓️ Stellar", "🔒 Audited"].map(t => (
-              <span key={t} style={{ fontSize: "11px", color: C.textMuted, background: C.surface, border: `1px solid ${C.border}`, padding: "4px 10px", borderRadius: "8px", fontWeight: 500 }}>{t}</span>
-            ))}
+            {["PH", "Stellar", "Audited"].map((t, i) => {
+              const Icon = [ShieldCheck, Link2, Lock][i];
+              return (
+                <span key={t} style={{ fontSize: "11px", color: C.textMuted, background: C.surface, border: `1px solid ${C.border}`, padding: "4px 10px", borderRadius: "8px", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "4px" }}><Icon size={12} /> {t}</span>
+              );
+            })}
           </div>
         </div>
       </div>

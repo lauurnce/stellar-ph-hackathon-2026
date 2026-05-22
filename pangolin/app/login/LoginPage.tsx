@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Briefcase, Building2 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Login / Sign-up Page
@@ -331,7 +332,7 @@ export default function LoginPage() {
                   <RoleCard
                     role="freelancer"
                     label="Freelancer"
-                    icon="💼"
+                    icon={<Briefcase size={22} />}
                     desc="I do the work and need payment protection"
                     selected={role}
                     onSelect={setRole}
@@ -339,7 +340,7 @@ export default function LoginPage() {
                   <RoleCard
                     role="client"
                     label="Client"
-                    icon="🏢"
+                    icon={<Building2 size={22} />}
                     desc="I hire talent and fund escrows"
                     selected={role}
                     onSelect={setRole}

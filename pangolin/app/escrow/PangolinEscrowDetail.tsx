@@ -8,6 +8,7 @@ import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { approveRelease, triggerDispute, approveMilestone } from "@/lib/contract-client";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
+import { ShieldCheck, Package, Zap, CheckCircle, Timer, Star, Scale, Link2, MessageSquare, Lock, Info } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PANGOLIN  —  Escrow Detail Page (Client View)
@@ -263,7 +264,7 @@ function BalanceCard({
           border: `1px solid rgba(46,175,125,.3)`, borderRadius: 14, padding: "14px 18px",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
-            <span style={{ fontSize: 14 }}>🛡️</span>
+            <ShieldCheck size={14} />
             <span style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: ".05em", textTransform: "uppercase" }}>Guaranteed Floor</span>
           </div>
           <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-.04em", color: C.coral }}>${minGuaranteeUsdc.toLocaleString()}</div>
@@ -313,9 +314,9 @@ function MilestoneStepper({ milestones = MILESTONES, supabase, escrow, onRefresh
 
   const stepIcon = (status) => {
     const s = norm(status);
-    if (s === "approved" || s === "completed") return { icon: "✓", bg: C.green, shadow: C.green };
-    if (s === "delivered") return { icon: "📦", bg: C.coral, shadow: C.coral };
-    if (s === "active" || s === "funded") return { icon: "⚡", bg: C.blue, shadow: C.blue };
+    if (s === "approved" || s === "completed") return { icon: <CheckCircle size={14} />, bg: C.green, shadow: C.green };
+    if (s === "delivered") return { icon: <Package size={14} />, bg: C.coral, shadow: C.coral };
+    if (s === "active" || s === "funded") return { icon: <Zap size={14} />, bg: C.blue, shadow: C.blue };
     return { icon: "○", bg: C.card, shadow: "transparent" };
   };
 
@@ -438,7 +439,7 @@ function MilestoneStepper({ milestones = MILESTONES, supabase, escrow, onRefresh
                           disabled={loadingId === ms.id}
                           onClick={() => handleApproveMilestone(ms)}
                         >
-                          {loadingId === ms.id ? "⏳ Signing…" : `✓ Approve $${Number(ms.amount_usdc || ms.amount || 0).toFixed(2)}`}
+                          {loadingId === ms.id ? "Signing…" : `Approve $${Number(ms.amount_usdc || ms.amount || 0).toFixed(2)}`}
                         </Btn>
                         {errorId === ms.id && (
                           <span style={{ fontSize: 11, color: "#F87171" }}>{errorMsg}</span>
@@ -446,7 +447,7 @@ function MilestoneStepper({ milestones = MILESTONES, supabase, escrow, onRefresh
                       </div>
                     )}
                     {(norm(ms.status) === "approved" || norm(ms.status) === "completed" || releasedIds.has(ms.id)) && (
-                      <span style={{ fontSize: 12.5, color: C.green, fontWeight: 700 }}>Released ✓</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12.5, color: C.green, fontWeight: 700 }}><CheckCircle size={12} /> Released</span>
                     )}
                   </div>
 
@@ -486,7 +487,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
           margin: "28px 24px 28px", border: `1.5px dashed ${C.border}`,
           borderRadius: 14, padding: "48px 24px", textAlign: "center",
         }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>📭</div>
+          <div style={{ marginBottom: 12 }}><Package size={36} color={C.textMuted} /></div>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.textMuted, marginBottom: 6 }}>Awaiting freelancer submission…</div>
           <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>
             When the freelancer submits work, you'll get an instant notification and the file will appear here for review.
@@ -555,7 +556,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
             <div style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: 13, padding: "14px 18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(46,175,125,.12)", border: "1px solid rgba(46,175,125,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📦</div>
+                  <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(46,175,125,.12)", border: "1px solid rgba(46,175,125,.25)", display: "flex", alignItems: "center", justifyContent: "center" }}><Package size={18} /></div>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>{delivery.name}</div>
                     <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{delivery.size}{delivery.size && delivery.timestamp ? " · " : ""}{delivery.timestamp}</div>
@@ -573,7 +574,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
                 <code style={{ fontSize: 12, color: C.blue, fontFamily: "monospace", background: "rgba(63,208,201,.08)", padding: "3px 9px", borderRadius: 6, border: "1px solid rgba(63,208,201,.2)" }}>
                   {delivery.hash}
                 </code>
-                <span style={{ fontSize: 11.5, color: C.textMuted, marginLeft: "auto" }}>⛓️ Stellar Network</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.textMuted, marginLeft: "auto" }}><Link2 size={12} /> Stellar Network</span>
               </div>
             </div>
           </div>
@@ -673,7 +674,7 @@ function ActionSidebar({ escrow, milestones = [] }) {
               {deliveredCount > 0 ? (
                 <>
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.coral, marginBottom: 3 }}>
-                    📦 {deliveredCount} milestone{deliveredCount > 1 ? "s" : ""} ready to approve
+                    {deliveredCount} milestone{deliveredCount > 1 ? "s" : ""} ready to approve
                   </div>
                   <div style={{ fontSize: 12, color: C.textMuted }}>
                     See Milestone Tracker below — approve each to release funds.
@@ -683,7 +684,7 @@ function ActionSidebar({ escrow, milestones = [] }) {
               ) : (
                 <>
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.textSub, marginBottom: 3 }}>
-                    {approvedCount === milestones.length ? "✅ All milestones approved" : "⏳ Awaiting deliveries"}
+                    {approvedCount === milestones.length ? "All milestones approved" : "Awaiting deliveries"}
                   </div>
                   <div style={{ fontSize: 12, color: C.textMuted }}>
                     {approvedCount === milestones.length
@@ -712,7 +713,7 @@ function ActionSidebar({ escrow, milestones = [] }) {
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,.08)"; e.currentTarget.style.borderColor = "rgba(239,68,68,.45)"; e.currentTarget.style.color = "#F87171"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(239,68,68,.25)"; e.currentTarget.style.color = "rgba(239,68,68,.7)"; }}
             >
-              ⚖️ Raise a Dispute
+              Raise a Dispute
             </button>
           ) : (
             <div style={{ background: "rgba(239,68,68,.07)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 12, padding: "14px 16px" }}>
@@ -727,7 +728,7 @@ function ActionSidebar({ escrow, milestones = [] }) {
               )}
               <div style={{ display: "flex", gap: 8 }}>
                 <Btn variant="red" size="sm" disabled={disputeLoading} onClick={handleDispute} style={{ flex: 1, justifyContent: "center" }}>
-                  {disputeLoading ? "⏳ Signing…" : "Confirm Dispute"}
+                  {disputeLoading ? "Signing…" : "Confirm Dispute"}
                 </Btn>
                 <Btn variant="ghost" size="sm" onClick={() => setShowDispute(false)}>Cancel</Btn>
               </div>
@@ -742,7 +743,7 @@ function ActionSidebar({ escrow, milestones = [] }) {
         border: `1px solid rgba(245,158,11,.3)`, borderRadius: 14, padding: "16px 18px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 16 }}>⏱️</span>
+          <Timer size={16} />
           <span style={{ fontSize: 12.5, fontWeight: 700, color: C.amber }}>Auto-Release Active</span>
         </div>
         <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-.05em", color: C.text, fontFamily: "monospace", marginBottom: 6 }}>
@@ -812,10 +813,10 @@ function FreelancerCard({ supabase, freelancerId }) {
   }
 
   const badges = [
-    { icon: "⭐", label: "Top Rated",    color: C.amber  },
-    { icon: "✅", label: "ID Verified",  color: C.green  },
-    { icon: "⚡", label: "Fast Deliver", color: C.blue   },
-    { icon: "🛡️", label: `${stats.disputes} Disputes`, color: C.purple },
+    { icon: <Star size={14} />, label: "Top Rated",    color: C.amber  },
+    { icon: <CheckCircle size={14} />, label: "ID Verified",  color: C.green  },
+    { icon: <Zap size={14} />, label: "Fast Deliver", color: C.blue   },
+    { icon: <ShieldCheck size={14} />, label: `${stats.disputes} Disputes`, color: C.purple },
   ];
 
   return (
@@ -895,7 +896,7 @@ function FreelancerCard({ supabase, freelancerId }) {
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <Btn variant="ghost" size="sm" fullWidth>💬 Message</Btn>
+        <Btn variant="ghost" size="sm" fullWidth>Message</Btn>
       </div>
     </GlassCard>
   );
@@ -1009,7 +1010,7 @@ export default function PangolinEscrowDetail() {
   } : DELIVERY;
   const totalPhp = phpOf(totalUsdc);
   const formattedEvents = escrowEvents.map(e => ({
-    icon: String(e.event_type || "").includes("deliver") ? "📦" : String(e.event_type || "").includes("fund") ? "🔒" : "ℹ️",
+    icon: String(e.event_type || "").includes("deliver") ? <Package size={16} /> : String(e.event_type || "").includes("fund") ? <Lock size={16} /> : <Info size={16} />,
     color: String(e.event_type || "").includes("deliver") ? C.coral : String(e.event_type || "").includes("fund") ? C.green : C.blue,
     label: e.message || e.event_type || "Escrow event",
     time: e.created_at ? new Date(e.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Pending",
