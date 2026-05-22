@@ -7,6 +7,7 @@
 # Blockchain Escrow for Filipino Digital Art Commissions
 
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-0077b6?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.expert/explorer/testnet/contract/CC4UBEGAAWHP3THETSYJZ6SGT6VEOXTLMYS5K4WL654LNXB2C5TOKQCC)
+[![Stellar Mainnet](https://img.shields.io/badge/Stellar-Mainnet-00b344?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.expert/explorer/public/contract/CBYSBRWFEBQDMH3B4F4THBCXAYNCRFIIOEDX2P5ETZHRJA2K352WCIRV)
 [![Soroban](https://img.shields.io/badge/Smart%20Contract-Soroban%20%28Rust%29-e63946?style=for-the-badge)](https://soroban.stellar.org)
 [![USDC](https://img.shields.io/badge/Payment-USDC%20on%20Stellar-2b9348?style=for-the-badge)](https://stellar.org)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2015-000000?style=for-the-badge&logo=next.js)](https://nextjs.org)
@@ -121,6 +122,10 @@ Pangolin is **Stellar-native by design** — not a multi-chain app ported to Ste
 
 | Property | Value |
 |----------|-------|
+| **Network** | Stellar Mainnet |
+| **Contract ID** | `CBYSBRWFEBQDMH3B4F4THBCXAYNCRFIIOEDX2P5ETZHRJA2K352WCIRV` |
+| **Status** | ✅ Deployed |
+| **Explorer** | [View on Stellar Expert](https://stellar.expert/explorer/public/contract/CBYSBRWFEBQDMH3B4F4THBCXAYNCRFIIOEDX2P5ETZHRJA2K352WCIRV) |
 | **Network** | Stellar Testnet |
 | **Contract ID** | `CC4UBEGAAWHP3THETSYJZ6SGT6VEOXTLMYS5K4WL654LNXB2C5TOKQCC` |
 | **Status** | ✅ Deployed & Initialized |
@@ -260,11 +265,13 @@ stellar contract deploy \
 
 | Item | Detail |
 |------|--------|
-| **Contract ID** | `CC4UBEGAAWHP3THETSYJZ6SGT6VEOXTLMYS5K4WL654LNXB2C5TOKQCC` |
-| **Network** | Stellar Testnet |
-| **Status** | ✅ Deployed & `init()` called — contract live |
+| **Mainnet Contract ID** | `CBYSBRWFEBQDMH3B4F4THBCXAYNCRFIIOEDX2P5ETZHRJA2K352WCIRV` |
+| **Mainnet Status** | ✅ Deployed |
+| **Mainnet Explorer** | [stellar.expert/explorer/public/contract/CBYSBRW...](https://stellar.expert/explorer/public/contract/CBYSBRWFEBQDMH3B4F4THBCXAYNCRFIIOEDX2P5ETZHRJA2K352WCIRV) |
+| **Testnet Contract ID** | `CC4UBEGAAWHP3THETSYJZ6SGT6VEOXTLMYS5K4WL654LNXB2C5TOKQCC` |
+| **Testnet Status** | ✅ Deployed & `init()` called — contract live |
 | **USDC (Testnet)** | `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA` |
-| **Explorer** | [stellar.expert/explorer/testnet/contract/CC4UBEG...](https://stellar.expert/explorer/testnet/contract/CC4UBEGAAWHP3THETSYJZ6SGT6VEOXTLMYS5K4WL654LNXB2C5TOKQCC) |
+| **Testnet Explorer** | [stellar.expert/explorer/testnet/contract/CC4UBEG...](https://stellar.expert/explorer/testnet/contract/CC4UBEGAAWHP3THETSYJZ6SGT6VEOXTLMYS5K4WL654LNXB2C5TOKQCC) |
 | **Frontend** | `npm run dev` → localhost:3000 |
 
 ---
@@ -289,6 +296,8 @@ Built for the **Stellar Philippines Hackathon 2026** — May 18–24, 2026
 | **Lawrence Panes** | Team Lead — Product, Frontend |
 | **Dave Aillerr Rivas** | Smart Contract, Backend |
 | **Nichola Ilim** | Frontend, Full-Stack |
+| **Hadji Esmael** | Team Member |
+| **Nico Ome** | Team Member |
 
 ---
 
