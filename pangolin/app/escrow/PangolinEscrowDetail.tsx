@@ -650,11 +650,6 @@ function ActionSidebar({ escrow, milestones = [] }) {
   const daysRemaining = escrow?.deadline
     ? Math.ceil((new Date(escrow.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
-  const releaseAmount = Number(reviewMilestone?.amount_usdc ?? escrow?.amount_usdc ?? 0);
-  const actionSubtitle = reviewMilestone
-    ? `${reviewMilestone.title || "Current milestone"} is awaiting your review`
-    : "Delivery is awaiting your review";
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
