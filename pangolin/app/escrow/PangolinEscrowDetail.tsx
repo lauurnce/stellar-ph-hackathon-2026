@@ -164,10 +164,10 @@ function useCountdown(initSecs) {
 
 // ── Milestone stepper data ─────────────────────────────────────────────────
 const MILESTONES = [
-  { id: 1, name: "Wireframes & Sitemap",  amount: 400,  status: "Approved",    action: null },
-  { id: 2, name: "UI Design (All Pages)", amount: 800,  status: "Delivered",   action: "review" },
-  { id: 3, name: "Responsive CSS Build",  amount: 600,  status: "In Progress", action: null },
-  { id: 4, name: "Final Handoff & QA",    amount: 400,  status: "Pending",     action: null },
+  { id: 1, name: "Wireframes & Sitemap",  amount: 400,  amount_usdc: 400,  status: "completed", action: null },
+  { id: 2, name: "UI Design (All Pages)", amount: 800,  amount_usdc: 800,  status: "delivered",  action: "review" },
+  { id: 3, name: "Responsive CSS Build",  amount: 600,  amount_usdc: 600,  status: "active",    action: null },
+  { id: 4, name: "Final Handoff & QA",    amount: 400,  amount_usdc: 400,  status: "created",   action: null },
 ];
 
 const TOTAL_USDC  = 2200;
@@ -306,9 +306,9 @@ function MilestoneStepper({ milestones = MILESTONES }) {
   const [approving, setApproving] = useState(null);
 
   const stepIcon = (status) => {
-    if (status === "Approved") return { icon: "✓", bg: C.green, shadow: C.green };
-    if (status === "Delivered") return { icon: "📦", bg: C.coral, shadow: C.coral };
-    if (status === "In Progress") return { icon: "⚡", bg: C.blue, shadow: C.blue };
+    if (status === "completed") return { icon: "✓", bg: C.green, shadow: C.green };
+    if (status === "delivered") return { icon: "📦", bg: C.coral, shadow: C.coral };
+    if (status === "active") return { icon: "⚡", bg: C.blue, shadow: C.blue };
     return { icon: "○", bg: C.card, shadow: "transparent" };
   };
 
@@ -317,7 +317,7 @@ function MilestoneStepper({ milestones = MILESTONES }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: "-.02em" }}>Milestone Tracker</div>
-          <div style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{milestones.length} milestones · {milestones.filter(m => m.status === "Approved").length} complete</div>
+          <div style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>{milestones.length} milestones · {milestones.filter(m => m.status === "completed").length} complete</div>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
@@ -329,7 +329,7 @@ function MilestoneStepper({ milestones = MILESTONES }) {
         {milestones.map((ms, i) => {
           const { icon, bg, shadow } = stepIcon(ms.status);
           const isLast = i === milestones.length - 1;
-          const active = ms.status === "In Progress" || ms.status === "Delivered";
+          const active = ms.status === "active" || ms.status === "delivered";
 
           return (
             <div key={ms.id} style={{ display: "flex", gap: 16, position: "relative" }}>
@@ -337,18 +337,18 @@ function MilestoneStepper({ milestones = MILESTONES }) {
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 40, flexShrink: 0 }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-                  background: ms.status === "Pending" ? C.elevated : `linear-gradient(135deg,${bg},${bg}CC)`,
-                  border: `2px solid ${ms.status === "Pending" ? C.border : bg}`,
+                  background: ms.status === "created" || ms.status === "funded" ? C.elevated : `linear-gradient(135deg,${bg},${bg}CC)`,
+                  border: `2px solid ${ms.status === "created" || ms.status === "funded" ? C.border : bg}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: ms.status === "Approved" ? 16 : 17, fontWeight: 800, color: ms.status === "Pending" ? C.textMuted : "#fff",
-                  boxShadow: ms.status !== "Pending" ? `0 0 20px ${shadow}50, 0 0 0 4px ${shadow}15` : "none",
+                  fontSize: ms.status === "completed" ? 16 : 17, fontWeight: 800, color: (ms.status === "created" || ms.status === "funded") ? C.textMuted : "#fff",
+                  boxShadow: (ms.status !== "created" && ms.status !== "funded") ? `0 0 20px ${shadow}50, 0 0 0 4px ${shadow}15` : "none",
                   transition: "all .3s",
                   zIndex: 1, position: "relative",
                 }}>{icon}</div>
                 {!isLast && (
                   <div style={{
                     width: 2, flex: 1, minHeight: 24,
-                    background: ms.status === "Approved"
+                    background: ms.status === "completed"
                       ? `linear-gradient(180deg,${C.green},${C.border})`
                       : `linear-gradient(180deg,${C.border},${C.border})`,
                     marginTop: 4, marginBottom: 4,
@@ -384,7 +384,7 @@ function MilestoneStepper({ milestones = MILESTONES }) {
                       <div style={{ display: "flex", gap: 8 }}>
                         {approving !== ms.id ? (
                           <Btn variant="coral" size="sm" onClick={() => setApproving(ms.id)}>
-                            ✓ Approve ${ms.amount}
+                            ✓ Approve ${Number(ms.amount_usdc || ms.amount || 0).toFixed(2)}
                           </Btn>
                         ) : (
                           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -395,17 +395,17 @@ function MilestoneStepper({ milestones = MILESTONES }) {
                         )}
                       </div>
                     )}
-                    {ms.status === "Approved" && (
+                    {ms.status === "completed" && (
                       <span style={{ fontSize: 12.5, color: C.green, fontWeight: 700 }}>Released ✓</span>
                     )}
                   </div>
 
-                  {ms.status === "In Progress" && (
+                  {ms.status === "active" && (
                     <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.55 }}>
                       Freelancer is actively working on this milestone. You'll be notified when it's delivered.
                     </div>
                   )}
-                  {ms.status === "Delivered" && (
+                  {ms.status === "delivered" && (
                     <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.55 }}>
                       Files submitted — review the delivery zone below and approve or request changes.
                     </div>
@@ -550,7 +550,7 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
 }
 
 // ── Action Sidebar ──────────────────────────────────────────────────────────
-function ActionSidebar({ escrow, reviewAmount }) {
+function ActionSidebar({ escrow, reviewMilestone, hasMilestones, hasRemainingMilestones, onApproved }) {
   const { supabase } = useAuth();
   const countdown = useCountdown(47 * 3600 + 32 * 60 + 10);
   const onchainEscrowId = parseInt(escrow?.stellar_contract_id ?? "0") || 0;
@@ -584,14 +584,45 @@ function ActionSidebar({ escrow, reviewAmount }) {
       return;
     }
     try {
-      const { hash } = await approveRelease(fresh.address, onchainEscrowId);
-      setApproveTxHash(hash);
-      await supabase.from("escrows").update({ status: "completed", completed_at: new Date().toISOString() }).eq("stellar_contract_id", String(onchainEscrowId));
-    await supabase.from("escrow_events").insert({
-      escrow_id: escrow?.id,
-      event_type: "completed",
-      message: "Payment approved and released to freelancer",
-    });
+      let hash = null;
+      const now = new Date().toISOString();
+      const shouldReleaseOnChain = !hasMilestones || !hasRemainingMilestones;
+
+      if (shouldReleaseOnChain) {
+        const release = await approveRelease(fresh.address, onchainEscrowId);
+        hash = release.hash;
+        setApproveTxHash(hash);
+      } else {
+        setApproveTxHash("milestone-approved");
+      }
+
+      if (reviewMilestone?.id) {
+        await supabase.from("milestones").update({
+          status: "completed",
+          approved_at: now,
+        }).eq("id", reviewMilestone.id);
+
+        const nextSortOrder = Number(reviewMilestone.sort_order || 0) + 1;
+        await supabase.from("milestones").update({ status: "active" })
+          .eq("escrow_id", escrow?.id)
+          .eq("sort_order", nextSortOrder)
+          .eq("status", "created");
+      }
+
+      await supabase.from("escrows").update({
+        status: shouldReleaseOnChain ? "completed" : "active",
+        completed_at: shouldReleaseOnChain ? now : null,
+      }).eq("stellar_contract_id", String(onchainEscrowId));
+
+      await supabase.from("escrow_events").insert({
+        escrow_id: escrow?.id,
+        event_type: shouldReleaseOnChain ? "completed" : "milestone_approved",
+        message: shouldReleaseOnChain
+          ? "Payment approved and released to freelancer"
+          : `Milestone "${reviewMilestone?.title || "Current milestone"}" approved`,
+      });
+
+      if (onApproved) onApproved();
 
   } catch (err) {
     setApproveError(err instanceof Error ? err.message : "Transaction failed.");
@@ -624,6 +655,10 @@ function ActionSidebar({ escrow, reviewAmount }) {
   const daysRemaining = escrow?.deadline
     ? Math.ceil((new Date(escrow.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
+  const releaseAmount = Number(reviewMilestone?.amount_usdc ?? escrow?.amount_usdc ?? 0);
+  const actionSubtitle = reviewMilestone
+    ? `${reviewMilestone.title || "Current milestone"} is awaiting your review`
+    : "Delivery is awaiting your review";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -631,7 +666,7 @@ function ActionSidebar({ escrow, reviewAmount }) {
       {/* Primary action card */}
       <GlassCard glow={C.coral} style={{ padding: "22px 20px" }}>
         <div style={{ fontSize: 13.5, fontWeight: 800, color: C.text, marginBottom: 4, letterSpacing: "-.02em" }}>Actions</div>
-        <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 20 }}>Milestone 2 is awaiting your review</div>
+        <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 20 }}>{actionSubtitle}</div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Success state */}
@@ -643,7 +678,7 @@ function ActionSidebar({ escrow, reviewAmount }) {
             <>
               {/* Primary CTA */}
               <Btn variant="coral" size="lg" fullWidth disabled={approveLoading} onClick={handleApprove}>
-                {approveLoading ? "⏳ Signing…" : `✓ Approve & Release ${escrow?.amount_usdc ? `$${Number(escrow.amount_usdc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Funds"}`}
+                {approveLoading ? "⏳ Signing…" : `✓ Approve & Release ${releaseAmount ? `$${releaseAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Funds"}`}
               </Btn>
 
               {approveError && (
@@ -920,7 +955,11 @@ export default function PangolinEscrowDetail() {
 
       if (!mounted) return;
       if (!milestonesRes.error && Array.isArray(milestonesRes.data)) {
-        setMilestones(milestonesRes.data);
+        setMilestones(milestonesRes.data.map(m => ({
+          ...m,
+          name: m.title || m.name || `Milestone ${m.sort_order || ""}`,
+          amount: Number(m.amount_usdc ?? m.amount ?? 0),
+        })));
       }
       if (!deliveryRes.error && deliveryRes.data) {
         setDelivery(deliveryRes.data);
@@ -936,13 +975,18 @@ export default function PangolinEscrowDetail() {
   }, [supabase, escrowId]);
 
   const milestoneRows = milestones.length > 0 ? milestones : [];
+  const reviewMilestone = milestoneRows.find(m => m.status === "delivered") || null;
+  const hasMilestones = milestoneRows.length > 0;
+  const hasRemainingMilestones = reviewMilestone
+    ? milestoneRows.some(m => Number(m.sort_order || 0) > Number(reviewMilestone.sort_order || 0))
+    : false;
   const totalUsdc = typeof escrow?.amount_usdc === "number" ? escrow.amount_usdc : Number(escrow?.amount_usdc) || 0;
   const platformFee = typeof escrow?.platform_fee_usdc === "number" ? escrow.platform_fee_usdc : Number(escrow?.platform_fee_usdc) || totalUsdc * 0.025;
   const minGuaranteePct = typeof escrow?.min_guarantee_pct === "number" ? escrow.min_guarantee_pct : 0;
   const minGuaranteeUsdc = typeof escrow?.min_guarantee_usdc === "number" ? escrow.min_guarantee_usdc : Number(escrow?.min_guarantee_usdc) || totalUsdc * (minGuaranteePct / 100);
-  const funded = milestoneRows.filter(m => m.status === "Approved").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
-  const inFlight = milestoneRows.filter(m => m.status !== "Approved" && m.status !== "Pending").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
-  const pending = milestoneRows.filter(m => m.status === "Pending").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
+  const funded = milestoneRows.filter(m => m.status === "completed").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
+  const inFlight = milestoneRows.filter(m => m.status === "active" || m.status === "delivered").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
+  const pending = milestoneRows.filter(m => m.status === "created" || m.status === "funded").reduce((a, m) => a + (Number(m.amount_usdc) || 0), 0);
   const escrowTitle = escrow?.title || "Escrow Contract";
   const contractId = escrow?.id ? `PGL-${escrow.id}` : "N/A";
   const escrowStatus = escrow?.status || "In Progress";
@@ -1041,7 +1085,13 @@ export default function PangolinEscrowDetail() {
 
             {/* ── Right column ── */}
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <ActionSidebar escrow={escrow} reviewAmount={milestoneRows.find(m => m.status === "Delivered")?.amount_usdc || milestoneRows.find(m => m.status === "In Progress")?.amount_usdc || 0} />
+              <ActionSidebar
+                escrow={escrow}
+                reviewMilestone={reviewMilestone}
+                hasMilestones={hasMilestones}
+                hasRemainingMilestones={hasRemainingMilestones}
+                onApproved={() => window.location.reload()}
+              />
               <FreelancerCard supabase={supabase} freelancerId={escrow?.freelancer_id} />
             </div>
 

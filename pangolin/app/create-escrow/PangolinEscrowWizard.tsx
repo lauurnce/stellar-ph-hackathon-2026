@@ -374,6 +374,9 @@ const milestoneMismatch =
   total > 0 &&
   milestones.some(m => m.amount !== "") &&
   milestoneSumRounded !== totalRounded;
+const milestoneIncomplete =
+  data.milestonesEnabled &&
+  milestones.some(m => !m.name?.trim() || !(Number(m.amount) > 0));
 const diff = Math.abs(totalRounded - milestoneSumRounded);
 const milestonesUnder = milestoneSumRounded < totalRounded;
 
@@ -381,7 +384,7 @@ const valid =
   total > 0 &&
   data.deadline &&
   new Date(data.deadline) > new Date() &&   // ← add this line
-  (!data.milestonesEnabled || !milestoneMismatch);
+  (!data.milestonesEnabled || (!milestoneIncomplete && !milestoneMismatch));
 
   const handleNext = () => {
     setData({ ...data, milestones, minGuarantee: minPct });
@@ -984,6 +987,24 @@ export default function PangolinEscrowWizard() {
       }).select("id").single();
 
       if (newEscrow?.id) {
+        if (data.milestonesEnabled && data.milestones?.length) {
+          const milestoneRows = data.milestones
+            .filter(m => m.name?.trim() || Number(m.amount) > 0)
+            .map((m, i) => ({
+              escrow_id: newEscrow.id,
+              title: m.name?.trim() || `Milestone ${i + 1}`,
+              description: null,
+              amount_usdc: Number(m.amount) || 0,
+              sort_order: i + 1,
+              status: i === 0 ? "active" : "created",
+            }));
+
+          if (milestoneRows.length) {
+            const { error: msError } = await supabase.from("milestones").insert(milestoneRows);
+            if (msError) console.error("Milestone insert error:", msError);
+          }
+        }
+
         await supabase.from("escrow_events").insert({
           escrow_id: newEscrow.id,
           event_type: "escrow_created",
