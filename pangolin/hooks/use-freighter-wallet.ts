@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { connectFreighterWallet, readFreighterWallet } from "@/lib/freighter";
 import type { WalletSnapshot } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import { ensureUsdcTrustline } from "@/lib/contract-client";
 
 const INITIAL_WALLET: WalletSnapshot = {
   status: "disconnected",
@@ -65,6 +67,20 @@ export function useFreighterWallet() {
 
   const isConnected = wallet.status === "connected" && Boolean(wallet.address);
   const isWrongNetwork = wallet.status === "connected" && !wallet.isExpectedNetwork;
+
+useEffect(() => {
+  if (!wallet.address) return;
+
+  const interval = setInterval(async () => {
+    const snapshot = await readFreighterWallet();
+    if (snapshot.address && snapshot.address !== wallet.address) {
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    }
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, [wallet.address]);
 
   return {
     wallet,

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import { approveRelease, triggerDispute } from "@/lib/contract-client";
@@ -550,8 +551,15 @@ function DeliveryZone({ delivered = true, delivery = DELIVERY, activities = [] }
 
 // ── Action Sidebar ──────────────────────────────────────────────────────────
 function ActionSidebar({ escrow, reviewAmount }) {
+  const { supabase } = useAuth();
   const countdown = useCountdown(47 * 3600 + 32 * 60 + 10);
   const onchainEscrowId = parseInt(escrow?.stellar_contract_id ?? "0") || 0;
+
+  // Calculate min guarantee from escrow data
+  const totalUsdc = typeof escrow?.amount_usdc === "number" ? escrow.amount_usdc : Number(escrow?.amount_usdc) || 0;
+  const minGuaranteePct = typeof escrow?.min_guarantee_pct === "number" ? escrow.min_guarantee_pct : 0;
+  const minGuaranteeUsdc = typeof escrow?.min_guarantee_usdc === "number" ? escrow.min_guarantee_usdc : Number(escrow?.min_guarantee_usdc) || totalUsdc * (minGuaranteePct / 100);
+
   const [showDispute, setShowDispute] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
   const [approveError, setApproveError] = useState(null);
@@ -566,19 +574,27 @@ function ActionSidebar({ escrow, reviewAmount }) {
     try {
       const { hash } = await approveRelease(wallet.address, onchainEscrowId);
       setApproveTxHash(hash);
-    } catch (err) {
-      setApproveError(err instanceof Error ? err.message : "Transaction failed.");
-    } finally {
-      setApproveLoading(false);
-    }
-  };
+      await supabase.from("escrows").update({ status: "completed", completed_at: new Date().toISOString() }).eq("stellar_contract_id", String(onchainEscrowId));
+    await supabase.from("escrow_events").insert({
+      escrow_id: escrow?.id,
+      event_type: "completed",
+      message: "Payment approved and released to freelancer",
+    });
+
+  } catch (err) {
+    setApproveError(err instanceof Error ? err.message : "Transaction failed.");
+  } finally {
+    setApproveLoading(false);
+  }
+};
 
   const handleDispute = async () => {
     if (!wallet?.address) { setDisputeError("Connect Freighter wallet first."); return; }
     setDisputeLoading(true); setDisputeError(null);
     try {
       const { hash } = await triggerDispute(wallet.address, onchainEscrowId);
-      go(`/dispute?tx=${hash}`);
+      const escrowId = escrow?.id;
+      go(`/dispute?tx=${hash}${escrowId ? `&escrow_id=${escrowId}` : ''}`);
     } catch (err) {
       setDisputeError(err instanceof Error ? err.message : "Transaction failed.");
       setDisputeLoading(false);
@@ -647,7 +663,7 @@ function ActionSidebar({ escrow, reviewAmount }) {
                 <div style={{ background: "rgba(239,68,68,.07)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 12, padding: "14px 16px" }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#F87171", marginBottom: 6 }}>Raise a Dispute?</div>
                   <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: 12 }}>
-                    A neutral arbitrator will review both sides. The guaranteed floor of ${MIN_GUARANTEE_USDC} USDC is protected for the freelancer.
+                    A neutral arbitrator will review both sides. The guaranteed floor of ${minGuaranteeUsdc.toLocaleString()} USDC is protected for the freelancer.
                   </div>
                   {disputeError && (
                     <div style={{ background: "rgba(239,68,68,.1)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#F87171", marginBottom: 10 }}>
@@ -835,6 +851,8 @@ function FreelancerCard({ supabase, freelancerId }) {
 // ── Root Page ────────────────────────────────────────────────────────────────
 export default function PangolinEscrowDetail() {
   const { supabase } = useAuth();
+  const searchParams = useSearchParams();
+  const escrowId = searchParams.get("id");
   const [escrow, setEscrow] = useState(null);
   const [milestones, setMilestones] = useState([]);
   const [delivery, setDelivery] = useState(null);
@@ -845,12 +863,19 @@ export default function PangolinEscrowDetail() {
     let mounted = true;
 
     async function loadEscrow() {
-      const { data: escrowData, error: escrowError } = await supabase
+      let query = supabase
         .from("escrows")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .select("*");
+
+      // If id is provided in URL, fetch that specific escrow
+      if (escrowId) {
+        query = query.eq("id", escrowId);
+      } else {
+        // Otherwise fetch the most recent one
+        query = query.order("created_at", { ascending: false }).limit(1);
+      }
+
+      const { data: escrowData, error: escrowError } = await query.single();
 
       if (!mounted) return;
       if (escrowError) {
@@ -896,7 +921,7 @@ export default function PangolinEscrowDetail() {
 
     loadEscrow();
     return () => { mounted = false; };
-  }, [supabase]);
+  }, [supabase, escrowId]);
 
   const milestoneRows = milestones.length > 0 ? milestones : [];
   const totalUsdc = typeof escrow?.amount_usdc === "number" ? escrow.amount_usdc : Number(escrow?.amount_usdc) || 0;

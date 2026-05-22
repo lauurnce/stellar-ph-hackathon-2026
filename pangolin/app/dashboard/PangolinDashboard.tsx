@@ -1404,7 +1404,6 @@ function NotifBell({ profile, escrows = [], activities = [] }) {
   );
 }
 
-// ── Activity event type → human-readable label ────────────────────────────────
 function eventLabel(eventType) {
   const map = {
     escrow_created: "Escrow Created",
@@ -1420,7 +1419,6 @@ function eventLabel(eventType) {
   };
   return map[eventType] || eventType;
 }
-
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function PangolinDashboard() {
   const { supabase, user } = useAuth();
@@ -1436,12 +1434,15 @@ export default function PangolinDashboard() {
   const [escrows, setEscrows] = useState([]);
   const [loadingEscrows, setLoadingEscrows] = useState(true);
   const [escrowError, setEscrowError] = useState("");
+  const [showAllEscrows, setShowAllEscrows] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [completedCount, setCompletedCount] = useState(0);
   const [trustScore, setTrustScore] = useState(0);
   const [walletError, setWalletError] = useState("");
+  const [disputes, setDisputes] = useState([]);
+  const [loadingDisputes, setLoadingDisputes] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -1451,12 +1452,13 @@ export default function PangolinDashboard() {
 
       const { data } = await supabase
         .from("profiles")
-        .select("display_name,wallet_address")
+        .select("display_name,wallet_address,role,trust_score")
         .eq("id", user.id)
         .single();
 
       if (mounted && data) {
         setUserProfile(data);
+        setTrustScore(data.trust_score || 0);
       }
     }
 
@@ -1474,12 +1476,20 @@ export default function PangolinDashboard() {
       setLoadingEscrows(true);
       setEscrowError("");
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("escrows")
         .select(
           "id,title,status,amount_usdc,freelancer_wallet,deadline,created_at",
         )
+        .eq("client_wallet", profile?.wallet_address)
         .order("created_at", { ascending: false });
+
+      // Apply limit only when not viewing all
+      if (!showAllEscrows) {
+        query = query.limit(6);
+      }
+
+      const { data, error } = await query;
 
       if (!mounted) return;
 
@@ -1503,7 +1513,156 @@ export default function PangolinDashboard() {
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, [supabase, profile?.wallet_address, showAllEscrows]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function calculateTrustScore() {
+      if (!user?.id || !userProfile?.role) return;
+
+      let score = 0;
+
+      if (userProfile.role === "client") {
+        // Client trust score: based on escrows created, completion rate, dispute rate
+        const { data: clientEscrows } = await supabase
+          .from("escrows")
+          .select("id,status")
+          .eq("client_wallet", profile?.wallet_address);
+
+        if (clientEscrows && clientEscrows.length > 0) {
+          const total = clientEscrows.length;
+          const completed = clientEscrows.filter(
+            (e) => e.status === "completed",
+          ).length;
+          const disputed = clientEscrows.filter(
+            (e) => e.status === "disputed",
+          ).length;
+
+          // Base score: 50
+          // +10 per completed escrow (max +30)
+          // -20 per dispute (max -40)
+          // +5 bonus if completion rate > 80%
+          score = 50;
+          score += Math.min(completed * 10, 30);
+          score -= Math.min(disputed * 20, 40);
+          if (total > 0 && completed / total > 0.8) score += 5;
+          score = Math.max(0, Math.min(100, score));
+        }
+      } else if (userProfile.role === "freelancer") {
+        // Freelancer trust score: based on escrows completed, completion rate, dispute rate
+        const { data: freelancerEscrows } = await supabase
+          .from("escrows")
+          .select("id,status")
+          .eq("freelancer_wallet", profile?.wallet_address);
+
+        if (freelancerEscrows && freelancerEscrows.length > 0) {
+          const total = freelancerEscrows.length;
+          const completed = freelancerEscrows.filter(
+            (e) => e.status === "completed",
+          ).length;
+          const disputed = freelancerEscrows.filter(
+            (e) => e.status === "disputed",
+          ).length;
+
+          // Base score: 50
+          // +15 per completed escrow (max +45)
+          // -25 per dispute (max -50)
+          // +10 bonus if completion rate > 90%
+          score = 50;
+          score += Math.min(completed * 15, 45);
+          score -= Math.min(disputed * 25, 50);
+          if (total > 0 && completed / total > 0.9) score += 10;
+          score = Math.max(0, Math.min(100, score));
+        }
+      }
+
+      if (mounted) {
+        setTrustScore(score);
+        // Update the trust score in the database
+        await supabase
+          .from("profiles")
+          .update({ trust_score: score })
+          .eq("id", user.id);
+      }
+    }
+
+    calculateTrustScore();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id, userProfile?.role, profile?.wallet_address, supabase]);
+
+  // Load disputes for client
+  const loadDisputes = async () => {
+    if (!user?.id) return;
+    setLoadingDisputes(true);
+
+    // Get escrows created by this client
+    const { data: clientEscrows } = await supabase
+      .from("escrows")
+      .select("id")
+      .eq("client_id", user.id);
+
+    if (!clientEscrows?.length) {
+      setDisputes([]);
+      setLoadingDisputes(false);
+      return;
+    }
+
+    const escrowIds = clientEscrows.map((e) => e.id);
+
+    // Get disputes for those escrows
+    const { data: disputesData } = await supabase
+      .from("disputes")
+      .select(
+        "id,escrow_id,reason,status,opened_at,resolved_at,freelancer_award_usdc,client_refund_usdc",
+      )
+      .in("escrow_id", escrowIds)
+      .order("opened_at", { ascending: false });
+
+    // Get escrow details for each dispute
+    if (disputesData?.length) {
+      const { data: escrowDetails } = await supabase
+        .from("escrows")
+        .select("id,title,amount_usdc,status")
+        .in(
+          "id",
+          disputesData.map((d) => d.escrow_id),
+        );
+
+      const escrowMap = {};
+      (escrowDetails || []).forEach((e) => {
+        escrowMap[e.id] = e;
+      });
+
+      const allDisputesWithEscrow = disputesData.map((d) => ({
+        ...d,
+        escrow: escrowMap[d.escrow_id] || null,
+      }));
+
+      // Deduplicate: keep only the most recent dispute per escrow
+      const seenEscrows = new Set();
+      const disputesWithEscrow = allDisputesWithEscrow.filter((d) => {
+        if (seenEscrows.has(d.escrow_id)) return false;
+        seenEscrows.add(d.escrow_id);
+        return true;
+      });
+
+      setDisputes(disputesWithEscrow);
+    } else {
+      setDisputes([]);
+    }
+    setLoadingDisputes(false);
+  };
+
+  // Load disputes when tab is selected
+  useEffect(() => {
+    if (active === "disputes") {
+      loadDisputes();
+    }
+  }, [active, user?.id]);
 
   useEffect(() => {
     let mounted = true;
@@ -1519,8 +1678,6 @@ export default function PangolinDashboard() {
 
       if (mounted && data) {
         const formattedActivities = data.map((e) => {
-          // Use the escrow title as the activity title; fall back to a
-          // human-readable event label if the title is unavailable.
           const escrowTitle = e.escrows?.title || null;
           const label = eventLabel(e.event_type);
 
@@ -1547,10 +1704,7 @@ export default function PangolinDashboard() {
                     : e.event_type === "disputed"
                       ? C.amber
                       : C.green,
-            // Show the escrow title as the primary heading in the feed.
-            // If no title is found, fall back to the readable event label.
             title: escrowTitle || label,
-            // Show the readable event label as the subtitle/description line.
             desc: escrowTitle ? label : e.message || "Activity recorded",
             time: new Date(e.created_at).toLocaleString("en-US", {
               dateStyle: "short",
@@ -1565,9 +1719,21 @@ export default function PangolinDashboard() {
     }
 
     loadActivities();
+    const channel = supabase
+      .channel(`escrow_events_feed_${Date.now()}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "escrow_events" },
+        (payload) => {
+          console.log("New event received:", payload);
+          loadActivities();
+        },
+      )
+      .subscribe();
 
     return () => {
       mounted = false;
+      supabase.removeChannel(channel);
     };
   }, [supabase]);
 

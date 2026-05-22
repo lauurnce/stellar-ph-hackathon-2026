@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
@@ -417,515 +418,678 @@ function ScreenA({ onAccept, inviteData, walletAddress }) {
   }
 
   return (
-    <div style={{ maxWidth: 620, margin: "0 auto", padding: "0 16px 60px" }}>
-      {/* Logo */}
-      <div
-        style={{ display: "flex", justifyContent: "center", marginBottom: 36 }}
-      >
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 10,
-            background: "linear-gradient(135deg,#054048,#032F36)",
-            border: `1px solid ${C.border}`,
-            borderRadius: 14,
-            padding: "10px 22px",
-            boxShadow: "0 0 0 1px rgba(63,208,201,.1)",
-          }}
-        >
-          <img
-            src="/pangolin-logo.png"
-            alt="Pangolin"
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 5,
-              objectFit: "contain",
-            }}
-          />
-          <span
-            style={{
-              fontSize: 18,
-              fontWeight: 800,
-              letterSpacing: "-.03em",
-              background: "linear-gradient(135deg,#3FD0C9,#C1F6ED)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Pangolin
-          </span>
-        </div>
-      </div>
-
-      {/* Client intro */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 16,
-            position: "relative",
-            width: 72,
-            margin: "0 auto 16px",
-          }}
-        >
-          <Avatar initials={clientInitials} size={72} color={C.blue} />
-          <div
-            style={{
-              position: "absolute",
-              bottom: -2,
-              right: -2,
-              width: 22,
-              height: 22,
-              borderRadius: "50%",
-              background: C.green,
-              border: `2px solid ${C.base}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 11,
-            }}
-          >
-            ✓
-          </div>
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: C.textMuted,
-            fontWeight: 600,
-            letterSpacing: ".05em",
-            textTransform: "uppercase",
-            marginBottom: 6,
-          }}
-        >
-          Project Invitation
-        </div>
-        <h1
-          style={{
-            fontSize: "clamp(20px,4vw,30px)",
-            fontWeight: 900,
-            letterSpacing: "-.04em",
-            color: C.text,
-            lineHeight: 1.2,
-            marginBottom: 6,
-          }}
-        >
-          <span
-            style={{
-              background: "linear-gradient(135deg,#7ECFC6,#3FD0C9)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            {clientName}
-          </span>{" "}
-          wants to work with you
-        </h1>
-        <div style={{ fontSize: 13.5, color: C.textMuted }}>
-          Verified client · {clientCompletedEscrows} completed escrows
-        </div>
-      </div>
-
-      {/* Project card */}
-      <GlassCard nohover glow={C.coral} style={{ marginBottom: 16 }}>
-        {/* Header */}
-        <div
-          style={{
-            padding: "20px 24px 16px",
-            borderBottom: `1px solid ${C.border}`,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: C.textMuted,
-                  fontWeight: 600,
-                  letterSpacing: ".05em",
-                  textTransform: "uppercase",
-                  marginBottom: 4,
-                }}
-              >
-                Project
-              </div>
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 800,
-                  letterSpacing: "-.03em",
-                  color: C.text,
-                }}
-              >
-                {projectTitle}
-              </div>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "rgba(63,208,201,.12)",
-                  border: "1px solid rgba(63,208,201,.28)",
-                  borderRadius: "100px",
-                  padding: "3px 11px",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: C.blue,
-                  marginTop: 8,
-                }}
-              >
-                {category || "General"}
-              </div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: C.textMuted,
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: ".05em",
-                  marginBottom: 4,
-                }}
-              >
-                Total Escrow
-              </div>
-              <div
-                style={{
-                  fontSize: 30,
-                  fontWeight: 900,
-                  letterSpacing: "-.05em",
-                  background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                ${formatUsd(totalUsdc)}
-              </div>
-              <div style={{ fontSize: 12.5, color: C.textMuted }}>
-                ≈ ₱{phpOf(totalUsdc)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Details grid */}
-        <div
-          style={{
-            padding: "16px 24px",
-            borderBottom: `1px solid ${C.border}`,
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
-          }}
-        >
-          {[
-            { label: "Deadline", value: deadline },
-            { label: "Structure", value: "Milestone-based" },
-            { label: "Auto-release", value: "48 hrs after delivery" },
-            { label: "Platform fee", value: "2.5% (paid by client)" },
-          ].map(({ label, value }) => (
-            <div key={label}>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: C.textMuted,
-                  fontWeight: 600,
-                  letterSpacing: ".04em",
-                  textTransform: "uppercase",
-                  marginBottom: 3,
-                }}
-              >
-                {label}
-              </div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>
-                {value}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Milestones */}
-        <div
-          style={{
-            padding: "16px 24px 0",
-            borderBottom: `1px solid ${C.border}`,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: C.textMuted,
-              letterSpacing: ".05em",
-              textTransform: "uppercase",
-              marginBottom: 12,
-            }}
-          >
-            Milestones
-          </div>
-          {milestones.map((m, i) => (
-            <div
-              key={m.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "11px 0",
-                borderBottom:
-                  i < milestones.length - 1
-                    ? `1px solid rgba(38,38,58,.5)`
-                    : "none",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    background: `linear-gradient(135deg,${C.coral},${C.coralDk})`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "#fff",
-                    flexShrink: 0,
-                  }}
-                >
-                  {i + 1}
-                </div>
-                <span style={{ fontSize: 13.5, color: C.textSub }}>
-                  {m.name}
-                </span>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
-                  ${formatUsd(m.amount)} USDC
-                </div>
-                <div style={{ fontSize: 11, color: C.textMuted }}>
-                  ≈ ₱{phpOf(m.amount || 0)}
-                </div>
-              </div>
-            </div>
-          ))}
-          <div style={{ paddingBottom: 16 }} />
-        </div>
-
-        {/* Guaranteed minimum — hero feature */}
-        <div
-          style={{
-            margin: "0",
-            background:
-              "linear-gradient(135deg,rgba(46,175,125,.12),rgba(46,175,125,.04))",
-            borderTop: "none",
-            borderRadius: "0 0 18px 18px",
-            padding: "18px 24px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              marginBottom: 8,
-            }}
-          >
-            <span style={{ fontSize: 20 }}>🛡️</span>
-            <span style={{ fontSize: 13.5, fontWeight: 800, color: C.text }}>
-              Your Guaranteed Minimum
-            </span>
-            <div
-              style={{
-                marginLeft: "auto",
-                padding: "3px 10px",
-                borderRadius: "100px",
-                fontSize: 11,
-                fontWeight: 700,
-                background: "rgba(46,175,125,.18)",
-                border: "1px solid rgba(46,175,125,.32)",
-                color: C.coral,
-              }}
-            >
-              Pangolin Promise
-            </div>
-          </div>
-          <div
-            style={{
-              fontSize: 26,
-              fontWeight: 900,
-              letterSpacing: "-.04em",
-              color: C.coral,
-              marginBottom: 6,
-            }}
-          >
-            ${formatUsd(minUsdc)} USDC{" "}
-            <span style={{ fontSize: 15, color: "rgba(46,175,125,.7)" }}>
-              ({minPct}% of total)
-            </span>
-          </div>
-          <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.65 }}>
-            Even if the client disputes or cancels, Pangolin's smart contract{" "}
-            <strong style={{ color: C.text }}>
-              guarantees you receive at least ${formatUsd(minUsdc)} USDC
-            </strong>{" "}
-            — automatically, no questions asked. ≈ ₱{phpOf(minUsdc)}
-          </div>
-        </div>
-      </GlassCard>
-
-      {/* Stellar security note */}
+    <AuthGuard>
+      {/* Header */}
       <div
         style={{
-          background: "rgba(63,208,201,.08)",
-          border: "1px solid rgba(63,208,201,.25)",
-          borderRadius: 14,
-          padding: "14px 18px",
-          marginBottom: 24,
           display: "flex",
-          gap: 14,
-          alignItems: "center",
+          alignItems: "relative",
+          marginTop: 10,
+          marginBottom: 36,
+          marginLeft: 24,
+          marginRight: 24,
+          maxWidth: "auto",
         }}
       >
-        <div
+        <img
+          src="/pangolin-logo.png"
+          alt="Pangolin"
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: "rgba(63,208,201,.15)",
-            border: "1px solid rgba(63,208,201,.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 18,
-            flexShrink: 0,
+            width: 50,
+            height: 55,
+            borderRadius: 5,
+            objectFit: "contain",
+          }}
+        />
+        <span
+          style={{
+            fontSize: 28,
+            marginTop: 6,
+            marginLeft: 10,
+            fontWeight: 800,
+            letterSpacing: ".03em",
+            background: "linear-gradient(135deg,#3FD0C9,#C1F6ED)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
           }}
         >
-          ⛓️
-        </div>
-        <div>
+          Pangolin
+        </span>
+        <button
+          onClick={() => go("/dashboard")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            background: "transparent",
+            border: `1px solid ${C.border}`,
+            borderRadius: 50,
+            padding: "8px 14px",
+            color: C.textSub,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: C.font,
+            transition: "all .15s ease",
+            flexShrink: 0,
+            marginLeft: "auto",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = C.elevated;
+            e.currentTarget.style.borderColor = C.borderLight;
+            e.currentTarget.style.color = C.text;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = C.border;
+            e.currentTarget.style.color = C.textSub;
+          }}
+        >
+          <MoveLeft size={24} />
+        </button>
+      </div>
+      <div style={{ maxWidth: 620, margin: "0 auto", padding: "0 16px 60px" }}>
+        {/* Logo */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 36,
+          }}
+        ></div>
+
+        {/* Client intro */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: 16,
+              position: "relative",
+              width: 72,
+              margin: "0 auto 16px",
+            }}
+          >
+            <Avatar initials={clientInitials} size={72} color={C.blue} />
+            <div
+              style={{
+                position: "absolute",
+                bottom: -2,
+                right: -2,
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                background: C.green,
+                border: `2px solid ${C.base}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 11,
+              }}
+            >
+              ✓
+            </div>
+          </div>
           <div
             style={{
               fontSize: 13,
-              fontWeight: 700,
-              color: "#7ECFC6",
-              marginBottom: 3,
+              color: C.textMuted,
+              fontWeight: 600,
+              letterSpacing: ".05em",
+              textTransform: "uppercase",
+              marginBottom: 6,
             }}
           >
-            Secured by Stellar blockchain
+            Project Invitation
           </div>
-          <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.55 }}>
-            Funds are locked in a verifiable smart contract — not held by
-            Pangolin. 3–5 second settlement. Your wallet, your money.
+          <h1
+            style={{
+              fontSize: "clamp(20px,4vw,30px)",
+              fontWeight: 900,
+              letterSpacing: "-.04em",
+              color: C.text,
+              lineHeight: 1.2,
+              marginBottom: 6,
+            }}
+          >
+            <span
+              style={{
+                background: "linear-gradient(135deg,#7ECFC6,#3FD0C9)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              {clientName}
+            </span>{" "}
+            wants to work with you
+          </h1>
+          <div style={{ fontSize: 13.5, color: C.textMuted }}>
+            Verified client · {clientCompletedEscrows} completed escrows
           </div>
         </div>
-      </div>
 
-      {/* CTAs */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <Btn
-          variant="coral"
-          size="xl"
-          fullWidth
-          onClick={handleAccept}
-          disabled={accepting}
-        >
-          {accepting ? "⏳ Signing…" : "✅ Accept Invitation"}
-        </Btn>
-        {acceptError && (
+        {/* Project card */}
+        <GlassCard nohover glow={C.coral} style={{ marginBottom: 16 }}>
+          {/* Header */}
           <div
             style={{
-              fontSize: 12.5,
-              color: "#F87171",
-              textAlign: "center",
-              marginTop: 4,
-            }}
-          >
-            {acceptError}
-          </div>
-        )}
-
-        {!declining ? (
-          <Btn
-            variant="ghost"
-            size="lg"
-            fullWidth
-            onClick={() => setDeclining(true)}
-          >
-            Decline invitation
-          </Btn>
-        ) : (
-          <div
-            style={{
-              background: "rgba(239,68,68,.07)",
-              border: "1px solid rgba(239,68,68,.25)",
-              borderRadius: 12,
-              padding: "14px 18px",
-              textAlign: "center",
+              padding: "20px 24px 16px",
+              borderBottom: `1px solid ${C.border}`,
             }}
           >
             <div
               style={{
-                fontSize: 13.5,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.textMuted,
+                    fontWeight: 600,
+                    letterSpacing: ".05em",
+                    textTransform: "uppercase",
+                    marginBottom: 4,
+                  }}
+                >
+                  Project
+                </div>
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    letterSpacing: "-.03em",
+                    color: C.text,
+                  }}
+                >
+                  {projectTitle}
+                </div>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: "rgba(63,208,201,.12)",
+                    border: "1px solid rgba(63,208,201,.28)",
+                    borderRadius: "100px",
+                    padding: "3px 11px",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: C.blue,
+                    marginTop: 8,
+                  }}
+                >
+                  {category || "General"}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.textMuted,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: ".05em",
+                    marginBottom: 4,
+                  }}
+                >
+                  Total Escrow
+                </div>
+                <div
+                  style={{
+                    fontSize: 30,
+                    fontWeight: 900,
+                    letterSpacing: "-.05em",
+                    background: "linear-gradient(135deg,#2EAF7D,#3FD0C9)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  ${formatUsd(totalUsdc)}
+                </div>
+                <div style={{ fontSize: 12.5, color: C.textMuted }}>
+                  ≈ ₱{phpOf(totalUsdc)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Details grid */}
+          <div
+            style={{
+              padding: "16px 24px",
+              borderBottom: `1px solid ${C.border}`,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+            }}
+          >
+            {[
+              { label: "Deadline", value: deadline },
+              { label: "Structure", value: "Milestone-based" },
+              { label: "Auto-release", value: "48 hrs after delivery" },
+              { label: "Platform fee", value: "2.5% (paid by client)" },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.textMuted,
+                    fontWeight: 600,
+                    letterSpacing: ".04em",
+                    textTransform: "uppercase",
+                    marginBottom: 3,
+                  }}
+                >
+                  {label}
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Milestones */}
+          <div
+            style={{
+              padding: "16px 24px 0",
+              borderBottom: `1px solid ${C.border}`,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
                 fontWeight: 700,
-                color: "#F87171",
+                color: C.textMuted,
+                letterSpacing: ".05em",
+                textTransform: "uppercase",
+                marginBottom: 12,
+              }}
+            >
+              Milestones
+            </div>
+            {milestones.map((m, i) => (
+              <div
+                key={m.name}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "11px 0",
+                  borderBottom:
+                    i < milestones.length - 1
+                      ? `1px solid rgba(38,38,58,.5)`
+                      : "none",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      background: `linear-gradient(135deg,${C.coral},${C.coralDk})`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: "#fff",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  <span style={{ fontSize: 13.5, color: C.textSub }}>
+                    {m.name}
+                  </span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
+                    ${formatUsd(m.amount)} USDC
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textMuted }}>
+                    ≈ ₱{phpOf(m.amount || 0)}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div style={{ paddingBottom: 16 }} />
+          </div>
+
+          {/* Guaranteed minimum — hero feature */}
+          <div
+            style={{
+              margin: "0",
+              background:
+                "linear-gradient(135deg,rgba(46,175,125,.12),rgba(46,175,125,.04))",
+              borderTop: "none",
+              borderRadius: "0 0 18px 18px",
+              padding: "18px 24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 8,
+              }}
+            >
+              <span style={{ fontSize: 20 }}>🛡️</span>
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: C.text }}>
+                Your Guaranteed Minimum
+              </span>
+              <div
+                style={{
+                  marginLeft: "auto",
+                  padding: "3px 10px",
+                  borderRadius: "100px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: "rgba(46,175,125,.18)",
+                  border: "1px solid rgba(46,175,125,.32)",
+                  color: C.coral,
+                }}
+              >
+                Pangolin Promise
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: 26,
+                fontWeight: 900,
+                letterSpacing: "-.04em",
+                color: C.coral,
                 marginBottom: 6,
               }}
             >
-              Are you sure?
+              ${formatUsd(minUsdc)} USDC{" "}
+              <span style={{ fontSize: 15, color: "rgba(46,175,125,.7)" }}>
+                ({minPct}% of total)
+              </span>
             </div>
-            <div
-              style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 14 }}
-            >
-              {clientName} will be notified you've declined. This invite link
-              will expire.
-            </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <Btn variant="red" size="sm" onClick={() => {}}>
-                Yes, Decline
-              </Btn>
-              <Btn
-                variant="ghost"
-                size="sm"
-                onClick={() => setDeclining(false)}
-              >
-                Go back
-              </Btn>
+            <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.65 }}>
+              Even if the client disputes or cancels, Pangolin's smart contract{" "}
+              <strong style={{ color: C.text }}>
+                guarantees you receive at least ${formatUsd(minUsdc)} USDC
+              </strong>{" "}
+              — automatically, no questions asked. ≈ ₱{phpOf(minUsdc)}
             </div>
           </div>
-        )}
-      </div>
+        </GlassCard>
 
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: 16,
-          fontSize: 12,
-          color: C.textMuted,
-        }}
-      >
-        🐧 Pangolin · Zero trust needed — just blockchain · 2.5% flat fee
-        charged to client
+        {/* Stellar security note */}
+        <div
+          style={{
+            background: "rgba(63,208,201,.08)",
+            border: "1px solid rgba(63,208,201,.25)",
+            borderRadius: 14,
+            padding: "14px 18px",
+            marginBottom: 24,
+            display: "flex",
+            gap: 14,
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "rgba(63,208,201,.15)",
+              border: "1px solid rgba(63,208,201,.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+              flexShrink: 0,
+            }}
+          >
+            ⛓️
+          </div>
+          <div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#7ECFC6",
+                marginBottom: 3,
+              }}
+            >
+              Secured by Stellar blockchain
+            </div>
+            <div style={{ fontSize: 12.5, color: C.textSub, lineHeight: 1.55 }}>
+              Funds are locked in a verifiable smart contract — not held by
+              Pangolin. 3–5 second settlement. Your wallet, your money.
+            </div>
+          </div>
+        </div>
+
+        {/* CTAs */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Btn
+            variant="coral"
+            size="xl"
+            fullWidth
+            onClick={handleAccept}
+            disabled={accepting}
+          >
+            {accepting ? "⏳ Signing…" : "✅ Accept Invitation"}
+          </Btn>
+          {acceptError && (
+            <div
+              style={{
+                fontSize: 12.5,
+                color: "#F87171",
+                textAlign: "center",
+                marginTop: 4,
+              }}
+            >
+              {acceptError}
+            </div>
+          )}
+
+          {!declining ? (
+            <Btn
+              variant="ghost"
+              size="lg"
+              fullWidth
+              onClick={() => setDeclining(true)}
+            >
+              Decline invitation
+            </Btn>
+          ) : (
+            <div
+              style={{
+                background: "rgba(239,68,68,.07)",
+                border: "1px solid rgba(239,68,68,.25)",
+                borderRadius: 12,
+                padding: "14px 18px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  color: "#F87171",
+                  marginBottom: 6,
+                }}
+              >
+                Are you sure?
+              </div>
+              <div
+                style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 14 }}
+              >
+                {clientName} will be notified you've declined. This invite link
+                will expire.
+              </div>
+              <div
+                style={{ display: "flex", gap: 10, justifyContent: "center" }}
+              >
+                <Btn variant="red" size="sm" onClick={() => {}}>
+                  Yes, Decline
+                </Btn>
+                <Btn
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDeclining(false)}
+                >
+                  Go back
+                </Btn>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: 16,
+            fontSize: 12,
+            color: C.textMuted,
+          }}
+        >
+          🐧 Pangolin · Zero trust needed — just blockchain · 2.5% flat fee
+          charged to client
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // SCREEN B — Freelancer Dashboard
 // ════════════════════════════════════════════════════════════════════════════
+function UsdcTrustlineBanner({ walletAddress }) {
+  const [show, setShow] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const CONTRACT = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";
+
+  useEffect(() => {
+    if (!walletAddress) return;
+    fetch(`https://horizon-testnet.stellar.org/accounts/${walletAddress}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const hasUsdc = data.balances?.some(
+          (b: any) => b.asset_code === "USDC",
+        );
+        if (!hasUsdc) setShow(true);
+      })
+      .catch(() => {});
+  }, [walletAddress]);
+
+  if (!show) return null;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(CONTRACT);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      style={{
+        background:
+          "linear-gradient(135deg,rgba(245,158,11,.10),rgba(245,158,11,.04))",
+        border: "1px solid rgba(245,158,11,.35)",
+        borderRadius: 16,
+        padding: "16px 20px",
+        marginBottom: 20,
+        display: "flex",
+        gap: 14,
+        alignItems: "flex-start",
+      }}
+    >
+      <div style={{ fontSize: 22, marginTop: 2 }}>⚠️</div>
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 800,
+            color: C.text,
+            marginBottom: 4,
+          }}
+        >
+          USDC Trustline Required
+        </div>
+        <div
+          style={{
+            fontSize: 13,
+            color: C.textSub,
+            lineHeight: 1.6,
+            marginBottom: 12,
+          }}
+        >
+          Your wallet can't receive USDC payments yet. Add the USDC token in
+          Freighter under{" "}
+          <strong style={{ color: C.text }}>
+            Manage Assets → Add by Contract ID
+          </strong>
+          .
+        </div>
+        <div
+          style={{
+            background: C.elevated,
+            border: `1px solid ${C.border}`,
+            borderRadius: 10,
+            padding: "10px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            marginBottom: 12,
+          }}
+        >
+          <code
+            style={{
+              fontSize: 11.5,
+              color: C.coral,
+              fontFamily: "monospace",
+              wordBreak: "break-all",
+            }}
+          >
+            {CONTRACT}
+          </code>
+          <button
+            onClick={handleCopy}
+            style={{
+              background: copied ? "rgba(46,175,125,.15)" : C.card,
+              border: `1px solid ${copied ? "rgba(46,175,125,.4)" : C.border}`,
+              borderRadius: 8,
+              padding: "5px 12px",
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 700,
+              color: copied ? C.coral : C.textSub,
+              fontFamily: C.font,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              transition: "all .17s ease",
+            }}
+          >
+            {copied ? "✓ Copied!" : "Copy"}
+          </button>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <Btn variant="subtle" size="sm" onClick={() => setShow(false)}>
+            Dismiss
+          </Btn>
+          <span style={{ fontSize: 12, color: C.textMuted }}>
+            After adding, refresh the page to dismiss automatically.
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 const getNavItems = (jobCount = 0, messageCount = 0) => [];
 
 const ACTIVE_JOBS = [];
@@ -1992,7 +2156,7 @@ function JobsTableBody({ rows }) {
   );
 }
 
-function ActiveJobsTable({ jobs, count }) {
+function ActiveJobsTable({ jobs, count, onViewAll, showAll }) {
   const active = jobs.filter((j) => !DONE_STATUSES.includes(j.status));
   const done = jobs.filter((j) => DONE_STATUSES.includes(j.status));
   return (
@@ -2029,6 +2193,11 @@ function ActiveJobsTable({ jobs, count }) {
               {active.length} contracts in progress
             </div>
           </div>
+          {!showAll && (
+            <Btn variant="ghost" size="sm" onClick={onViewAll}>
+              View All →
+            </Btn>
+          )}
         </div>
         <JobsTableBody rows={active} />
       </GlassCard>
@@ -2068,8 +2237,15 @@ function ActiveJobsTable({ jobs, count }) {
 }
 
 function JobRow({ row, last }) {
+  const router = useRouter();
   const [h, hov] = useHover();
   const isActionable = row.action === "Submit Delivery";
+  const handleNavigate = () => {
+    const id = row.escrowId || row.id;
+    if (id) {
+      router.push(`/delivery?escrow_id=${id}`);
+    }
+  };
   return (
     <div
       {...hov}
@@ -2090,7 +2266,9 @@ function JobRow({ row, last }) {
             fontWeight: 700,
             color: C.text,
             marginBottom: 2,
+            cursor: "pointer",
           }}
+          onClick={handleNavigate}
         >
           {row.project}
         </div>
@@ -2127,11 +2305,11 @@ function JobRow({ row, last }) {
       <div style={{ fontSize: 13, color: C.textSub }}>{row.due}</div>
       <div>
         {isActionable ? (
-          <Btn variant="coral" size="sm" onClick={() => go("/delivery")}>
+          <Btn variant="coral" size="sm" onClick={handleNavigate}>
             {row.action}
           </Btn>
         ) : (
-          <Btn variant="subtle" size="sm" onClick={() => go("/delivery")}>
+          <Btn variant="subtle" size="sm" onClick={handleNavigate}>
             {row.action}
           </Btn>
         )}
@@ -2155,27 +2333,42 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
   const [jobs, setJobs] = useState(ACTIVE_JOBS);
   const [jobCount, setJobCount] = useState(ACTIVE_JOBS.length);
   const [freelancerName, setFreelancerName] = useState("Freelancer");
-  const [earningsThisMonth, setEarningsThisMonth] = useState(1240);
-  const [earningsTotal, setEarningsTotal] = useState(3150);
+  const [earningsThisMonth, setEarningsThisMonth] = useState(0);
+  const [earningsTotal, setEarningsTotal] = useState(0);
   const [pendingRelease, setPendingRelease] = useState(0);
   const [statsCompleted, setStatsCompleted] = useState("0");
-  const [statsRating] = useState("4.9");
+  const [statsRating] = useState(0);
   const [portfolioLink, setPortfolioLink] = useState(
     "pangolin.gg/verify/freelancer",
   );
   const [responseRate, setResponseRate] = useState("N/A");
+  const [showAllJobs, setShowAllJobs] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     async function loadJobs() {
-      const { data, error } = await supabase
+      // Only fetch jobs assigned to this freelancer's wallet if wallet is connected
+      if (wallet?.status !== "connected" || !wallet?.address) {
+        setJobs([]);
+        setJobCount(0);
+        return;
+      }
+
+      let query = supabase
         .from("escrows")
         .select(
           "id,title,status,amount_usdc,deadline,freelancer_wallet,client_id,created_at,completed_at",
         )
-        .order("created_at", { ascending: false })
-        .limit(6);
+        .eq("freelancer_wallet", wallet.address)
+        .order("created_at", { ascending: false });
+
+      // Apply limit only when not viewing all
+      if (!showAllJobs) {
+        query = query.limit(6);
+      }
+
+      const { data, error } = await query;
 
       if (!mounted) return;
       if (!error && data?.length) {
@@ -2199,6 +2392,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
             : "CL";
           const status = row.status || "In Progress";
           return {
+            escrowId: row.id,
             project: row.title || "Escrow Project",
             client: {
               initials,
@@ -2242,8 +2436,38 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
             .reduce((sum, job) => sum + Number(job.amount || 0), 0),
         );
         setStatsCompleted(
-          String((data || []).filter((row) => row.completed_at).length),
+          String(
+            (data || []).filter((row) => row.status === "completed").length,
+          ),
         );
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const allEscrows = data;
+
+        const monthTotal = allEscrows
+          .filter(
+            (e) =>
+              e.status === "completed" &&
+              e.completed_at &&
+              new Date(e.completed_at).getMonth() === currentMonth &&
+              new Date(e.completed_at).getFullYear() === currentYear,
+          )
+          .reduce((sum, e) => sum + Number(e.amount_usdc || 0), 0);
+
+        const allTimeTotal = allEscrows
+          .filter((e) => e.status === "completed")
+          .reduce((sum, e) => sum + Number(e.amount_usdc || 0), 0);
+
+        const pendingTotal = allEscrows
+          .filter((e) => e.status === "delivered")
+          .reduce((sum, e) => sum + Number(e.amount_usdc || 0), 0);
+
+        setEarningsThisMonth(monthTotal);
+        setEarningsTotal(allTimeTotal);
+        setPendingRelease(pendingTotal);
       }
 
       if (user?.id) {
@@ -2257,38 +2481,6 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
           setPortfolioLink(
             `pangolin.gg/verify/${me.display_name.toLowerCase().replace(/\s+/g, "-")}-${user.id.slice(0, 6)}`,
           );
-        }
-
-        const { data: payments } = await supabase
-          .from("payments")
-          .select("amount_usdc,status,created_at")
-          .eq("user_id", user.id);
-        if (payments?.length) {
-          const now = new Date();
-          const monthTotal = payments
-            .filter((p) => {
-              const d = new Date(p.created_at);
-              return (
-                d.getMonth() === now.getMonth() &&
-                d.getFullYear() === now.getFullYear()
-              );
-            })
-            .reduce((sum, p) => sum + Number(p.amount_usdc || 0), 0);
-          const allTime = payments.reduce(
-            (sum, p) => sum + Number(p.amount_usdc || 0),
-            0,
-          );
-          setEarningsThisMonth(monthTotal);
-          setEarningsTotal(allTime);
-          const completedPayments = payments.filter((p) =>
-            String(p.status || "")
-              .toLowerCase()
-              .includes("complete"),
-          ).length;
-          const rate = payments.length
-            ? Math.round((completedPayments / payments.length) * 100)
-            : 0;
-          setResponseRate(`${rate}%`);
         }
       }
     }
@@ -2308,7 +2500,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
     return () => {
       mounted = false;
     };
-  }, [supabase, user?.id]);
+  }, [supabase, user?.id, wallet, showAllJobs]);
 
   return (
     <>
@@ -2539,6 +2731,7 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
                 flexWrap: "wrap",
               }}
             >
+              <UsdcTrustlineBanner walletAddress={wallet?.address} />
               <StatCard
                 icon="💰"
                 label="Earnings This Month"
@@ -2573,7 +2766,12 @@ function ScreenB({ onSwitchToInvite = null, hasInvite = false }) {
 
             {/* Active jobs table */}
             <div style={{ marginBottom: 22 }}>
-              <ActiveJobsTable jobs={jobs} count={jobCount} />
+              <ActiveJobsTable
+                jobs={jobs}
+                count={jobCount}
+                onViewAll={() => setShowAllJobs(true)}
+                showAll={showAllJobs}
+              />
             </div>
 
             {/* Bottom row */}
