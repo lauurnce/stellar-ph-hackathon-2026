@@ -303,3 +303,123 @@ export async function cancelEscrow(client: string, escrowId: number): Promise<{ 
   const res = await signAndSubmit(client, "cancel_escrow", buildArgs([{ value: escrowId, type: "u32" }]));
   return { hash: res.hash };
 }
+
+// ─── Milestones ──────────────────────────────────────────────────────────────
+
+export type MilestoneStatus = "PENDING" | "ACTIVE" | "DELIVERED" | "APPROVED";
+
+export interface MilestoneData {
+  index: number;
+  title: string;
+  amountUsdc: bigint;
+  status: MilestoneStatus;
+  deliveryHash: string | null;
+}
+
+const MILESTONE_STATUS_MAP: Record<number, MilestoneStatus> = {
+  0: "PENDING",
+  1: "ACTIVE",
+  2: "DELIVERED",
+  3: "APPROVED",
+};
+
+function toMilestoneStatus(v: unknown): MilestoneStatus {
+  if (typeof v === "number") return MILESTONE_STATUS_MAP[v] ?? "PENDING";
+  if (typeof v === "string") return (v.toUpperCase() as MilestoneStatus) ?? "PENDING";
+  return "PENDING";
+}
+
+function normalizeMilestone(raw: unknown): MilestoneData {
+  return {
+    index: toNumber(readField(raw, ["index"])),
+    title: toStr(readField(raw, ["title"])),
+    amountUsdc: toBigInt(readField(raw, ["amount_usdc", "amountUsdc"])),
+    status: toMilestoneStatus(readField(raw, ["status"])),
+    deliveryHash: (() => {
+      const v = readField(raw, ["delivery_hash", "deliveryHash"]);
+      if (v == null) return null;
+      try {
+        return toStr(v);
+      } catch {
+        return null;
+      }
+    })(),
+  };
+}
+
+export async function setMilestones(
+  client: string,
+  escrowId: number,
+  titles: string[],
+  amounts: bigint[],
+): Promise<{ hash: string }> {
+  if (titles.length !== amounts.length) {
+    throw new Error("titles and amounts arrays must be the same length.");
+  }
+  if (titles.length === 0 || titles.length > 10) {
+    throw new Error("Must have 1–10 milestones.");
+  }
+
+  const titleVec = xdr.ScVal.scvVec(titles.map((t) => nativeToScVal(t, { type: "string" })));
+  const amountVec = xdr.ScVal.scvVec(amounts.map((a) => nativeToScVal(a, { type: "i128" })));
+
+  const res = await signAndSubmit(
+    client,
+    "set_milestones",
+    [
+      nativeToScVal(escrowId, { type: "u32" }),
+      titleVec,
+      amountVec,
+    ],
+  );
+  return { hash: res.hash };
+}
+
+export async function submitMilestoneDelivery(
+  freelancer: string,
+  escrowId: number,
+  deliveryHashHex: string,
+): Promise<{ hash: string; milestoneIndex: number | null }> {
+  if (deliveryHashHex.replace(/^0x/, "").length !== 64) {
+    throw new Error("delivery_hash must be a 32-byte hex string (64 hex chars).");
+  }
+  const hashBytes = Buffer.from(deliveryHashHex.replace(/^0x/, ""), "hex");
+  const res = await signAndSubmit(
+    freelancer,
+    "submit_milestone_delivery",
+    [
+      nativeToScVal(escrowId, { type: "u32" }),
+      xdr.ScVal.scvBytes(hashBytes),
+    ],
+    toNumber,
+  );
+  return { hash: res.hash, milestoneIndex: res.result ?? null };
+}
+
+export async function approveMilestone(
+  client: string,
+  escrowId: number,
+  milestoneIndex: number,
+): Promise<{ hash: string; isFinal: boolean }> {
+  const res = await signAndSubmit(
+    client,
+    "approve_milestone",
+    buildArgs([
+      { value: escrowId, type: "u32" },
+      { value: milestoneIndex, type: "u32" },
+    ]),
+    (v): boolean => v === true || v === 1,
+  );
+  return { hash: res.hash, isFinal: res.result ?? false };
+}
+
+export async function getMilestones(escrowId: number): Promise<MilestoneData[]> {
+  return simulateRead(
+    "get_milestones",
+    buildArgs([{ value: escrowId, type: "u32" }]),
+    (raw) => {
+      if (!Array.isArray(raw)) return [];
+      return raw.map(normalizeMilestone);
+    },
+  );
+}

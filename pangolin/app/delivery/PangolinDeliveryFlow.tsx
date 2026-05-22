@@ -8,8 +8,10 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
 import {
   submitDelivery,
+  submitMilestoneDelivery,
   getEscrow,
   confirmFreelancer,
+  getMilestones,
 } from "@/lib/contract-client";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -350,12 +352,12 @@ function ScreenA({
 
     let txHash = null;
 
-    if (!onchainId || !isLastMilestone) {
-      // No on-chain ID, or intermediate milestone — record in DB only, skip contract call
+    if (!onchainId) {
+      // No on-chain ID — record in DB only, skip contract call
       setPhase("done");
       setProgress(100);
     } else {
-      // Final milestone — check on-chain state before calling submit_delivery
+      // Check on-chain state before calling submit_delivery / submit_milestone_delivery
       let onchainStatus = null;
       try {
         const onchain = await getEscrow(onchainId);
@@ -388,12 +390,28 @@ function ScreenA({
 
         // DELIVERED/COMPLETED = already submitted on-chain, skip contract call, record in DB only
         if (onchainStatus !== "DELIVERED" && onchainStatus !== "COMPLETED") {
-          const { hash } = await submitDelivery(
-            fresh.address,
-            onchainId,
-            hashHex,
-          );
-          txHash = hash;
+          // Try milestone-aware submit first; fall back to legacy single-payment submit
+          let onchainMilestones = [];
+          try {
+            onchainMilestones = await getMilestones(onchainId);
+          } catch {
+            onchainMilestones = [];
+          }
+          if (onchainMilestones.length > 0) {
+            const { hash } = await submitMilestoneDelivery(
+              fresh.address,
+              onchainId,
+              hashHex,
+            );
+            txHash = hash;
+          } else {
+            const { hash } = await submitDelivery(
+              fresh.address,
+              onchainId,
+              hashHex,
+            );
+            txHash = hash;
+          }
         }
       } catch (err) {
         setSubmitting(false);

@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
-import { createEscrow, fundEscrow } from "@/lib/contract-client";
+import { createEscrow, fundEscrow, setMilestones as setMilestonesOnChain } from "@/lib/contract-client";
 import { parseAmountToInt } from "@/lib/format";
 import { appConfig } from "@/lib/config";
 import { useAuth } from "@/hooks/useAuth";
@@ -966,6 +966,29 @@ export default function PangolinEscrowWizard() {
         data.description,
       );
       if (escrowId == null) throw new Error("Contract did not return an escrow ID. Check explorer and try again.");
+
+      // Build milestone schedule for on-chain set_milestones (must be called before fund)
+      const validMilestones = (data.milestonesEnabled && Array.isArray(data.milestones))
+        ? data.milestones.filter(m => (m.name?.trim() || Number(m.amount) > 0))
+        : [];
+
+      const titles = validMilestones.length
+        ? validMilestones.map((m, i) => m.name?.trim() || `Milestone ${i + 1}`)
+        : [data.title?.trim() || "Full payment"];
+
+      const amounts = validMilestones.length
+        ? validMilestones.map(m => parseAmountToInt(String(Number(m.amount) || 0), appConfig.assetDecimals))
+        : [amountUsdc];
+
+      // Contract requires sum(amounts) === amountUsdc. Adjust last milestone to absorb rounding.
+      const sum = amounts.reduce((a, b) => a + b, 0n);
+      if (sum !== amountUsdc) {
+        const diff = amountUsdc - sum;
+        amounts[amounts.length - 1] = amounts[amounts.length - 1] + diff;
+      }
+
+      await setMilestonesOnChain(wallet.address, escrowId, titles, amounts);
+
       const { hash: fundHash } = await fundEscrow(wallet.address, escrowId);
 
     // Persist to Supabase — best-effort (on-chain tx already confirmed)

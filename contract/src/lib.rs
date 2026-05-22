@@ -1,7 +1,7 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, token, Address, BytesN, Env,
+    contract, contracterror, contractimpl, contracttype, token, Address, BytesN, Env, String, Vec,
 };
 
 // ---------------------------------------------------------------------------
@@ -45,6 +45,33 @@ pub enum DataKey {
     UsdcToken,
     Counter,
     Escrow(u32),
+    EscrowMilestones(u32),
+}
+
+// ---------------------------------------------------------------------------
+// Milestone types
+// ---------------------------------------------------------------------------
+
+/// Lifecycle of a single milestone.
+/// Pending → Active (next in queue) → Delivered (freelancer submitted)
+/// → Approved (client approved, funds released)
+#[contracttype]
+#[derive(Clone, PartialEq)]
+pub enum MilestoneStatus {
+    Pending = 0,
+    Active = 1,
+    Delivered = 2,
+    Approved = 3,
+}
+
+#[contracttype]
+#[derive(Clone)]
+pub struct Milestone {
+    pub index: u32,
+    pub title: String,
+    pub amount_usdc: i128,
+    pub status: MilestoneStatus,
+    pub delivery_hash: Option<BytesN<32>>,
 }
 
 #[contracterror]
@@ -431,6 +458,25 @@ impl PangolinEscrow {
     }
 
     // -----------------------------------------------------------------------
+    // Upgrade
+    // -----------------------------------------------------------------------
+
+    /// Replace the contract's WASM with a new version.
+    /// Only callable by the admin set in `init`.
+    /// Storage (escrows, milestones, counter, admin, usdc token) is preserved.
+    pub fn upgrade(env: Env, new_wasm_hash: BytesN<32>) -> Result<(), Error> {
+        let admin: Address = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotFound)?;
+        admin.require_auth();
+
+        env.deployer().update_current_contract_wasm(new_wasm_hash);
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
     // Private helpers
     // -----------------------------------------------------------------------
 
@@ -446,6 +492,222 @@ impl PangolinEscrow {
             .persistent()
             .get(&DataKey::UsdcToken)
             .unwrap()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Milestones
+// Per-phase delivery and partial payment release for escrows.
+// ---------------------------------------------------------------------------
+
+#[contractimpl]
+impl PangolinEscrow {
+    /// Define the milestone schedule for an escrow.
+    ///
+    /// Rules:
+    /// * Only the client may call this.
+    /// * Must be called while the escrow is still Created (before funding).
+    /// * The sum of milestone amounts must equal the escrow's amount_usdc.
+    /// * 1–10 milestones per escrow.
+    ///
+    /// Calling this a second time replaces the previous schedule entirely.
+    pub fn set_milestones(
+        env: Env,
+        escrow_id: u32,
+        titles: Vec<String>,
+        amounts: Vec<i128>,
+    ) -> Result<(), Error> {
+        let escrow = Self::load_escrow(&env, escrow_id)?;
+
+        if escrow.status != EscrowStatus::Created {
+            return Err(Error::InvalidStatus);
+        }
+
+        escrow.client.require_auth();
+
+        let n = titles.len();
+        if n == 0 || n > 10 || amounts.len() != n {
+            return Err(Error::InvalidInput);
+        }
+
+        // Amounts must sum to the escrow total
+        let mut total: i128 = 0;
+        for i in 0..n {
+            let amt = amounts.get(i).unwrap();
+            if amt <= 0 {
+                return Err(Error::InvalidInput);
+            }
+            total += amt;
+        }
+        if total != escrow.amount_usdc {
+            return Err(Error::InvalidInput);
+        }
+
+        // Build milestone list — first one Active, rest Pending
+        let mut milestones: Vec<Milestone> = Vec::new(&env);
+        for i in 0..n {
+            milestones.push_back(Milestone {
+                index: i,
+                title: titles.get(i).unwrap(),
+                amount_usdc: amounts.get(i).unwrap(),
+                status: if i == 0 {
+                    MilestoneStatus::Active
+                } else {
+                    MilestoneStatus::Pending
+                },
+                delivery_hash: None,
+            });
+        }
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::EscrowMilestones(escrow_id), &milestones);
+
+        env.events().publish(("milestone", "set"), (escrow_id, n));
+
+        Ok(())
+    }
+
+    /// Freelancer submits proof-of-work for the currently Active milestone.
+    /// Escrow status stays Active so the client can approve milestone-by-milestone.
+    pub fn submit_milestone_delivery(
+        env: Env,
+        escrow_id: u32,
+        delivery_hash: BytesN<32>,
+    ) -> Result<u32, Error> {
+        let escrow = Self::load_escrow(&env, escrow_id)?;
+
+        if escrow.status != EscrowStatus::Active {
+            return Err(Error::InvalidStatus);
+        }
+
+        escrow.freelancer.require_auth();
+
+        let mut milestones: Vec<Milestone> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::EscrowMilestones(escrow_id))
+            .ok_or(Error::NotFound)?;
+
+        let mut active_index: Option<u32> = None;
+        for i in 0..milestones.len() {
+            let ms = milestones.get(i).unwrap();
+            if ms.status == MilestoneStatus::Active {
+                active_index = Some(i);
+                break;
+            }
+        }
+
+        let idx = active_index.ok_or(Error::InvalidStatus)?;
+        let mut ms = milestones.get(idx).unwrap();
+        ms.delivery_hash = Some(delivery_hash);
+        ms.status = MilestoneStatus::Delivered;
+        milestones.set(idx, ms);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::EscrowMilestones(escrow_id), &milestones);
+
+        env.events()
+            .publish(("milestone", "delivered"), (escrow_id, idx));
+
+        Ok(idx)
+    }
+
+    /// Client approves a delivered milestone and releases its payment slice.
+    /// Per-milestone fee = milestone.amount_usdc * platform_fee_pct / 10_000.
+    /// Final milestone approval marks the escrow Completed.
+    /// Returns true when this was the final milestone.
+    pub fn approve_milestone(
+        env: Env,
+        escrow_id: u32,
+        milestone_index: u32,
+    ) -> Result<bool, Error> {
+        let mut escrow = Self::load_escrow(&env, escrow_id)?;
+
+        if escrow.status != EscrowStatus::Active {
+            return Err(Error::InvalidStatus);
+        }
+
+        escrow.client.require_auth();
+
+        let mut milestones: Vec<Milestone> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::EscrowMilestones(escrow_id))
+            .ok_or(Error::NotFound)?;
+
+        if milestone_index >= milestones.len() {
+            return Err(Error::InvalidInput);
+        }
+
+        let mut ms = milestones.get(milestone_index).unwrap();
+        if ms.status != MilestoneStatus::Delivered {
+            return Err(Error::InvalidStatus);
+        }
+
+        // Per-milestone platform fee (proportional share)
+        let fee = ms.amount_usdc * escrow.platform_fee_pct as i128 / 10_000;
+        let payout = ms.amount_usdc - fee;
+
+        let usdc_token = Self::load_usdc(&env);
+        let token_client = token::Client::new(&env, &usdc_token);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &escrow.freelancer,
+            &payout,
+        );
+
+        ms.status = MilestoneStatus::Approved;
+        milestones.set(milestone_index, ms);
+
+        // Any remaining unfinished milestones?
+        let mut remaining_pending = false;
+        for i in 0..milestones.len() {
+            let m = milestones.get(i).unwrap();
+            if m.status == MilestoneStatus::Pending || m.status == MilestoneStatus::Active {
+                remaining_pending = true;
+                break;
+            }
+        }
+        let is_final = !remaining_pending;
+
+        if is_final {
+            escrow.status = EscrowStatus::Completed;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Escrow(escrow_id), &escrow);
+
+            env.events().publish(("escrow", "completed"), escrow_id);
+        } else {
+            // Promote next Pending milestone to Active
+            for i in (milestone_index + 1)..milestones.len() {
+                let mut next = milestones.get(i).unwrap();
+                if next.status == MilestoneStatus::Pending {
+                    next.status = MilestoneStatus::Active;
+                    milestones.set(i, next);
+                    break;
+                }
+            }
+        }
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::EscrowMilestones(escrow_id), &milestones);
+
+        env.events()
+            .publish(("milestone", "approved"), (escrow_id, milestone_index));
+
+        Ok(is_final)
+    }
+
+    /// Returns the milestone list, or an empty Vec if none were set
+    /// (legacy single-payment escrows).
+    pub fn get_milestones(env: Env, escrow_id: u32) -> Vec<Milestone> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::EscrowMilestones(escrow_id))
+            .unwrap_or_else(|| Vec::new(&env))
     }
 }
 

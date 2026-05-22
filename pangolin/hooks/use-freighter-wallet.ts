@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { connectFreighterWallet, readFreighterWallet } from "@/lib/freighter";
 import type { WalletSnapshot } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
-import { ensureUsdcTrustline } from "@/lib/contract-client";
 
 const INITIAL_WALLET: WalletSnapshot = {
   status: "disconnected",

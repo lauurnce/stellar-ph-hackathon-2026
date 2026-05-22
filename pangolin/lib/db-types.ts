@@ -115,13 +115,17 @@ export interface EscrowEvent {
 export interface Database {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Omit<Profile, "id">; Update: Partial<Profile> };
-      escrows: { Row: Escrow; Insert: Omit<Escrow, "id">; Update: Partial<Escrow> };
-      milestones: { Row: Milestone; Insert: Omit<Milestone, "id">; Update: Partial<Milestone> };
-      deliveries: { Row: Delivery; Insert: Omit<Delivery, "id">; Update: Partial<Delivery> };
-      disputes: { Row: Dispute; Insert: Omit<Dispute, "id">; Update: Partial<Dispute> };
-      dispute_evidence: { Row: DisputeEvidence; Insert: Omit<DisputeEvidence, "id">; Update: Partial<DisputeEvidence> };
-      escrow_events: { Row: EscrowEvent; Insert: Omit<EscrowEvent, "id">; Update: Partial<EscrowEvent> };
+      profiles: { Row: Profile; Insert: Omit<Profile, "id">; Update: Partial<Profile>; Relationships: [] };
+      escrows: { Row: Escrow; Insert: Omit<Escrow, "id">; Update: Partial<Escrow>; Relationships: [] };
+      milestones: { Row: Milestone; Insert: Omit<Milestone, "id">; Update: Partial<Milestone>; Relationships: [] };
+      deliveries: { Row: Delivery; Insert: Omit<Delivery, "id">; Update: Partial<Delivery>; Relationships: [] };
+      disputes: { Row: Dispute; Insert: Omit<Dispute, "id">; Update: Partial<Dispute>; Relationships: [] };
+      dispute_evidence: { Row: DisputeEvidence; Insert: Omit<DisputeEvidence, "id">; Update: Partial<DisputeEvidence>; Relationships: [] };
+      escrow_events: { Row: EscrowEvent; Insert: Omit<EscrowEvent, "id">; Update: Partial<EscrowEvent>; Relationships: [] };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }

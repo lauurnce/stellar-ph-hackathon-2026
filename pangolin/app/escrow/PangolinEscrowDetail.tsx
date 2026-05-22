@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { useFreighterWallet } from "@/hooks/use-freighter-wallet";
-import { approveRelease, triggerDispute } from "@/lib/contract-client";
+import { approveRelease, triggerDispute, approveMilestone } from "@/lib/contract-client";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 
@@ -325,32 +325,31 @@ function MilestoneStepper({ milestones = MILESTONES, supabase, escrow, onRefresh
       const fresh = await connectWallet();
       if (!fresh?.address) throw new Error("Connect Freighter wallet first.");
 
+      const onchainEscrowId = parseInt(escrow?.stellar_contract_id ?? "0");
+      if (Number.isNaN(onchainEscrowId)) throw new Error("Missing on-chain escrow ID.");
+
+      const milestoneIndex = Number(ms.sort_order || 0) - 1;
+      if (milestoneIndex < 0) throw new Error("Invalid milestone index.");
+
+      const { hash: txHash, isFinal } = await approveMilestone(fresh.address, onchainEscrowId, milestoneIndex);
+
       await supabase.from("milestones").update({
         status: "completed",
         approved_at: new Date().toISOString(),
       }).eq("id", ms.id);
 
-      const remaining = milestones.filter(m => m.id !== ms.id && norm(m.status) !== "completed" && norm(m.status) !== "approved");
-      const isLast = remaining.length === 0;
-      let txHash = null;
-
-      if (isLast) {
-        const onchainId = parseInt(escrow?.stellar_contract_id ?? "0") || 0;
-        if (onchainId) {
-          const { hash } = await approveRelease(fresh.address, onchainId);
-          txHash = hash;
-        }
+      if (isFinal) {
         await supabase.from("escrows").update({
           status: "completed",
           completed_at: new Date().toISOString(),
-          ...(txHash ? { stellar_release_tx_hash: txHash } : {}),
+          stellar_release_tx_hash: txHash,
         }).eq("id", escrow.id);
       }
 
       await supabase.from("escrow_events").insert({
         escrow_id: escrow.id,
         event_type: "milestone_approved",
-        message: `Milestone "${ms.title}" approved${isLast ? " — funds released to freelancer" : ""}`,
+        message: `Milestone "${ms.title}" approved — payment released${isFinal ? " (escrow complete)" : ""}`,
         tx_hash: txHash,
       });
 
@@ -651,11 +650,6 @@ function ActionSidebar({ escrow, milestones = [] }) {
   const daysRemaining = escrow?.deadline
     ? Math.ceil((new Date(escrow.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
-  const releaseAmount = Number(reviewMilestone?.amount_usdc ?? escrow?.amount_usdc ?? 0);
-  const actionSubtitle = reviewMilestone
-    ? `${reviewMilestone.title || "Current milestone"} is awaiting your review`
-    : "Delivery is awaiting your review";
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
