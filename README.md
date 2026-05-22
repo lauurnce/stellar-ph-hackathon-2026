@@ -38,24 +38,7 @@
 
 The Philippines ranks **#3 globally for freelancer earnings** (Payoneer 2023). Over **500,000 Filipino digital art commission artists** earn an estimated **₱18–25 billion annually** — yet every major payment platform leaves them structurally unprotected.
 
-<!-- PROBLEM CHART — generate with the prompt below, save as images/problem-chart.png -->
-![The Problem with Current Platforms](images/problem-chart.png)
-
-> **📋 Image generation prompt:**
-> ```
-> Create a professional comparison infographic titled "Why Filipino Artists Can't Get Paid Safely".
-> Show 4 platforms as horizontal bars with ratings:
->
-> PayPal     | Fee: 4.4% | Artist Protection: NONE (red X) | Note: "Explicitly excludes digital goods"
-> Vgen       | Fee: 9.4–10.4% | Artist Protection: NONE (red X) | Note: "No protection mechanism"
-> GCash      | Fee: varies | Artist Protection: NONE (red X) | Note: "No financial enforcement layer"
-> Pangolin   | Fee: 2.5% | Artist Protection: ✅ GUARANTEED (green check) | Note: "Minimum floor enforced by smart contract"
->
-> Color scheme: red bars for competitors, blue/green bar for Pangolin.
-> Add stat at bottom: "1 in 3 commission artists hit non-payment or chargeback fraud"
-> Add stat: "₱640M in estimated annual losses to Philippine creatives"
-> White background, bold title, clean modern design. 1000x600px PNG.
-> ```
+![The Problem with Current Platforms](visuals/image%201.png)
 
 ### The Numbers
 
@@ -116,27 +99,7 @@ This solves the core asymmetry: **freelancers get paid for work they already did
 
 ## ⚙️ How It Works
 
-<!-- FLOW DIAGRAM — generate with the prompt below, save as images/pangolin-flow.png -->
-![How Pangolin Works](images/pangolin-flow.png)
-
-> **📋 Image generation prompt:**
-> ```
-> Create a clean horizontal step-by-step infographic titled "How Pangolin Works".
-> 6 steps connected by arrows, left to right:
->
-> Step 1 — icon: handshake — label: "Artist & Client Agree on Commission + Minimum Floor %"
-> Step 2 — icon: lock — label: "Client Deposits USDC into Soroban Smart Contract"
-> Step 3 — icon: paint palette — label: "Artist Sees Funds Locked — Starts Working with Confidence"
-> Step 4 — icon: upload arrow — label: "Artist Submits Work — SHA-256 Hash Recorded On-Chain"
-> Step 5 — icon: checkmark — label: "Client Approves — Full USDC Released to Artist"
-> Step 6 (branch) — icon: shield — label: "If Dispute: Minimum Floor % Auto-Released to Artist"
->
-> Style: white background, dark blue (#0d1b2a) step circles with white icons, black bold labels,
-> Stellar logo watermark bottom-right.
-> Add a branch arrow after Step 4 going to Step 6 labeled "If client disputes or goes silent".
-> Tagline at bottom: "Your floor is in the contract, not in the client's hands."
-> Size: 1600x600px PNG, clean modern flat design suitable for GitHub README.
-> ```
+![How Pangolin Works](visuals/image%202.png)
 
 **Step 1 — Agree:** Artist and client negotiate privately (on Twitter/X, Discord, etc.) and agree on price, scope, and minimum guarantee percentage.
 
@@ -212,33 +175,7 @@ CREATED → FUNDED → ACTIVE → DELIVERED → COMPLETED
 
 ## 🛠️ Tech Stack
 
-<!-- ARCHITECTURE DIAGRAM — generate with the prompt below, save as images/architecture.png -->
-![Pangolin Architecture](images/architecture.png)
-
-> **📋 Image generation prompt:**
-> ```
-> Create a clean 4-layer software architecture diagram titled "Pangolin — System Architecture".
->
-> Layer 1 (top, label "User Interfaces"):
->   - Box: "Client Dashboard — Create Escrow, Fund, Approve/Dispute"
->   - Box: "Freelancer Dashboard — Accept Job, Submit Delivery, Track Earnings"
->
-> Layer 2 (label "Frontend"):
->   - Box: "Next.js 15 + TypeScript + Tailwind CSS"
->   - Box: "Freighter Wallet — @stellar/freighter-api"
->
-> Layer 3 (label "Off-Chain Data"):
->   - Box: "Supabase — PostgreSQL — User Profiles, Metadata, Event Log"
->   Note: "(No financial logic here — funds are on-chain only)"
->
-> Layer 4 (bottom, label "Stellar Blockchain"):
->   - Box: "Soroban Smart Contract (Rust) — Escrow Logic, Minimum Guarantee, Auto-Release"
->   - Box: "USDC on Stellar — Circle-issued, Native — No Bridge Risk"
->
-> Connect layers with arrows top to bottom. Add Stellar logo next to Layer 4.
-> Style: dark background (#0d1117), blue (#0077b6) box borders, white text,
-> subtle glow on Layer 4. 1000x700px PNG, modern dev aesthetic.
-> ```
+![Pangolin Architecture](visuals/image3.png)
 
 | Layer | Technology |
 |-------|-----------|
