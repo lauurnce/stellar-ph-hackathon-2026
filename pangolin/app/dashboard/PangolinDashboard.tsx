@@ -2080,220 +2080,66 @@ export default function PangolinDashboard() {
                 />
               </div>
 
-              {/* ── Tab Content ── */}
-              {active === "disputes" ? (
-                <DisputesView
-                  disputes={disputes}
-                  loading={loadingDisputes}
-                  onRefresh={loadDisputes}
-                />
-              ) : (
-                <>
-                  {/* ── Active Escrows ── */}
-                  <div style={{ marginBottom: 28 }}>
-                    <div
+              {/* ── Active Escrows ── */}
+              <div style={{ marginBottom: 28 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div>
+                    <h2
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 16,
+                        fontSize: 17,
+                        fontWeight: 800,
+                        color: C.text,
+                        letterSpacing: "-.02em",
                       }}
                     >
-                      <div>
-                        <h2
-                          style={{
-                            fontSize: 17,
-                            fontWeight: 800,
-                            color: C.text,
-                            letterSpacing: "-.02em",
-                          }}
-                        >
-                          Active Escrows
-                        </h2>
-                        <p
-                          style={{
-                            fontSize: 12.5,
-                            color: C.textMuted,
-                            marginTop: 2,
-                          }}
-                        >
-                          {loadingEscrows
-                            ? "Loading contracts..."
-                            : `${escrows.filter((e) => e.status !== "Completed").length} active · ${escrows.filter((e) => e.status === "Completed").length} done`}
-                        </p>
-                      </div>
-                      {!showAllEscrows && (
-                        <Btn
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowAllEscrows(true)}
-                        >
-                          View All →
-                        </Btn>
-                      )}
-                    </div>
-                    <EscrowTable
-                      rows={escrows}
-                      loading={loadingEscrows}
-                      error={escrowError}
-                    />
+                      Active Escrows
+                    </h2>
+                    <p
+                      style={{
+                        fontSize: 12.5,
+                        color: C.textMuted,
+                        marginTop: 2,
+                      }}
+                    >
+                      {loadingEscrows
+                        ? "Loading contracts..."
+                        : `${escrows.filter((e) => e.status !== "Completed").length} active · ${escrows.filter((e) => e.status === "Completed").length} done`}
+                    </p>
                   </div>
+                  <Btn variant="ghost" size="sm" onClick={() => go("/escrow")}>
+                    View All →
+                  </Btn>
+                </div>
+                <EscrowTable
+                  rows={escrows}
+                  loading={loadingEscrows}
+                  error={escrowError}
+                />
+              </div>
 
-                  {/* ── Bottom row: Activity + Quick Tips ── */}
-                  <div
-                    className="dashboard-bottom-grid"
-                    style={{ display: "grid", gap: 20 }}
-                  >
-                    <ActivityFeed
-                      activities={activities}
-                      loading={loadingActivities}
-                    />
-                    <QuickTips />
-                  </div>
-                </>
-              )}
+              {/* ── Bottom row: Activity + Quick Tips ── */}
+              <div
+                className="dashboard-bottom-grid"
+                style={{ display: "grid", gap: 20 }}
+              >
+                <ActivityFeed
+                  activities={activities}
+                  loading={loadingActivities}
+                />
+                <QuickTips />
+              </div>
             </div>
           </main>
         </div>
       </>
     </AuthGuard>
-  );
-}
-
-// ── Disputes View ───────────────────────────────────────────────────────────
-function DisputesView({ disputes, loading, onRefresh }) {
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", padding: 60, color: C.textMuted }}>
-        <div style={{ fontSize: 24, marginBottom: 16 }}>⚖️</div>
-        <div style={{ fontSize: 14 }}>Loading disputes…</div>
-      </div>
-    );
-  }
-
-  if (!disputes?.length) {
-    return (
-      <div style={{ textAlign: "center", padding: 60 }}>
-        <div style={{ fontSize: 32, marginBottom: 16 }}>⚖️</div>
-        <div
-          style={{
-            fontSize: 16,
-            fontWeight: 700,
-            color: C.text,
-            marginBottom: 8,
-          }}
-        >
-          No Disputes
-        </div>
-        <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 20 }}>
-          You haven&apos;t raised any disputes yet.
-        </div>
-        <Btn variant="ghost" size="sm" onClick={onRefresh}>
-          Refresh
-        </Btn>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 20,
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              fontSize: 17,
-              fontWeight: 800,
-              color: C.text,
-              letterSpacing: "-.02em",
-            }}
-          >
-            Your Disputes
-          </h2>
-          <p style={{ fontSize: 12.5, color: C.textMuted, marginTop: 2 }}>
-            {disputes.length} dispute{disputes.length > 1 ? "s" : ""} raised
-          </p>
-        </div>
-        <Btn variant="ghost" size="sm" onClick={onRefresh}>
-          Refresh
-        </Btn>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {disputes.map((dispute) => (
-          <div
-            key={dispute.id}
-            onClick={() => go(`/dispute?escrow_id=${dispute.escrow_id}`)}
-            style={{
-              background: `linear-gradient(135deg,rgba(24,24,32,.97),rgba(18,18,26,.97))`,
-              border: `1px solid ${C.border}`,
-              borderRadius: 14,
-              padding: "18px 22px",
-              cursor: "pointer",
-              transition: "all .15s",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: 10,
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: C.text,
-                    marginBottom: 4,
-                  }}
-                >
-                  {dispute.escrow?.title || "Escrow Project"}
-                </div>
-                <div style={{ fontSize: 12, color: C.textMuted }}>
-                  {dispute.escrow?.amount_usdc
-                    ? `$${dispute.escrow.amount_usdc} USDC`
-                    : ""}
-                </div>
-              </div>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "4px 10px",
-                  borderRadius: 100,
-                  background: dispute.resolved_at
-                    ? "rgba(68,147,66,.14)"
-                    : "rgba(239,68,68,.14)",
-                  border: dispute.resolved_at
-                    ? "1px solid rgba(68,147,66,.35)"
-                    : "1px solid rgba(239,68,68,.35)",
-                  color: dispute.resolved_at ? "#7ECFC6" : "#F87171",
-                }}
-              >
-                {dispute.resolved_at ? "Resolved" : "Active"}
-              </span>
-            </div>
-            <div style={{ fontSize: 12.5, color: C.textSub, marginBottom: 8 }}>
-              <strong>Reason:</strong> {dispute.reason || "Not specified"}
-            </div>
-            <div style={{ fontSize: 11, color: C.textMuted }}>
-              Opened {new Date(dispute.opened_at).toLocaleDateString()}
-              {dispute.resolved_at &&
-                ` · Resolved ${new Date(dispute.resolved_at).toLocaleDateString()}`}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
