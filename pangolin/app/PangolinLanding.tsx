@@ -466,7 +466,7 @@ function FeatureStrip() {
                 background: "linear-gradient(135deg,rgba(63,208,201,.15),rgba(46,175,125,.1))",
                 border: "1px solid rgba(63,208,201,.3)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "26px",
+                fontSize: "26px", color: "#1A6B60",
               }}>{icon}</div>
               <span style={{ fontSize: "15px", fontWeight: 700, color: "#02353C", lineHeight: 1.4 }}>{title}</span>
             </div>
@@ -512,7 +512,7 @@ function HowItWorks() {
                   background: "linear-gradient(135deg,rgba(46,175,125,.12),rgba(63,208,201,.08))",
                   border: "1px solid rgba(63,208,201,.4)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "28px",
+                  fontSize: "28px", color: "#1A6B60",
                   boxShadow: "0 8px 24px rgba(46,175,125,.12)",
                 }}>{icon}</div>
                 <div style={{
