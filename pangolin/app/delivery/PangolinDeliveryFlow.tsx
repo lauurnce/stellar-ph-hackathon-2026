@@ -241,11 +241,18 @@ function ScreenA({
 
   const milestoneCount = milestones.length || 1;
   const currentMilestone =
-    milestones.find((m) => m.status !== "Approved") || milestones[0] || {};
+    milestones.find((m) => m.status === "active") ||
+    milestones.find((m) => m.status !== "completed") ||
+    milestones[0] ||
+    {};
   const currentIndex = milestones.findIndex(
     (m) => m.id === currentMilestone.id,
   );
   const milestoneStep = currentIndex >= 0 ? currentIndex + 1 : 1;
+  const isLastMilestone =
+    milestones.length === 0 ||
+    currentIndex === milestones.length - 1 ||
+    milestones.slice(currentIndex + 1).every((m) => m.status === "completed");
   const milestoneLabel = `Milestone ${milestoneStep} of ${milestoneCount}`;
   const milestoneName = currentMilestone.name || "Delivery";
   const milestoneAmount = Number(
@@ -343,12 +350,12 @@ function ScreenA({
 
     let txHash = null;
 
-    if (!onchainId) {
-      // No on-chain ID yet — record delivery in DB only, skip contract call
+    if (!onchainId || !isLastMilestone) {
+      // No on-chain ID, or intermediate milestone — record in DB only, skip contract call
       setPhase("done");
       setProgress(100);
     } else {
-      // Check on-chain state before calling submit_delivery
+      // Final milestone — check on-chain state before calling submit_delivery
       let onchainStatus = null;
       try {
         const onchain = await getEscrow(onchainId);
@@ -403,7 +410,7 @@ function ScreenA({
     await new Promise((r) => setTimeout(r, 500));
 
     const fileRecord = files[0] || null;
-    await Promise.all([
+    const updates = [
       supabase.from("deliveries").insert({
         escrow_id: escrow.id,
         milestone_id: currentMilestone?.id || null,
@@ -414,11 +421,29 @@ function ScreenA({
         delivery_note: notes || null,
         stellar_delivery_tx_hash: txHash,
       }),
-      supabase
-        .from("escrows")
-        .update({ status: "delivered" })
-        .eq("id", escrow.id),
-    ]);
+      ...(isLastMilestone
+        ? [
+            supabase
+              .from("escrows")
+              .update({ status: "delivered" })
+              .eq("id", escrow.id),
+          ]
+        : []),
+    ];
+
+    if (currentMilestone?.id) {
+      updates.push(
+        supabase
+          .from("milestones")
+          .update({
+            status: "delivered",
+            submitted_at: new Date().toISOString(),
+          })
+          .eq("id", currentMilestone.id),
+      );
+    }
+
+    await Promise.all(updates);
 
     onSubmit();
   };
@@ -1530,7 +1555,7 @@ function ScreenB({ escrow, milestones, supabase }) {
   const [txHash, setTxHash] = useState("—");
 
   const milestone =
-    milestones.find((m) => m.status !== "Approved") || milestones[0] || {};
+    milestones.find((m) => m.status !== "completed") || milestones[0] || {};
   const milestoneIndex = milestones.findIndex((m) => m.id === milestone.id);
   const milestoneNumber = milestoneIndex >= 0 ? milestoneIndex + 1 : 1;
   const received = Number(
@@ -1801,6 +1826,7 @@ function ScreenB({ escrow, milestones, supabase }) {
 // ════════════════════════════════════════════════════════════════════════════
 export default function PangolinDeliveryFlow() {
   const { supabase, user } = useAuth();
+  const { wallet } = useFreighterWallet();
   const searchParams = useSearchParams();
   const escrowId = searchParams.get("escrow_id");
   const [screen, setScreen] = useState("A");
@@ -1818,9 +1844,16 @@ export default function PangolinDeliveryFlow() {
       let query = supabase
         .from("escrows")
         .select(
-          "id,title,status,amount_usdc,deadline,client_id,freelancer_id,stellar_contract_id",
-        )
-        .eq("freelancer_id", user.id);
+          "id,title,status,amount_usdc,deadline,client_id,freelancer_id,freelancer_wallet,stellar_contract_id",
+        );
+
+      if (wallet?.address) {
+        query = query.or(
+          `freelancer_id.eq.${user.id},freelancer_wallet.eq.${wallet.address}`,
+        );
+      } else {
+        query = query.eq("freelancer_id", user.id);
+      }
 
       // If escrow_id is provided in URL, fetch that specific one
       if (escrowId) {
@@ -1856,7 +1889,7 @@ export default function PangolinDeliveryFlow() {
     return () => {
       mounted = false;
     };
-  }, [supabase, user?.id, escrowId]);
+  }, [supabase, user?.id, wallet?.address, escrowId]);
 
   return (
     <AuthGuard>
